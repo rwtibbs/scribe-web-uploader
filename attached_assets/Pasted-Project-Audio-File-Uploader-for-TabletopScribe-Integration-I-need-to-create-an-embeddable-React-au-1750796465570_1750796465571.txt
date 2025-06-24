@@ -1,0 +1,77 @@
+Project: Audio File Uploader for TabletopScribe Integration
+
+I need to create an embeddable React audio uploader application that integrates with an existing AWS Amplify/AppSync backend. Here are the detailed requirements and technical specifications:
+
+Core Functionality:
+
+Authenticated audio file upload interface for tabletop gaming session recordings
+Integration with Amazon Cognito for user authentication
+File upload to AWS S3 with automatic Lambda function triggering for audio processing
+Session creation and management through AWS AppSync GraphQL API
+Campaign selection and session metadata input
+Technical Stack:
+
+React with TypeScript
+Vite for build tooling
+AWS Amplify v6 for authentication and file storage
+AWS AppSync GraphQL API for data operations
+Express.js backend for file upload handling
+Tailwind CSS + shadcn/ui components for styling
+AWS Configuration Details:
+
+Cognito User Pool ID: us-east-2_p4Mv0gXrW
+Region: us-east-2
+S3 Bucket: scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-devsort
+GraphQL API Endpoint: https://aye26gtfp5am3ogkvd3qb46xbm.appsync-api.us-east-2.amazonaws.com/graphql
+Lambda API Endpoint: https://642l8cabx1.execute-api.us-east-2.amazonaws.com/dev/start-summary
+Required Environment Variables:
+
+VITE_USER_POOL_ID=us-east-2_p4Mv0gXrW
+VITE_USER_POOL_CLIENT_ID=[provided separately]
+VITE_AWS_REGION=us-east-2
+VITE_S3_BUCKET=scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-devsort
+VITE_APPSYNC_API_KEY=[provided separately]
+AWS_ACCESS_KEY_ID=[provided separately]
+AWS_SECRET_ACCESS_KEY=[provided separately]
+Key Features to Implement:
+
+Authentication Flow: Login screen with username/password using Cognito
+Campaign Selection: Dropdown to select from user's campaigns via GraphQL API
+Session Creation: Form to create new session with name, date, and duration
+File Upload: Drag-and-drop or file picker for audio files (any size)
+Progress Tracking: Upload progress bar and status indicators
+Error Handling: Comprehensive error handling with user-friendly messages
+Critical Implementation Details:
+
+Use API key authentication for GraphQL requests (not user tokens)
+File naming convention: campaign{campaignId}Session{sessionId}.{extension}
+S3 upload path: public/audioUploads/
+Lambda payload format: { sessionId, campaignId, audio_filename, user_specified_fields }
+Reset form after successful upload to prevent duplicates
+Server-side upload handling through Express.js middleware
+UI/UX Requirements:
+
+Dark theme with radial gradient background: rgba(1, 3, 45, 1) to rgba(1, 2, 19, 1)
+Text color: #FCEBD5
+Button hover color: #010213
+Professional, game-focused aesthetic
+Responsive design for desktop and mobile
+Must be embeddable via iframe
+GraphQL Schema Considerations:
+
+Sessions have: id, name, date, duration, audioFile, transcriptionStatus, campaignSessionsId
+Campaigns have: id, name, description, owner
+Use proper versioning for DynamoDB updates (_version field)
+Authentication Flow:
+
+Check existing session on app load
+Redirect to login if not authenticated
+Fetch user's campaigns after authentication
+Filter campaigns by current user's ownership
+Upload Process:
+
+Create session record in DynamoDB with "pending-upload" status
+Upload file to S3 with proper naming convention
+Trigger Lambda function for audio processing
+Display success message and reset form
+Please implement this as a complete, production-ready application with proper error handling, TypeScript types, and clean code architecture. Focus on reliability and user experience, ensuring the upload process works consistently with the existing AWS infrastructure.

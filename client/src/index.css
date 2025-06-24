@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(36, 45%, 95%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(36, 45%, 95%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(36, 45%, 95%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(217, 91%, 60%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(36, 45%, 95%);
+  --accent: hsl(217, 91%, 60%);
+  --accent-foreground: hsl(0, 0%, 100%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 85.7%, 97.3%);
+  --ring: hsl(217, 91%, 60%);
+  --radius: 0.5rem;
+  
+  /* Custom game theme colors */
+  --game-primary: hsl(36, 45%, 95%);
+  --game-secondary: hsl(36, 45%, 70%);
+  --game-hover: hsl(240, 100%, 6%);
+  --game-accent: hsl(217, 91%, 60%);
+  --game-success: hsl(142, 76%, 36%);
+  --game-error: hsl(0, 84%, 60%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased text-foreground;
+    background: radial-gradient(ellipse at center, rgba(1, 3, 45, 1) 0%, rgba(1, 2, 19, 1) 100%);
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .game-primary {
+    color: var(--game-primary);
+  }
+  
+  .game-secondary {
+    color: var(--game-secondary);
+  }
+  
+  .game-accent {
+    color: var(--game-accent);
+  }
+  
+  .game-success {
+    color: var(--game-success);
+  }
+  
+  .game-error {
+    color: var(--game-error);
+  }
+  
+  .text-game-primary {
+    color: var(--game-primary);
+  }
+  
+  .text-game-secondary {
+    color: var(--game-secondary);
+  }
+  
+  .text-game-accent {
+    color: var(--game-accent);
+  }
+  
+  .text-game-success {
+    color: var(--game-success);
+  }
+  
+  .text-game-error {
+    color: var(--game-error);
+  }
+  
+  .bg-game-accent {
+    background-color: var(--game-accent);
+  }
+  
+  .bg-game-hover {
+    background-color: var(--game-hover);
+  }
+  
+  .bg-game-success {
+    background-color: var(--game-success);
+  }
+  
+  .bg-game-error {
+    background-color: var(--game-error);
+  }
+  
+  .border-game-primary {
+    border-color: var(--game-primary);
+  }
+  
+  .border-game-secondary {
+    border-color: var(--game-secondary);
+  }
+  
+  .border-game-accent {
+    border-color: var(--game-accent);
+  }
+  
+  .border-game-success {
+    border-color: var(--game-success);
+  }
+  
+  .border-game-error {
+    border-color: var(--game-error);
+  }
+  
+  .file-drop-zone {
+    transition: all 0.3s ease;
+  }
+  
+  .file-drop-zone.drag-over {
+    border-color: var(--game-accent);
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+  
+  .form-input {
+    transition: all 0.2s ease;
+  }
+  
+  .form-input:focus {
+    outline: none;
+    border-color: var(--game-accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  .btn-primary {
+    transition: all 0.2s ease;
+  }
+  
+  .btn-primary:hover {
+    background-color: var(--game-hover);
+  }
+  
+  .status-indicator {
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+}

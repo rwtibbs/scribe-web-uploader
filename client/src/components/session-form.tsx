@@ -1,0 +1,306 @@
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CheckCircle, AlertTriangle, Upload, RotateCcw } from 'lucide-react';
+import { FileUploadZone } from './file-upload-zone';
+import { UploadProgressComponent } from './upload-progress';
+import { useCampaigns } from '@/hooks/use-campaigns';
+import { useAuth } from '@/hooks/use-auth';
+import { graphqlClient } from '@/lib/graphql';
+import { S3UploadService } from '@/lib/s3-upload';
+import { UploadProgress } from '@shared/schema';
+
+const sessionFormSchema = z.object({
+  campaignId: z.string().min(1, 'Please select a campaign'),
+  name: z.string().min(1, 'Session name is required'),
+  date: z.string().min(1, 'Session date is required'),
+  duration: z.number().positive('Duration must be positive'),
+});
+
+type SessionFormData = z.infer<typeof sessionFormSchema>;
+
+export function SessionForm() {
+  const { user } = useAuth();
+  const { data: campaigns, isLoading: campaignsLoading } = useCampaigns(user?.username);
+  
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const form = useForm<SessionFormData>({
+    resolver: zodResolver(sessionFormSchema),
+    defaultValues: {
+      campaignId: '',
+      name: '',
+      date: new Date().toISOString().split('T')[0],
+      duration: 3,
+    },
+  });
+
+  const handleFileSelect = (file: File) => {
+    setSelectedFile(file);
+    setErrorMessage(null);
+  };
+
+  const handleFileRemove = () => {
+    setSelectedFile(null);
+  };
+
+  const handleSubmit = async (data: SessionFormData) => {
+    if (!selectedFile) {
+      setErrorMessage('Please select an audio file');
+      return;
+    }
+
+    if (!user) {
+      setErrorMessage('User not authenticated');
+      return;
+    }
+
+    try {
+      setUploadStatus('uploading');
+      setErrorMessage(null);
+
+      // Create session record
+      const session = await graphqlClient.createSession({
+        name: data.name,
+        date: data.date,
+        duration: data.duration,
+        campaignSessionsId: data.campaignId,
+        transcriptionStatus: 'pending-upload',
+      });
+
+      // Generate S3 filename
+      const fileName = S3UploadService.generateFileName(
+        data.campaignId,
+        session.id,
+        selectedFile.name
+      );
+
+      // Upload to S3 with progress tracking
+      const s3Url = await S3UploadService.uploadFile({
+        key: fileName,
+        file: selectedFile,
+        onProgress: (progress) => {
+          setUploadProgress({
+            ...progress,
+            status: 'Uploading to S3...',
+          });
+        },
+      });
+
+      // Update session with audio file URL
+      await graphqlClient.updateSessionAudioFile(session.id, s3Url);
+
+      // Trigger Lambda function
+      const lambdaPayload = {
+        sessionId: session.id,
+        campaignId: data.campaignId,
+        audio_filename: fileName,
+        user_specified_fields: {
+          sessionName: data.name,
+          duration: data.duration,
+          date: data.date,
+        },
+      };
+
+      const lambdaResponse = await fetch('/api/trigger-lambda', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(lambdaPayload),
+      });
+
+      if (!lambdaResponse.ok) {
+        throw new Error('Failed to trigger processing');
+      }
+
+      setUploadStatus('success');
+      
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        resetForm();
+      }, 3000);
+
+    } catch (error) {
+      setUploadStatus('error');
+      setErrorMessage(error instanceof Error ? error.message : 'Upload failed');
+    }
+  };
+
+  const resetForm = () => {
+    form.reset();
+    setSelectedFile(null);
+    setUploadProgress(null);
+    setUploadStatus('idle');
+    setErrorMessage(null);
+  };
+
+  return (
+    <Card className="bg-black/20 backdrop-blur-sm border-game-primary/20">
+      <CardHeader>
+        <CardTitle className="text-2xl font-semibold text-game-primary">
+          Upload Session Recording
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          {/* Campaign Selection */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-game-primary">
+              Campaign <span className="text-game-error">*</span>
+            </Label>
+            <Select
+              value={form.watch('campaignId')}
+              onValueChange={(value) => form.setValue('campaignId', value)}
+            >
+              <SelectTrigger className="form-input bg-game-primary/5 border-game-primary/20 text-game-primary">
+                <SelectValue placeholder="Select a campaign..." />
+              </SelectTrigger>
+              <SelectContent>
+                {campaignsLoading ? (
+                  <SelectItem value="loading" disabled>Loading campaigns...</SelectItem>
+                ) : campaigns && campaigns.length > 0 ? (
+                  campaigns.map((campaign) => (
+                    <SelectItem key={campaign.id} value={campaign.id}>
+                      {campaign.name}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="no-campaigns" disabled>No campaigns found</SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+            {form.formState.errors.campaignId && (
+              <p className="text-sm text-game-error">{form.formState.errors.campaignId.message}</p>
+            )}
+          </div>
+
+          {/* Session Details */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-game-primary">
+                Session Name <span className="text-game-error">*</span>
+              </Label>
+              <Input
+                {...form.register('name')}
+                className="form-input bg-game-primary/5 border-game-primary/20 text-game-primary placeholder:text-game-secondary/50"
+                placeholder="Session 1: The Goblin Ambush"
+              />
+              {form.formState.errors.name && (
+                <p className="text-sm text-game-error">{form.formState.errors.name.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-game-primary">
+                Session Date <span className="text-game-error">*</span>
+              </Label>
+              <Input
+                type="date"
+                {...form.register('date')}
+                className="form-input bg-game-primary/5 border-game-primary/20 text-game-primary"
+              />
+              {form.formState.errors.date && (
+                <p className="text-sm text-game-error">{form.formState.errors.date.message}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-game-primary">
+              Duration (hours) <span className="text-game-error">*</span>
+            </Label>
+            <Input
+              type="number"
+              step="0.5"
+              min="0.5"
+              max="12"
+              {...form.register('duration', { valueAsNumber: true })}
+              className="form-input bg-game-primary/5 border-game-primary/20 text-game-primary placeholder:text-game-secondary/50"
+              placeholder="3.5"
+            />
+            {form.formState.errors.duration && (
+              <p className="text-sm text-game-error">{form.formState.errors.duration.message}</p>
+            )}
+          </div>
+
+          {/* File Upload */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-game-primary">
+              Audio Recording <span className="text-game-error">*</span>
+            </Label>
+            <FileUploadZone
+              onFileSelect={handleFileSelect}
+              selectedFile={selectedFile}
+              onFileRemove={handleFileRemove}
+            />
+          </div>
+
+          {/* Upload Progress */}
+          {uploadProgress && uploadStatus === 'uploading' && (
+            <UploadProgressComponent progress={uploadProgress} />
+          )}
+
+          {/* Status Messages */}
+          {uploadStatus === 'success' && (
+            <Alert className="bg-game-success/10 border-game-success/20">
+              <CheckCircle className="h-4 w-4 text-game-success" />
+              <AlertDescription className="text-game-success">
+                Upload Successful! Your session has been uploaded and is being processed. 
+                You'll receive a notification when transcription is complete.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {uploadStatus === 'error' && errorMessage && (
+            <Alert className="bg-game-error/10 border-game-error/20">
+              <AlertTriangle className="h-4 w-4 text-game-error" />
+              <AlertDescription className="text-game-error">
+                {errorMessage}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {errorMessage && uploadStatus !== 'error' && (
+            <Alert className="bg-game-error/10 border-game-error/20">
+              <AlertTriangle className="h-4 w-4 text-game-error" />
+              <AlertDescription className="text-game-error">
+                {errorMessage}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Submit Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button
+              type="submit"
+              disabled={uploadStatus === 'uploading' || !selectedFile}
+              className="btn-primary flex-1 py-3 bg-game-accent hover:bg-game-hover text-white font-medium"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              {uploadStatus === 'uploading' ? 'Uploading...' : 'Upload Session'}
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={resetForm}
+              className="border-game-primary/30 hover:border-game-primary/50 text-game-primary hover:text-game-primary py-3 px-6 font-medium"
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Reset Form
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}

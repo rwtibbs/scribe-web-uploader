@@ -5,8 +5,8 @@ import { S3UploadParams } from '@/types/aws';
 // Configure AWS
 AWS.config.update({
   region: awsConfig.region,
-  accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY,
+  accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID,
+  secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY,
 });
 
 const s3 = new AWS.S3();

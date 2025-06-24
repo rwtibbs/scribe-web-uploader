@@ -1,7 +1,16 @@
-import { users, type User, type InsertUser } from "@shared/schema";
+// User storage interface - using basic user types for now
 
 // modify the interface with any CRUD methods
 // you might need
+
+interface User {
+  id: number;
+  username: string;
+}
+
+interface InsertUser {
+  username: string;
+}
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;

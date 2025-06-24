@@ -3,6 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>TabletopScribe Audio Uploader</title>
+    <script>
+      // Polyfills for AWS SDK v2 browser compatibility
+      if (typeof global === 'undefined') {
+        window.global = window;
+      }
+      if (typeof process === 'undefined') {
+        window.process = { env: {} };
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

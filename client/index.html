@@ -10,7 +10,16 @@
         window.global = window;
       }
       if (typeof process === 'undefined') {
-        window.process = { env: {} };
+        window.process = { 
+          env: {},
+          browser: true,
+          version: '',
+          versions: { node: '16.0.0' },
+          platform: 'browser'
+        };
+      }
+      if (typeof Buffer === 'undefined') {
+        window.Buffer = {};
       }
     </script>
   </head>

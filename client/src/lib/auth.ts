@@ -39,6 +39,18 @@ export class AuthService {
           console.error('❌ Authentication failed:', err);
           reject(new Error(err.message || 'Authentication failed'));
         },
+        newPasswordRequired: (userAttributes, requiredAttributes) => {
+          console.log('🔐 New password required for user');
+          reject(new Error('Password change required. Please contact administrator.'));
+        },
+        mfaRequired: (challengeName, challengeParameters) => {
+          console.log('🔐 MFA required');
+          reject(new Error('Multi-factor authentication required.'));
+        },
+        customChallenge: (challengeParameters) => {
+          console.log('🔐 Custom challenge required');
+          reject(new Error('Custom authentication challenge required.'));
+        }
       });
     });
   }

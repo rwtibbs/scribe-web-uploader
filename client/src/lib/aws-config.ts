@@ -10,6 +10,14 @@ export const awsConfig: AWSConfig = {
   lambdaEndpoint: 'https://642l8cabx1.execute-api.us-east-2.amazonaws.com/dev/start-summary',
 };
 
+// Debug: Print current configuration
+console.log('🔧 Cognito Configuration:', {
+  region: awsConfig.region,
+  userPoolId: awsConfig.userPoolId,
+  userPoolClientId: awsConfig.userPoolClientId ? `${awsConfig.userPoolClientId.substring(0, 8)}...` : 'NOT SET',
+  hasAppsyncKey: !!awsConfig.appsyncApiKey
+});
+
 if (!awsConfig.userPoolClientId) {
   console.warn('VITE_USER_POOL_CLIENT_ID environment variable is not set');
 }

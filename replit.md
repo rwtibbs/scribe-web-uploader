@@ -103,5 +103,6 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 27, 2025. Updated GraphQL endpoint to https://lm5nq7s75raxnd24y67v3civhm.appsync-api.us-east-2.amazonaws.com/graphql
 - June 27, 2025. Updated Cognito User Pool ID to us-east-2_2sxvJnReu for correct authentication
 - June 24, 2025. Initial setup

@@ -175,7 +175,7 @@ export function SessionForm() {
                   ))
                 ) : (
                   <SelectItem value="manual-entry" disabled>
-                    Enter Campaign ID manually below (GraphQL endpoint unavailable)
+                    Enter Campaign ID manually below (API key authentication required)
                   </SelectItem>
                 )}
               </SelectContent>

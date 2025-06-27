@@ -1,11 +1,14 @@
 import { CognitoUserPool, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
-import { awsConfig } from './aws-config';
+import { getAwsConfig } from './aws-config';
 import { AuthUser } from '@shared/schema';
 
-const userPool = new CognitoUserPool({
-  UserPoolId: awsConfig.userPoolId,
-  ClientId: awsConfig.userPoolClientId,
-});
+const getUserPool = () => {
+  const config = getAwsConfig();
+  return new CognitoUserPool({
+    UserPoolId: config.userPoolId,
+    ClientId: config.userPoolClientId,
+  });
+};
 
 export class AuthService {
   static async signIn(username: string, password: string): Promise<AuthUser> {

@@ -1,14 +1,43 @@
 import { AWSConfig } from '@/types/aws';
 
-export const awsConfig: AWSConfig = {
-  region: import.meta.env.VITE_AWS_REGION || 'us-east-2',
-  userPoolId: import.meta.env.VITE_USER_POOL_ID || 'us-east-2_2sxvJnReu',
+// Environment configurations
+const productionConfig = {
+  region: 'us-east-2',
+  userPoolId: 'us-east-2_2sxvJnReu',
   userPoolClientId: import.meta.env.VITE_USER_POOL_CLIENT_ID || '',
-  s3Bucket: import.meta.env.VITE_S3_BUCKET || 'scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-devsort',
+  s3Bucket: 'scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-devsort',
   appsyncApiKey: import.meta.env.VITE_APPSYNC_API_KEY || '',
-  graphqlEndpoint: import.meta.env.VITE_GRAPHQL_ENDPOINT || 'https://lm5nq7s75raxnd24y67v3civhm.appsync-api.us-east-2.amazonaws.com/graphql',
+  graphqlEndpoint: 'https://lm5nq7s75raxnd24y67v3civhm.appsync-api.us-east-2.amazonaws.com/graphql',
   lambdaEndpoint: 'https://642l8cabx1.execute-api.us-east-2.amazonaws.com/dev/start-summary',
 };
+
+const developmentConfig = {
+  region: 'us-east-2',
+  userPoolId: 'us-east-2_DEV_POOL_ID', // Replace with actual dev pool ID
+  userPoolClientId: import.meta.env.VITE_USER_POOL_CLIENT_ID || '',
+  s3Bucket: 'scribe-dev-bucket', // Replace with actual dev bucket
+  appsyncApiKey: import.meta.env.VITE_APPSYNC_API_KEY || '',
+  graphqlEndpoint: 'https://dev-graphql-endpoint.appsync-api.us-east-2.amazonaws.com/graphql', // Replace with actual dev endpoint
+  lambdaEndpoint: 'https://dev-lambda-endpoint.execute-api.us-east-2.amazonaws.com/dev/start-summary',
+};
+
+// Get environment from localStorage, defaults to production
+export const getEnvironment = (): 'production' | 'development' => {
+  return (localStorage.getItem('tabletopscribe-environment') as 'production' | 'development') || 'production';
+};
+
+export const setEnvironment = (env: 'production' | 'development') => {
+  localStorage.setItem('tabletopscribe-environment', env);
+  // Force page reload to apply new configuration
+  window.location.reload();
+};
+
+export const getAwsConfig = (): AWSConfig => {
+  const env = getEnvironment();
+  return env === 'development' ? developmentConfig : productionConfig;
+};
+
+export const awsConfig = getAwsConfig();
 
 // Debug: Print current configuration
 console.log('🔧 AWS Configuration:', {

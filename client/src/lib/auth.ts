@@ -25,6 +25,7 @@ export class AuthService {
           const accessToken = result.getAccessToken().getJwtToken();
           const payload = result.getAccessToken().payload;
           
+          console.log('✅ Authentication successful');
           resolve({
             username,
             sub: payload.sub,
@@ -32,6 +33,7 @@ export class AuthService {
           });
         },
         onFailure: (err) => {
+          console.error('❌ Authentication failed:', err);
           reject(new Error(err.message || 'Authentication failed'));
         },
       });

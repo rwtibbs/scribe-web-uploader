@@ -14,10 +14,12 @@ export function useAuth() {
   const checkCurrentSession = async () => {
     try {
       setIsLoading(true);
+      console.log('🔄 Checking current session...');
       const currentUser = await AuthService.getCurrentSession();
       setUser(currentUser);
+      console.log('✅ Session check complete:', currentUser ? 'User found' : 'No active session');
     } catch (err) {
-      console.error('Error checking current session:', err);
+      console.error('❌ Error checking current session:', err);
     } finally {
       setIsLoading(false);
     }

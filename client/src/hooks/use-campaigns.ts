@@ -5,9 +5,17 @@ import { Campaign } from '@/types/aws';
 export function useCampaigns(owner?: string) {
   return useQuery<Campaign[]>({
     queryKey: ['campaigns', owner],
-    queryFn: () => {
+    queryFn: async () => {
       if (!owner) throw new Error('Owner is required to fetch campaigns');
-      return graphqlClient.getCampaignsByOwner(owner);
+      console.log('🔄 Fetching campaigns for owner:', owner);
+      try {
+        const campaigns = await graphqlClient.getCampaignsByOwner(owner);
+        console.log('✅ Campaigns fetched:', campaigns.length, 'campaigns');
+        return campaigns;
+      } catch (error) {
+        console.error('❌ Failed to fetch campaigns:', error);
+        throw error;
+      }
     },
     enabled: !!owner,
   });

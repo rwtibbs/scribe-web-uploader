@@ -27,3 +27,10 @@ export interface S3UploadParams {
   file: File;
   onProgress?: (progress: { loaded: number; total: number; percentage: number }) => void;
 }
+
+export interface Campaign {
+  id: string;
+  name: string;
+  description?: string;
+  owner: string;
+}

@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, AlertTriangle, Upload, RotateCcw } from 'lucide-react';
@@ -165,19 +165,34 @@ export function SessionForm() {
                 <SelectValue placeholder="Select a campaign..." />
               </SelectTrigger>
               <SelectContent>
-                {campaignsLoading ? (
-                  <SelectItem value="loading" disabled>Loading campaigns...</SelectItem>
-                ) : campaigns && campaigns.length > 0 ? (
-                  campaigns.map((campaign) => (
-                    <SelectItem key={campaign.id} value={campaign.id}>
-                      {campaign.name}
+                <SelectGroup>
+                  <SelectLabel>Your Campaigns</SelectLabel>
+                  {campaignsLoading ? (
+                    <SelectItem value="loading" disabled>Loading campaigns...</SelectItem>
+                  ) : campaigns && campaigns.length > 0 ? (
+                    campaigns.map((campaign) => (
+                      <SelectItem key={campaign.id} value={campaign.id}>
+                        {campaign.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-campaigns" disabled>
+                      No campaigns found for user "rwtibbitts"
                     </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="manual-entry" disabled>
-                    Enter Campaign ID manually below (API key authentication required)
+                  )}
+                </SelectGroup>
+                <SelectGroup>
+                  <SelectLabel>Test with Sample Campaigns</SelectLabel>
+                  <SelectItem value="a30cc549-9e4b-4bd9-9bc6-d43f9b25073b">
+                    Test Campaign (canadianrunna)
                   </SelectItem>
-                )}
+                  <SelectItem value="cafc687a-06dd-4c20-b5ac-e6f8ec813a35">
+                    Fish Campaign (dbford)
+                  </SelectItem>
+                  <SelectItem value="552a74e4-170a-4966-8268-f91ca5244538">
+                    Mines Campaign (dragonslayer)
+                  </SelectItem>
+                </SelectGroup>
               </SelectContent>
             </Select>
             {form.formState.errors.campaignId && (

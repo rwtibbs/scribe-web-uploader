@@ -165,34 +165,19 @@ export function SessionForm() {
                 <SelectValue placeholder="Select a campaign..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Your Campaigns</SelectLabel>
-                  {campaignsLoading ? (
-                    <SelectItem value="loading" disabled>Loading campaigns...</SelectItem>
-                  ) : campaigns && campaigns.length > 0 ? (
-                    campaigns.map((campaign) => (
-                      <SelectItem key={campaign.id} value={campaign.id}>
-                        {campaign.name}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="no-campaigns" disabled>
-                      No campaigns found for user "rwtibbitts"
+                {campaignsLoading ? (
+                  <SelectItem value="loading" disabled>Loading campaigns...</SelectItem>
+                ) : campaigns && campaigns.length > 0 ? (
+                  campaigns.map((campaign) => (
+                    <SelectItem key={campaign.id} value={campaign.id}>
+                      {campaign.name}
                     </SelectItem>
-                  )}
-                </SelectGroup>
-                <SelectGroup>
-                  <SelectLabel>Test with Sample Campaigns</SelectLabel>
-                  <SelectItem value="a30cc549-9e4b-4bd9-9bc6-d43f9b25073b">
-                    Test Campaign (canadianrunna)
+                  ))
+                ) : (
+                  <SelectItem value="no-campaigns" disabled>
+                    No campaigns found
                   </SelectItem>
-                  <SelectItem value="cafc687a-06dd-4c20-b5ac-e6f8ec813a35">
-                    Fish Campaign (dbford)
-                  </SelectItem>
-                  <SelectItem value="552a74e4-170a-4966-8268-f91ca5244538">
-                    Mines Campaign (dragonslayer)
-                  </SelectItem>
-                </SelectGroup>
+                )}
               </SelectContent>
             </Select>
             {form.formState.errors.campaignId && (

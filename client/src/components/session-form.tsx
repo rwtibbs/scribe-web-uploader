@@ -123,30 +123,7 @@ export function SessionForm() {
       
       await graphqlClient.updateSessionAudioFile(session.id, fileName, session._version);
 
-      // Step 4: Trigger Lambda function for processing
-      setUploadProgress({ percentage: 90, loaded: 0, total: 100, status: 'Starting audio processing...' });
-      
-      const lambdaPayload = {
-        sessionId: session.id,
-        campaignId: data.campaignId,
-        audio_filename: fileName,
-        user_specified_fields: {
-          sessionName: sessionName,
-          date: data.date || getLocalDateString(new Date()),
-        },
-      };
-
-      const lambdaResponse = await fetch('/api/trigger-lambda', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(lambdaPayload),
-      });
-
-      if (!lambdaResponse.ok) {
-        throw new Error('Failed to trigger processing');
-      }
-
-      setUploadProgress({ percentage: 100, loaded: 100, total: 100, status: 'Upload complete! Processing started.' });
+      setUploadProgress({ percentage: 100, loaded: 100, total: 100, status: 'Upload complete!' });
       setUploadStatus('success');
       
       // Reset form after 3 seconds

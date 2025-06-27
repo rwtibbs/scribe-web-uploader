@@ -58,8 +58,7 @@ TabletopScribe is a web application for uploading and processing tabletop gaming
    - **Step 1**: Create session with NOTSTARTED/NOTPURCHASED status, wait for completion
    - **Step 2**: Upload audio file to S3 with progress tracking, wait for completion
    - **Step 3**: Update session with audioFile, transcriptionFile, and UPLOADED status
-5. **Processing Trigger**: Backend triggers Lambda function with session metadata
-6. **Status Updates**: Session status tracked through transcription pipeline states
+5. **Status Updates**: Session status tracked through transcription pipeline states
 
 ### Session Status States
 - `pending-upload`: Initial state, waiting for file
@@ -106,6 +105,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 27, 2025. Implemented 3-step upload process: create session, upload audio, update session data (removed Lambda trigger)
 - June 27, 2025. Updated session creation to match TabletopScribe data structure with NOTSTARTED/NOTPURCHASED status
 - June 27, 2025. Removed duration field from form - will be automatically detected from audio file
 - June 27, 2025. Removed sample campaigns, now displaying only authenticated user's campaigns

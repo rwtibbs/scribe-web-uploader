@@ -78,8 +78,10 @@ export function SessionForm() {
         return date.toLocaleDateString('en-CA'); // YYYY-MM-DD format
       };
 
-      // Create session record with proper structure
-      const session = await graphqlClient.createSession({
+      // Step 1: Create session record and wait for completion
+      setUploadProgress({ percentage: 10, loaded: 0, total: 100, status: 'Creating session...' });
+      
+      const session: { id: string; _version: number } = await graphqlClient.createSession({
         name: sessionName,
         duration: 0, // Will be updated after audio processing
         audioFile: "",
@@ -90,36 +92,47 @@ export function SessionForm() {
         date: data.date || getLocalDateString(new Date()),
       });
 
-      // Generate S3 filename
+      // Validate session was created properly
+      if (!session || !session.id) {
+        throw new Error('Failed to create session - invalid session object');
+      }
+
+      // Step 2: Upload audio file and wait for completion
+      setUploadProgress({ percentage: 30, loaded: 0, total: 100, status: 'Uploading audio file...' });
+      
       const fileName = S3UploadService.generateFileName(
         data.campaignId,
         session.id,
         selectedFile.name
       );
 
-      // Upload to S3 with progress tracking
       const s3Url = await S3UploadService.uploadFile({
         key: fileName,
         file: selectedFile,
         onProgress: (progress) => {
           setUploadProgress({
             ...progress,
+            percentage: 30 + (progress.percentage * 0.4), // 30-70% range
             status: 'Uploading to S3...',
           });
         },
       });
 
-      // Update session with audio file URL
-      await graphqlClient.updateSessionAudioFile(session.id, s3Url);
+      // Step 3: Update session data with uploaded file information
+      setUploadProgress({ percentage: 80, loaded: 0, total: 100, status: 'Updating session data...' });
+      
+      await graphqlClient.updateSessionAudioFile(session.id, fileName, session._version);
 
-      // Trigger Lambda function
+      // Step 4: Trigger Lambda function for processing
+      setUploadProgress({ percentage: 90, loaded: 0, total: 100, status: 'Starting audio processing...' });
+      
       const lambdaPayload = {
         sessionId: session.id,
         campaignId: data.campaignId,
         audio_filename: fileName,
         user_specified_fields: {
-          sessionName: data.name,
-          date: data.date,
+          sessionName: sessionName,
+          date: data.date || getLocalDateString(new Date()),
         },
       };
 
@@ -133,6 +146,7 @@ export function SessionForm() {
         throw new Error('Failed to trigger processing');
       }
 
+      setUploadProgress({ percentage: 100, loaded: 100, total: 100, status: 'Upload complete! Processing started.' });
       setUploadStatus('success');
       
       // Reset form after 3 seconds

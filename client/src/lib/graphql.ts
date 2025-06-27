@@ -132,7 +132,7 @@ class GraphQLClient {
     purchaseStatus: string;
     campaignSessionsId: string;
     date: string;
-  }): Promise<{ id: string }> {
+  }): Promise<{ id: string; _version: number }> {
     const mutation = `
       mutation CreateSession($input: CreateSessionInput!) {
         createSession(input: $input) {
@@ -145,11 +145,12 @@ class GraphQLClient {
           purchaseStatus
           campaignSessionsId
           date
+          _version
         }
       }
     `;
 
-    const result = await this.query<{ createSession: { id: string } }>(mutation, {
+    const result = await this.query<{ createSession: { id: string; _version: number } }>(mutation, {
       input: sessionData,
     });
 
@@ -162,13 +163,20 @@ class GraphQLClient {
         updateSession(input: $input) {
           id
           audioFile
+          transcriptionFile
+          transcriptionStatus
         }
       }
     `;
 
+    const baseAudioFile = audioFile.split('/').pop() || audioFile;
+    const baseTranscriptionFile = baseAudioFile.replace(/\.[^/.]+$/, '') + '_transcription.json';
+
     const input: any = {
       id: sessionId,
-      audioFile,
+      audioFile: baseAudioFile,
+      transcriptionFile: baseTranscriptionFile,
+      transcriptionStatus: "UPLOADED",
     };
 
     if (version !== undefined) {

@@ -53,8 +53,11 @@ TabletopScribe is a web application for uploading and processing tabletop gaming
 
 1. **User Authentication**: User signs in via AWS Cognito, receives JWT tokens
 2. **Campaign Selection**: Frontend queries GraphQL API to fetch user's campaigns
-3. **Session Creation**: User fills form with session metadata (name, date, duration)
-4. **File Upload**: Audio file uploaded to S3 with progress tracking
+3. **Session Creation**: User fills form with session metadata (name, date)
+4. **3-Step Upload Process**:
+   - **Step 1**: Create session with NOTSTARTED/NOTPURCHASED status, wait for completion
+   - **Step 2**: Upload audio file to S3 with progress tracking, wait for completion
+   - **Step 3**: Update session with audioFile, transcriptionFile, and UPLOADED status
 5. **Processing Trigger**: Backend triggers Lambda function with session metadata
 6. **Status Updates**: Session status tracked through transcription pipeline states
 

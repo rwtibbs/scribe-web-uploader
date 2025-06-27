@@ -1,4 +1,4 @@
-import { getAwsConfig } from './aws-config';
+import { getAwsConfig, getEnvironment } from './aws-config';
 import { GraphQLResponse, Campaign } from '@/types/aws';
 
 class GraphQLClient {
@@ -133,7 +133,25 @@ class GraphQLClient {
     campaignSessionsId: string;
     date: string;
   }): Promise<{ id: string; _version: number }> {
-    const mutation = `
+    const isDevelopment = getEnvironment() === 'development';
+    
+    // DEVSORT (development) supports purchaseStatus, DEV (production) does not
+    const mutation = isDevelopment ? `
+      mutation CreateSession($input: CreateSessionInput!) {
+        createSession(input: $input) {
+          id
+          name
+          duration
+          audioFile
+          transcriptionFile
+          transcriptionStatus
+          purchaseStatus
+          campaignSessionsId
+          date
+          _version
+        }
+      }
+    ` : `
       mutation CreateSession($input: CreateSessionInput!) {
         createSession(input: $input) {
           id
@@ -149,8 +167,16 @@ class GraphQLClient {
       }
     `;
 
+    const input = isDevelopment ? {
+      ...sessionData,
+      purchaseStatus: 'NOTPURCHASED'
+    } : sessionData;
+
+    console.log('🔄 Creating session with data:', input);
+    console.log('🌍 Environment:', isDevelopment ? 'DEVSORT (development)' : 'DEV (production)');
+
     const result = await this.query<{ createSession: { id: string; _version: number } }>(mutation, {
-      input: sessionData,
+      input,
     });
 
     return result.createSession;

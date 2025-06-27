@@ -100,7 +100,7 @@ class GraphQLClient {
   async getCampaignsByOwner(owner: string, accessToken?: string): Promise<Campaign[]> {
     const query = `
       query GetCampaignsByOwner($owner: String!) {
-        listCampaigns(filter: { owner: { eq: $owner } }) {
+        listCampaigns(filter: { owner: { contains: $owner } }) {
           items {
             id
             name

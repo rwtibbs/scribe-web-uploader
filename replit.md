@@ -103,4 +103,5 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 27, 2025. Updated Cognito User Pool ID to us-east-2_2sxvJnReu for correct authentication
 - June 24, 2025. Initial setup

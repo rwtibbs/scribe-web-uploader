@@ -2,7 +2,7 @@ import { AWSConfig } from '@/types/aws';
 
 export const awsConfig: AWSConfig = {
   region: import.meta.env.VITE_AWS_REGION || 'us-east-2',
-  userPoolId: import.meta.env.VITE_USER_POOL_ID || 'us-east-2_p4Mv0gXrW',
+  userPoolId: import.meta.env.VITE_USER_POOL_ID || 'us-east-2_2sxvJnReu',
   userPoolClientId: import.meta.env.VITE_USER_POOL_CLIENT_ID || '',
   s3Bucket: import.meta.env.VITE_S3_BUCKET || 'scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-devsort',
   appsyncApiKey: import.meta.env.VITE_APPSYNC_API_KEY || '',

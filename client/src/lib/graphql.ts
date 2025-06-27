@@ -61,8 +61,8 @@ class GraphQLClient {
     } catch (error) {
       console.error('❌ GraphQL request error details:', {
         name: error?.constructor?.name,
-        message: error?.message,
-        stack: error?.stack,
+        message: (error as any)?.message,
+        stack: (error as any)?.stack,
         error
       });
       

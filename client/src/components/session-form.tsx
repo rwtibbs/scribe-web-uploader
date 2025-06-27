@@ -18,7 +18,7 @@ import { S3UploadService } from '@/lib/s3-upload';
 import { UploadProgress } from '@shared/schema';
 
 const sessionFormSchema = z.object({
-  campaignId: z.string().min(1, 'Please select a campaign'),
+  campaignId: z.string().min(1, 'Campaign ID is required'),
   name: z.string().min(1, 'Session name is required'),
   date: z.string().min(1, 'Session date is required'),
   duration: z.number().positive('Duration must be positive'),
@@ -174,12 +174,29 @@ export function SessionForm() {
                     </SelectItem>
                   ))
                 ) : (
-                  <SelectItem value="no-campaigns" disabled>No campaigns found</SelectItem>
+                  <SelectItem value="manual-entry" disabled>
+                    Enter Campaign ID manually below (GraphQL endpoint unavailable)
+                  </SelectItem>
                 )}
               </SelectContent>
             </Select>
             {form.formState.errors.campaignId && (
               <p className="text-sm text-game-error">{form.formState.errors.campaignId.message}</p>
+            )}
+            
+            {/* Manual Campaign ID Entry */}
+            {(!campaigns || campaigns.length === 0) && (
+              <div className="mt-2">
+                <Label className="text-sm font-medium text-game-primary">
+                  Or enter Campaign ID manually
+                </Label>
+                <Input
+                  value={form.watch('campaignId')}
+                  onChange={(e) => form.setValue('campaignId', e.target.value)}
+                  className="form-input bg-game-primary/5 border-game-primary/20 text-game-primary placeholder:text-game-secondary/50"
+                  placeholder="Enter campaign ID (e.g., campaign-123)"
+                />
+              </div>
             )}
           </div>
 

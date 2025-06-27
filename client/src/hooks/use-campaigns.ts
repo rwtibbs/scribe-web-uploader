@@ -13,10 +13,12 @@ export function useCampaigns(owner?: string) {
         console.log('✅ Campaigns fetched:', campaigns.length, 'campaigns');
         return campaigns;
       } catch (error) {
-        console.error('❌ Failed to fetch campaigns:', error);
-        throw error;
+        console.error('❌ Failed to fetch campaigns, using fallback:', error);
+        // Return empty array when GraphQL endpoint is unreachable
+        return [];
       }
     },
     enabled: !!owner,
+    retry: false, // Don't retry failed requests
   });
 }

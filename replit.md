@@ -77,6 +77,8 @@ TabletopScribe is a web application for uploading and processing tabletop gaming
   - Production: scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-dev
   - Development: scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-devsort
 - **AppSync**: GraphQL API for campaign and session data
+  - Production: https://lm5nq7s75raxnd24y67v3civhm.appsync-api.us-east-2.amazonaws.com/graphql
+  - Development: https://aye26gtfp5am3ogkvd3qb46xbm.appsync-api.us-east-2.amazonaws.com/graphql
 - **Lambda**: Audio processing and transcription service
 
 ### Development Dependencies
@@ -109,6 +111,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 27, 2025. Updated GraphQL client to handle schema differences between DEV and DEVSORT environments
 - June 27, 2025. Configured environment toggle with correct DEV (production) and DEVSORT (development) settings
 - June 27, 2025. Added environment toggle on signin page to switch between production and development environments
 - June 27, 2025. Fixed GraphQL schema error by removing purchaseStatus field (not supported in Session type)

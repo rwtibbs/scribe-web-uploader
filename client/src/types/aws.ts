@@ -32,5 +32,13 @@ export interface Campaign {
   id: string;
   name: string;
   description?: string;
-  owner: string;
+  brief?: string;
+  duration?: number;
+  numPlayers?: number;
+  owner?: string;
+  createdAt: string;
+  updatedAt?: string;
+  _version: number;
+  _deleted?: boolean;
+  _lastChangedAt: number;
 }

@@ -82,14 +82,22 @@ class GraphQLClient {
             id
             name
             description
+            brief
+            duration
+            numPlayers
             owner
+            createdAt
+            updatedAt
+            _version
+            _deleted
+            _lastChangedAt
           }
         }
       }
     `;
 
     const result = await this.query<{ listCampaigns: { items: Campaign[] } }>(query, { owner });
-    return result.listCampaigns.items;
+    return result.listCampaigns.items.filter(campaign => !campaign._deleted);
   }
 
   async createSession(sessionData: {

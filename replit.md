@@ -105,6 +105,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 27, 2025. Added environment toggle on signin page to switch between production and development environments
 - June 27, 2025. Fixed GraphQL schema error by removing purchaseStatus field (not supported in Session type)
 - June 27, 2025. Implemented 3-step upload process: create session, upload audio, update session data (removed Lambda trigger)
 - June 27, 2025. Updated session creation to match TabletopScribe data structure with NOTSTARTED status

@@ -103,6 +103,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 27, 2025. Removed duration field from form - will be automatically detected from audio file
 - June 27, 2025. Removed sample campaigns, now displaying only authenticated user's campaigns
 - June 27, 2025. Fixed campaign query to use 'contains' filter instead of 'eq' for owner field matching
 - June 27, 2025. Updated GraphQL endpoint to https://lm5nq7s75raxnd24y67v3civhm.appsync-api.us-east-2.amazonaws.com/graphql

@@ -21,7 +21,6 @@ const sessionFormSchema = z.object({
   campaignId: z.string().min(1, 'Campaign ID is required'),
   name: z.string().min(1, 'Session name is required'),
   date: z.string().min(1, 'Session date is required'),
-  duration: z.number().positive('Duration must be positive'),
 });
 
 type SessionFormData = z.infer<typeof sessionFormSchema>;
@@ -41,7 +40,6 @@ export function SessionForm() {
       campaignId: '',
       name: '',
       date: new Date().toISOString().split('T')[0],
-      duration: 3,
     },
   });
 
@@ -73,7 +71,6 @@ export function SessionForm() {
       const session = await graphqlClient.createSession({
         name: data.name,
         date: data.date,
-        duration: data.duration,
         campaignSessionsId: data.campaignId,
         transcriptionStatus: 'pending-upload',
       });
@@ -107,7 +104,6 @@ export function SessionForm() {
         audio_filename: fileName,
         user_specified_fields: {
           sessionName: data.name,
-          duration: data.duration,
           date: data.date,
         },
       };
@@ -231,23 +227,7 @@ export function SessionForm() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-game-primary">
-              Duration (hours) <span className="text-game-error">*</span>
-            </Label>
-            <Input
-              type="number"
-              step="0.5"
-              min="0.5"
-              max="12"
-              {...form.register('duration', { valueAsNumber: true })}
-              className="form-input bg-game-primary/5 border-game-primary/20 text-game-primary placeholder:text-game-secondary/50"
-              placeholder="3.5"
-            />
-            {form.formState.errors.duration && (
-              <p className="text-sm text-game-error">{form.formState.errors.duration.message}</p>
-            )}
-          </div>
+
 
           {/* File Upload */}
           <div className="space-y-2">

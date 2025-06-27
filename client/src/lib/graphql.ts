@@ -126,7 +126,6 @@ class GraphQLClient {
   async createSession(sessionData: {
     name: string;
     date: string;
-    duration: number;
     campaignSessionsId: string;
     transcriptionStatus: string;
   }): Promise<{ id: string }> {
@@ -136,7 +135,6 @@ class GraphQLClient {
           id
           name
           date
-          duration
           transcriptionStatus
           campaignSessionsId
         }

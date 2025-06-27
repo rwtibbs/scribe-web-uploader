@@ -125,18 +125,26 @@ class GraphQLClient {
 
   async createSession(sessionData: {
     name: string;
-    date: string;
-    campaignSessionsId: string;
+    duration: number;
+    audioFile: string;
+    transcriptionFile: string;
     transcriptionStatus: string;
+    purchaseStatus: string;
+    campaignSessionsId: string;
+    date: string;
   }): Promise<{ id: string }> {
     const mutation = `
       mutation CreateSession($input: CreateSessionInput!) {
         createSession(input: $input) {
           id
           name
-          date
+          duration
+          audioFile
+          transcriptionFile
           transcriptionStatus
+          purchaseStatus
           campaignSessionsId
+          date
         }
       }
     `;

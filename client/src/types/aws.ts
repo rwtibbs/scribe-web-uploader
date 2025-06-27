@@ -41,4 +41,10 @@ export interface Campaign {
   _version: number;
   _deleted?: boolean;
   _lastChangedAt: number;
+  sessions?: {
+    items: Array<{
+      id: string;
+      name: string;
+    }>;
+  };
 }

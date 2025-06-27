@@ -67,12 +67,27 @@ export function SessionForm() {
       setUploadStatus('uploading');
       setErrorMessage(null);
 
-      // Create session record
+      // Find selected campaign to get session count
+      const selectedCampaign = campaigns?.find(c => c.id === data.campaignId);
+      
+      // Generate session name if not provided  
+      const sessionName = data.name || `Session ${1}`; // Simplified for now, can be enhanced later
+      
+      // Helper function to get local date string
+      const getLocalDateString = (date: Date) => {
+        return date.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+      };
+
+      // Create session record with proper structure
       const session = await graphqlClient.createSession({
-        name: data.name,
-        date: data.date,
+        name: sessionName,
+        duration: 0, // Will be updated after audio processing
+        audioFile: "",
+        transcriptionFile: "",
+        transcriptionStatus: "NOTSTARTED",
+        purchaseStatus: "NOTPURCHASED",
         campaignSessionsId: data.campaignId,
-        transcriptionStatus: 'pending-upload',
+        date: data.date || getLocalDateString(new Date()),
       });
 
       // Generate S3 filename

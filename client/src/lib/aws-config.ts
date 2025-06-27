@@ -16,7 +16,7 @@ const productionConfig = {
 const developmentConfig = {
   region: 'us-east-2',
   userPoolId: 'us-east-2_N5trdtp4e', // DEVSORT environment (development)
-  userPoolClientId: import.meta.env.VITE_USER_POOL_CLIENT_ID || '',
+  userPoolClientId: 'kpk9rjugfg5997ann3v40s7hs', // DEVSORT client ID
   s3Bucket: 'scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-devsort',
   appsyncApiKey: import.meta.env.VITE_APPSYNC_API_KEY || '',
   graphqlEndpoint: import.meta.env.VITE_GRAPHQL_ENDPOINT || 'https://aye26gtfp5am3ogkvd3qb46xbm.appsync-api.us-east-2.amazonaws.com/graphql',

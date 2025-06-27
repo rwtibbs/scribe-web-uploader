@@ -72,7 +72,7 @@ TabletopScribe is a web application for uploading and processing tabletop gaming
 ### AWS Services
 - **Cognito**: User authentication and management
   - Production (DEV): us-east-2_2sxvJnReu
-  - Development (DEVSORT): us-east-2_N5trdtp4e
+  - Development (DEVSORT): us-east-2_N5trdtp4e (client: kpk9rjugfg5997ann3v40s7hs)
 - **S3**: Audio file storage with public/audioUploads prefix
   - Production: scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-dev
   - Development: scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-devsort
@@ -111,6 +111,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 27, 2025. Fixed DEVSORT authentication with correct client ID (kpk9rjugfg5997ann3v40s7hs)
 - June 27, 2025. Updated GraphQL client to handle schema differences between DEV and DEVSORT environments
 - June 27, 2025. Configured environment toggle with correct DEV (production) and DEVSORT (development) settings
 - June 27, 2025. Added environment toggle on signin page to switch between production and development environments

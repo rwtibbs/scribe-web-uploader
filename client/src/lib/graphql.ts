@@ -129,7 +129,6 @@ class GraphQLClient {
     audioFile: string;
     transcriptionFile: string;
     transcriptionStatus: string;
-    purchaseStatus: string;
     campaignSessionsId: string;
     date: string;
   }): Promise<{ id: string; _version: number }> {
@@ -142,7 +141,6 @@ class GraphQLClient {
           audioFile
           transcriptionFile
           transcriptionStatus
-          purchaseStatus
           campaignSessionsId
           date
           _version

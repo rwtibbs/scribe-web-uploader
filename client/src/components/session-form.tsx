@@ -87,7 +87,6 @@ export function SessionForm() {
         audioFile: "",
         transcriptionFile: "",
         transcriptionStatus: "NOTSTARTED",
-        purchaseStatus: "NOTPURCHASED",
         campaignSessionsId: data.campaignId,
         date: data.date || getLocalDateString(new Date()),
       });

@@ -1,4 +1,4 @@
-import { awsConfig } from './aws-config';
+import { getAwsConfig } from './aws-config';
 import { GraphQLResponse, Campaign } from '@/types/aws';
 
 class GraphQLClient {
@@ -6,8 +6,9 @@ class GraphQLClient {
   private apiKey: string;
 
   constructor() {
-    this.endpoint = awsConfig.graphqlEndpoint;
-    this.apiKey = awsConfig.appsyncApiKey;
+    const config = getAwsConfig();
+    this.endpoint = config.graphqlEndpoint;
+    this.apiKey = config.appsyncApiKey;
   }
 
   async query<T = any>(query: string, variables?: Record<string, any>, accessToken?: string): Promise<T> {

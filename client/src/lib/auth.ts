@@ -20,7 +20,7 @@ export class AuthService {
 
       const cognitoUser = new CognitoUser({
         Username: username,
-        Pool: userPool,
+        Pool: getUserPool(),
       });
 
       cognitoUser.authenticateUser(authenticationDetails, {
@@ -44,7 +44,7 @@ export class AuthService {
   }
 
   static getCurrentUser(): CognitoUser | null {
-    return userPool.getCurrentUser();
+    return getUserPool().getCurrentUser();
   }
 
   static async getCurrentSession(): Promise<AuthUser | null> {

@@ -7,7 +7,8 @@ import { useAuth } from '@/hooks/use-auth';
 export function AudioUploader() {
   const { isAuthenticated, isLoading, user, renderKey } = useAuth();
   
-  // Authentication state is working correctly
+  // Debug: Track render key changes
+  console.log('🔄 AudioUploader render - key:', renderKey, 'authenticated:', isAuthenticated);
 
   if (isLoading) {
     return (

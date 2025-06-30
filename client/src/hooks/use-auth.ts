@@ -40,7 +40,11 @@ export function useAuth() {
       const authUser = await AuthService.signIn(username, password);
       console.log('✅ Authentication successful, setting user:', authUser);
       setUser(authUser);
-      setRenderKey(prev => prev + 1); // Force re-render
+      setRenderKey(prev => {
+        const newKey = prev + 1;
+        console.log('🔄 RenderKey updated:', prev, '->', newKey);
+        return newKey;
+      });
       console.log('🔄 User state updated in hook');
       return authUser;
     } catch (err) {
@@ -58,7 +62,11 @@ export function useAuth() {
     setUser(null);
     setError(null);
     setIsLoading(false);
-    setRenderKey(prev => prev + 1); // Force re-render
+    setRenderKey(prev => {
+      const newKey = prev + 1;
+      console.log('🔄 RenderKey updated on logout:', prev, '->', newKey);
+      return newKey;
+    });
     console.log('✅ User signed out successfully');
   };
 

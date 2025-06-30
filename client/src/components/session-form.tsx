@@ -303,8 +303,8 @@ export function SessionForm() {
             <Alert className="bg-game-success/10 border-game-success/20">
               <CheckCircle className="h-4 w-4 text-game-success" />
               <AlertDescription className="text-game-success">
-                Upload Successful! Your session has been uploaded and is being processed. 
-                You'll receive a notification when transcription is complete.
+                <div className="font-medium mb-1">Upload Successful!</div>
+                Your audio file has been uploaded. To continue, open the New Session page in the app to find your saved file.
               </AlertDescription>
             </Alert>
           )}

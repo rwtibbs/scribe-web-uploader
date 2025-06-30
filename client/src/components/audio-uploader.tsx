@@ -9,6 +9,14 @@ export function AudioUploader() {
   
   // Debug logging to track state changes
   console.log('🔄 AudioUploader render - authenticated:', isAuthenticated, 'loading:', isLoading, 'user:', user?.username || 'none');
+  console.log('🔄 Will show:', !isAuthenticated ? 'LoginForm' : 'SessionForm');
+  
+  // Force component to show correct state by logging the decision
+  if (!isAuthenticated) {
+    console.log('📋 Rendering LoginForm component');
+  } else {
+    console.log('📋 Rendering authenticated components (UserInfo + SessionForm)');
+  }
 
   if (isLoading) {
     return (

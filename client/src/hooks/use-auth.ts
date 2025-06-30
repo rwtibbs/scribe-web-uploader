@@ -37,8 +37,9 @@ export function useAuth() {
       setError(null);
       setIsLoading(true);
       const authUser = await AuthService.signIn(username, password);
+      console.log('✅ Authentication successful, setting user:', authUser);
       setUser(authUser);
-      console.log('✅ Authentication successful');
+      console.log('🔄 User state updated in hook');
       return authUser;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Authentication failed';

@@ -6,6 +6,16 @@ const app = express();
 app.use(express.json({ limit: '500mb' }));
 app.use(express.urlencoded({ extended: false, limit: '500mb' }));
 
+// Increase timeout for large file uploads
+app.use((req, res, next) => {
+  // Set timeout to 10 minutes for upload endpoints
+  if (req.path.includes('/upload')) {
+    req.setTimeout(600000); // 10 minutes
+    res.setTimeout(600000); // 10 minutes
+  }
+  next();
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;

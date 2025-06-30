@@ -27,8 +27,27 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Multer error handling middleware
+  const handleMulterError = (err: any, req: any, res: any, next: any) => {
+    if (err) {
+      console.error('Multer error:', err);
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({ 
+          message: 'File too large. Maximum size is 500MB.',
+          error: 'LIMIT_FILE_SIZE'
+        });
+      }
+      return res.status(400).json({ 
+        message: 'File upload error',
+        error: err.message || 'Unknown upload error'
+      });
+    }
+    next();
+  };
+
   // S3 upload endpoint with multipart file support
-  app.post('/api/upload-to-s3', upload.single('audioFile'), async (req, res) => {
+  app.post('/api/upload-to-s3', upload.single('audioFile'), handleMulterError, async (req, res) => {
+    console.log(`🔄 Received upload request - Content-Length: ${req.get('content-length')}`);
     try {
       const file = req.file;
       const { fileName, bucket } = req.body;
@@ -59,6 +78,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('Error uploading to S3:', error);
+      
+      // Check if this is a multer error
+      if (error && typeof error === 'object' && 'code' in error) {
+        if (error.code === 'LIMIT_FILE_SIZE') {
+          return res.status(413).json({ 
+            message: 'File too large. Maximum size is 500MB.',
+            error: 'LIMIT_FILE_SIZE'
+          });
+        }
+        if (error.code === 'LIMIT_UNEXPECTED_FILE') {
+          return res.status(400).json({ 
+            message: 'Unexpected file field. Use "audioFile" field name.',
+            error: 'LIMIT_UNEXPECTED_FILE'
+          });
+        }
+      }
+      
       res.status(500).json({ 
         message: 'Failed to upload file to S3',
         error: error instanceof Error ? error.message : 'Unknown error'

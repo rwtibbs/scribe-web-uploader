@@ -1,4 +1,5 @@
 import { Dice6 } from 'lucide-react';
+import logoPath from '@assets/Main-logo_1751318189156.png';
 import { LoginForm } from './login-form';
 import { UserInfo } from './user-info';
 import { SessionForm } from './session-form';
@@ -23,10 +24,13 @@ export function AudioUploader() {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-game-primary mb-2 flex items-center justify-center">
-            <Dice6 className="mr-3 text-game-accent" />
-            TabletopScribe
-          </h1>
+          <div className="flex items-center justify-center mb-4">
+            <img 
+              src={logoPath} 
+              alt="TabletopScribe Logo" 
+              className="h-16 w-auto"
+            />
+          </div>
           <p className="text-game-secondary text-lg">Audio Session Uploader</p>
         </div>
 

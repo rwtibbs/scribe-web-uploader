@@ -12,7 +12,7 @@ import { CheckCircle, AlertTriangle, Upload, RotateCcw } from 'lucide-react';
 import { FileUploadZone } from './file-upload-zone';
 import { UploadProgressComponent } from './upload-progress';
 import { useCampaigns } from '@/hooks/use-campaigns';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/contexts/auth-context';
 import { graphqlClient } from '@/lib/graphql';
 import { S3UploadService } from '@/lib/s3-upload';
 import { UploadProgress } from '@shared/schema';

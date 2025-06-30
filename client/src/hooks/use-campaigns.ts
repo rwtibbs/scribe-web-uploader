@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { graphqlClient } from '@/lib/graphql';
 import { Campaign } from '@/types/aws';
-import { useAuth } from './use-auth';
+import { useAuth } from '@/contexts/auth-context';
 
 export function useCampaigns(owner?: string) {
   const { user } = useAuth();

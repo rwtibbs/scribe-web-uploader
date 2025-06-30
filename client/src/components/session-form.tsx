@@ -112,7 +112,7 @@ export function SessionForm() {
       // Step 2: Create session record with actual duration
       setUploadProgress({ percentage: 10, loaded: 0, total: 100, status: 'Creating session...' });
       
-      const session: { id: string; _version: number } = await graphqlClient.createSession({
+      const session = await graphqlClient.createSession({
         name: sessionName,
         duration: currentDurationMillis,
         audioFile: "",
@@ -126,6 +126,8 @@ export function SessionForm() {
       if (!session || !session.id) {
         throw new Error('Failed to create session - invalid session object');
       }
+      
+      console.log(`✅ Session created successfully: id=${session.id}, version=${session._version}`);
 
       // Step 3: Upload audio file and wait for completion
       setUploadProgress({ percentage: 30, loaded: 0, total: 100, status: 'Uploading audio file...' });

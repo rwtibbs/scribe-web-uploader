@@ -175,7 +175,20 @@ class GraphQLClient {
     console.log('🔄 Creating session with data:', input);
     console.log('🌍 Environment:', isDevelopment ? 'DEVSORT (development)' : 'DEV (production)');
 
-    const result = await this.query<{ createSession: { id: string; _version: number } }>(mutation, {
+    const result = await this.query<{ 
+      createSession: { 
+        id: string; 
+        name: string;
+        duration: number;
+        audioFile: string;
+        transcriptionFile: string;
+        transcriptionStatus: string;
+        campaignSessionsId: string;
+        date: string;
+        _version: number;
+        purchaseStatus?: string;
+      } 
+    }>(mutation, {
       input,
     }, accessToken);
 

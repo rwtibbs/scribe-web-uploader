@@ -44,14 +44,14 @@ export function SessionForm() {
   });
 
   const handleFileSelect = (file: File) => {
-    const maxSize = 100 * 1024 * 1024; // 100MB limit for deployed environment
+    const maxSize = 300 * 1024 * 1024; // 300MB limit for all environments
     const fileSizeMB = file.size / (1024 * 1024);
     
     console.log(`📁 File selected: ${file.name}, Size: ${fileSizeMB.toFixed(2)}MB`);
     
     if (file.size > maxSize) {
       setErrorMessage(
-        `File too large: ${fileSizeMB.toFixed(2)}MB. Maximum size is 100MB. ` +
+        `File too large: ${fileSizeMB.toFixed(2)}MB. Maximum size is 300MB. ` +
         `Try compressing your audio file using tools like Audacity (Export > MP3 with lower bitrate) or online audio compressors.`
       );
       return;

@@ -7,7 +7,7 @@ const app = express();
 // Log environment info
 const isDeployed = process.env.REPLIT_DEPLOYMENT_ID || process.env.NODE_ENV === 'production';
 console.log(`🌍 Environment: ${isDeployed ? 'DEPLOYED' : 'DEVELOPMENT'}`);
-console.log(`📊 File size limits: ${isDeployed ? '100MB' : '500MB'}`);
+console.log(`📊 File size limits: 300MB`);
 
 // Add raw body parser for debugging large requests
 app.use((req, res, next) => {
@@ -16,10 +16,10 @@ app.use((req, res, next) => {
     const sizeInMB = parseInt(contentLength) / (1024 * 1024);
     console.log(`📊 Incoming request: ${req.method} ${req.path} - Content-Length: ${contentLength} bytes (${sizeInMB.toFixed(2)}MB)`);
     
-    if (sizeInMB > 500) {
-      console.error(`❌ Request too large: ${sizeInMB.toFixed(2)}MB exceeds 500MB limit`);
+    if (sizeInMB > 300) {
+      console.error(`❌ Request too large: ${sizeInMB.toFixed(2)}MB exceeds 300MB limit`);
       return res.status(413).json({ 
-        message: `Request too large: ${sizeInMB.toFixed(2)}MB exceeds 500MB limit`,
+        message: `Request too large: ${sizeInMB.toFixed(2)}MB exceeds 300MB limit`,
         error: 'REQUEST_TOO_LARGE'
       });
     }

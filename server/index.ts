@@ -27,8 +27,9 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.json({ limit: '500mb' }));
-app.use(express.urlencoded({ extended: false, limit: '500mb' }));
+app.use(express.json({ limit: '350mb' }));
+app.use(express.urlencoded({ extended: false, limit: '350mb' }));
+app.use(express.raw({ limit: '350mb', type: 'application/octet-stream' }));
 
 // Increase timeout for large file uploads
 app.use((req, res, next) => {
@@ -89,6 +90,12 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
+
+  // Configure server for large file uploads
+  server.maxHeadersCount = 0;
+  server.timeout = 600000; // 10 minutes
+  server.keepAliveTimeout = 600000; // 10 minutes
+  server.headersTimeout = 610000; // Slightly longer than keepAliveTimeout
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.

@@ -19,13 +19,14 @@ const s3 = new AWS.S3({
 });
 
 // Configure multer for file uploads (store in memory for direct S3 upload)
-// Set consistent 300MB limit for all environments
-const maxFileSize = 300 * 1024 * 1024; // 300MB for all environments
+// Use 45MB chunks to work around Replit infrastructure limits
+const chunkSize = 45 * 1024 * 1024; // 45MB chunks to stay under 50MB limit
+const maxFileSize = 300 * 1024 * 1024; // 300MB total file size
 
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: maxFileSize,
+    fileSize: chunkSize, // Process in chunks
   },
 });
 

@@ -22,7 +22,7 @@ const s3 = new AWS.S3({
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 200 * 1024 * 1024, // 200MB limit
+    fileSize: 500 * 1024 * 1024, // 500MB limit
   },
 });
 

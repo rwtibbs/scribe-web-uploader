@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthService } from '@/lib/auth';
 import { AuthUser } from '@shared/schema';
 
@@ -6,7 +6,6 @@ export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [renderKey, setRenderKey] = useState(0);
 
   useEffect(() => {
     checkCurrentSession();
@@ -38,14 +37,8 @@ export function useAuth() {
       setError(null);
       setIsLoading(true);
       const authUser = await AuthService.signIn(username, password);
-      console.log('✅ Authentication successful, setting user:', authUser);
       setUser(authUser);
-      setRenderKey(prev => {
-        const newKey = prev + 1;
-        console.log('🔄 RenderKey updated:', prev, '->', newKey);
-        return newKey;
-      });
-      console.log('🔄 User state updated in hook');
+      console.log('✅ Authentication successful');
       return authUser;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
@@ -62,11 +55,6 @@ export function useAuth() {
     setUser(null);
     setError(null);
     setIsLoading(false);
-    setRenderKey(prev => {
-      const newKey = prev + 1;
-      console.log('🔄 RenderKey updated on logout:', prev, '->', newKey);
-      return newKey;
-    });
     console.log('✅ User signed out successfully');
   };
 
@@ -77,6 +65,5 @@ export function useAuth() {
     error,
     signIn,
     signOut,
-    renderKey,
   };
 }

@@ -5,10 +5,7 @@ import { SessionForm } from './session-form';
 import { useAuth } from '@/hooks/use-auth';
 
 export function AudioUploader() {
-  const { isAuthenticated, isLoading, user, renderKey } = useAuth();
-  
-  // Debug: Track render key changes
-  console.log('🔄 AudioUploader render - key:', renderKey, 'authenticated:', isAuthenticated);
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -34,16 +31,14 @@ export function AudioUploader() {
         </div>
 
         {/* Authentication Container */}
-        <div key={`${isAuthenticated ? 'authenticated' : 'unauthenticated'}-${renderKey}`}>
-          {!isAuthenticated ? (
-            <LoginForm />
-          ) : (
-            <div className="space-y-6">
-              <UserInfo />
-              <SessionForm />
-            </div>
-          )}
-        </div>
+        {!isAuthenticated ? (
+          <LoginForm />
+        ) : (
+          <div className="space-y-6">
+            <UserInfo />
+            <SessionForm />
+          </div>
+        )}
       </div>
     </div>
   );

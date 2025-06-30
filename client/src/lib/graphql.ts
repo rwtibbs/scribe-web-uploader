@@ -182,7 +182,7 @@ class GraphQLClient {
     return result.createSession;
   }
 
-  async updateSessionAudioFile(sessionId: string, audioFile: string, version?: number, accessToken?: string): Promise<void> {
+  async updateSessionAudioFile(sessionId: string, audioFile: string, transcriptionFile: string, version?: number, accessToken?: string): Promise<void> {
     const mutation = `
       mutation UpdateSession($input: UpdateSessionInput!) {
         updateSession(input: $input) {
@@ -194,13 +194,10 @@ class GraphQLClient {
       }
     `;
 
-    const baseAudioFile = audioFile.split('/').pop() || audioFile;
-    const baseTranscriptionFile = baseAudioFile.replace(/\.[^/.]+$/, '') + '_transcription.json';
-
     const input: any = {
       id: sessionId,
-      audioFile: baseAudioFile,
-      transcriptionFile: baseTranscriptionFile,
+      audioFile: audioFile,
+      transcriptionFile: transcriptionFile,
       transcriptionStatus: "UPLOADED",
     };
 

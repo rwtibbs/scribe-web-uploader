@@ -91,6 +91,10 @@ export function SessionForm() {
       // Find selected campaign to get session count
       const selectedCampaign = campaigns?.find(c => c.id === data.campaignId);
       
+      if (!selectedCampaign) {
+        throw new Error('Selected campaign not found');
+      }
+      
       // Generate session name if not provided  
       const sessionName = data.name || `Session ${1}`; // Simplified for now, can be enhanced later
       
@@ -147,7 +151,21 @@ export function SessionForm() {
       // Step 4: Update session data with uploaded file information
       setUploadProgress({ percentage: 80, loaded: 0, total: 100, status: 'Updating session data...' });
       
-      await graphqlClient.updateSessionAudioFile(session.id, fileName, session._version, user?.accessToken);
+      // Generate the proper file names based on campaign and session
+      const fileExtension = selectedFile.name.split('.').pop() || 'unknown';
+      const baseFile = `campaign${selectedCampaign.id}Session${session.id}`;
+      const baseAudioFile = `${baseFile}.${fileExtension}`;
+      const baseTranscriptionFile = `${baseFile}.json`;
+      
+      console.log(`📝 Updating session with files: audio=${baseAudioFile}, transcription=${baseTranscriptionFile}`);
+      
+      await graphqlClient.updateSessionAudioFile(
+        session.id, 
+        baseAudioFile, 
+        baseTranscriptionFile, 
+        session._version, 
+        user?.accessToken
+      );
 
       setUploadProgress({ percentage: 100, loaded: 100, total: 100, status: 'Upload complete!' });
       setUploadStatus('success');

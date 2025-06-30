@@ -47,6 +47,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       console.log(`🔄 Uploading file to S3: ${fileName} (${file.size} bytes)`);
+      console.log(`📦 Using S3 bucket: ${bucket}`);
+      console.log(`🔑 S3 Key: public/audioUploads/${fileName}`);
       const result = await s3.upload(uploadParams).promise();
       console.log(`✅ Upload successful: ${result.Location}`);
 

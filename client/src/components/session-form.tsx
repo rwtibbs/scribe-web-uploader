@@ -162,7 +162,7 @@ export function SessionForm() {
               value={form.watch('campaignId')}
               onValueChange={(value) => form.setValue('campaignId', value)}
             >
-              <SelectTrigger className="form-input bg-game-primary/5 border-game-primary/20 text-game-primary">
+              <SelectTrigger className="form-input bg-white/95 border-game-primary/20 text-gray-900">
                 <SelectValue placeholder="Select a campaign..." />
               </SelectTrigger>
               <SelectContent>

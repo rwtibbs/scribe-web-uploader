@@ -111,6 +111,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 28, 2025. Fixed dropdown contrast issue with white background and dark text on Select component
 - June 28, 2025. Fixed input text readability by ensuring dark text on light input backgrounds
 - June 28, 2025. Updated DEVSORT to use correct GraphQL endpoint (https://bbypecanqjgyblz7ikrrk46rbe.appsync-api.us-east-2.amazonaws.com/graphql)
 - June 28, 2025. Fixed GraphQL endpoint connectivity issue - both environments now use the same working endpoint

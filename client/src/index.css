@@ -144,6 +144,19 @@
     outline: none;
     border-color: var(--game-accent);
     color: hsl(240, 10%, 10%) !important; /* Even darker when focused */
+  }
+
+  /* Select component styling for proper contrast */
+  [role="combobox"], 
+  .select-trigger {
+    color: hsl(240, 10%, 15%) !important; /* Dark text for select triggers */
+    background-color: rgba(255, 255, 255, 0.95) !important; /* Light background for contrast */
+  }
+  
+  [role="combobox"]:focus,
+  .select-trigger:focus {
+    color: hsl(240, 10%, 10%) !important;
+    background-color: rgba(255, 255, 255, 1) !important;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
   
@@ -158,9 +171,9 @@
   .status-indicator {
     animation: pulse 2s infinite;
   }
-  
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }

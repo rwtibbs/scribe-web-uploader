@@ -68,7 +68,7 @@ export function FileUploadZone({ onFileSelect, selectedFile, onFileRemove }: Fil
             <CloudUpload className="h-16 w-16 text-game-accent mx-auto mb-4" />
             <p className="text-lg font-medium mb-2 text-game-primary">Drop your audio file here</p>
             <p className="text-game-secondary mb-4">or click to browse</p>
-            <p className="text-sm text-game-secondary">Supports: MP3, WAV, M4A, OGG (Max 300MB)</p>
+            <p className="text-sm text-game-secondary">Supports: MP3, WAV, M4A, OGG (Max 45MB)</p>
           </div>
         ) : (
           <div>

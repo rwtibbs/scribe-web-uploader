@@ -44,15 +44,15 @@ export function SessionForm() {
   });
 
   const handleFileSelect = (file: File) => {
-    const maxSize = 300 * 1024 * 1024; // 300MB limit for all environments
+    const maxSize = 45 * 1024 * 1024; // 45MB limit due to Replit infrastructure
     const fileSizeMB = file.size / (1024 * 1024);
     
     console.log(`📁 File selected: ${file.name}, Size: ${fileSizeMB.toFixed(2)}MB`);
     
     if (file.size > maxSize) {
       setErrorMessage(
-        `File too large: ${fileSizeMB.toFixed(2)}MB. Maximum size is 300MB. ` +
-        `Try compressing your audio file using tools like Audacity (Export > MP3 with lower bitrate) or online audio compressors.`
+        `File too large: ${fileSizeMB.toFixed(2)}MB. Maximum size is 45MB due to platform limitations. ` +
+        `Please compress your audio file using tools like Audacity (Export > MP3 with lower bitrate) or online audio compressors.`
       );
       return;
     }

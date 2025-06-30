@@ -48,6 +48,27 @@ export function SessionForm() {
     setErrorMessage(null);
   };
 
+  const getAudioDuration = (file: File): Promise<number> => {
+    return new Promise((resolve, reject) => {
+      const audio = new Audio();
+      audio.preload = 'metadata';
+      
+      audio.onloadedmetadata = () => {
+        // Duration is in seconds, convert to milliseconds
+        const durationMillis = Math.round(audio.duration * 1000);
+        resolve(durationMillis);
+        URL.revokeObjectURL(audio.src);
+      };
+      
+      audio.onerror = () => {
+        reject(new Error('Failed to load audio metadata'));
+        URL.revokeObjectURL(audio.src);
+      };
+      
+      audio.src = URL.createObjectURL(file);
+    });
+  };
+
   const handleFileRemove = () => {
     setSelectedFile(null);
   };
@@ -78,12 +99,18 @@ export function SessionForm() {
         return date.toLocaleDateString('en-CA'); // YYYY-MM-DD format
       };
 
-      // Step 1: Create session record and wait for completion
+      // Step 1: Get audio duration first
+      setUploadProgress({ percentage: 5, loaded: 0, total: 100, status: 'Analyzing audio file...' });
+      
+      const currentDurationMillis = await getAudioDuration(selectedFile);
+      console.log(`📊 Audio duration detected: ${currentDurationMillis}ms (${(currentDurationMillis / 1000).toFixed(1)}s)`);
+
+      // Step 2: Create session record with actual duration
       setUploadProgress({ percentage: 10, loaded: 0, total: 100, status: 'Creating session...' });
       
       const session: { id: string; _version: number } = await graphqlClient.createSession({
         name: sessionName,
-        duration: 0, // Will be updated after audio processing
+        duration: currentDurationMillis,
         audioFile: "",
         transcriptionFile: "",
         transcriptionStatus: "NOTSTARTED",
@@ -96,7 +123,7 @@ export function SessionForm() {
         throw new Error('Failed to create session - invalid session object');
       }
 
-      // Step 2: Upload audio file and wait for completion
+      // Step 3: Upload audio file and wait for completion
       setUploadProgress({ percentage: 30, loaded: 0, total: 100, status: 'Uploading audio file...' });
       
       const fileName = S3UploadService.generateFileName(
@@ -117,7 +144,7 @@ export function SessionForm() {
         },
       });
 
-      // Step 3: Update session data with uploaded file information
+      // Step 4: Update session data with uploaded file information
       setUploadProgress({ percentage: 80, loaded: 0, total: 100, status: 'Updating session data...' });
       
       await graphqlClient.updateSessionAudioFile(session.id, fileName, session._version, user?.accessToken);

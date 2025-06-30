@@ -42,20 +42,24 @@ export class S3UploadService {
 
         xhr.addEventListener('load', () => {
           console.log(`📡 Backend response status: ${xhr.status}`);
+          console.log(`📡 Backend response text:`, xhr.responseText);
           
           if (xhr.status >= 200 && xhr.status < 300) {
             try {
               const result = JSON.parse(xhr.responseText);
               resolve(result.location);
             } catch (parseError) {
+              console.error('Failed to parse successful response:', parseError);
               reject(new Error('Failed to parse response'));
             }
           } else {
             try {
               const errorData = JSON.parse(xhr.responseText);
-              reject(new Error(errorData.message || 'Upload failed'));
-            } catch {
-              reject(new Error(`Upload failed with status: ${xhr.status}`));
+              console.error('Upload failed with error data:', errorData);
+              reject(new Error(errorData.message || `Upload failed with status: ${xhr.status}`));
+            } catch (parseError) {
+              console.error('Failed to parse error response:', parseError);
+              reject(new Error(`Upload failed with status: ${xhr.status}. Response: ${xhr.responseText}`));
             }
           }
         });

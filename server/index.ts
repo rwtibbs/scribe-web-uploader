@@ -3,6 +3,25 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// Add raw body parser for debugging large requests
+app.use((req, res, next) => {
+  const contentLength = req.get('content-length');
+  if (contentLength) {
+    const sizeInMB = parseInt(contentLength) / (1024 * 1024);
+    console.log(`📊 Incoming request: ${req.method} ${req.path} - Content-Length: ${contentLength} bytes (${sizeInMB.toFixed(2)}MB)`);
+    
+    if (sizeInMB > 500) {
+      console.error(`❌ Request too large: ${sizeInMB.toFixed(2)}MB exceeds 500MB limit`);
+      return res.status(413).json({ 
+        message: `Request too large: ${sizeInMB.toFixed(2)}MB exceeds 500MB limit`,
+        error: 'REQUEST_TOO_LARGE'
+      });
+    }
+  }
+  next();
+});
+
 app.use(express.json({ limit: '500mb' }));
 app.use(express.urlencoded({ extended: false, limit: '500mb' }));
 

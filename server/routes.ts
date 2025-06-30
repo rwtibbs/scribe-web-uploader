@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import AWS from 'aws-sdk';
 import multer from 'multer';
@@ -46,8 +46,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // S3 upload endpoint with multipart file support
-  app.post('/api/upload-to-s3', upload.single('audioFile'), handleMulterError, async (req, res) => {
+  app.post('/api/upload-to-s3', (req: Request, res: Response, next: NextFunction) => {
     console.log(`🔄 Received upload request - Content-Length: ${req.get('content-length')}`);
+    console.log(`📊 Request headers:`, {
+      'content-type': req.get('content-type'),
+      'content-length': req.get('content-length'),
+      'user-agent': req.get('user-agent')
+    });
+    next();
+  }, upload.single('audioFile'), handleMulterError, async (req: Request, res: Response) => {
+    console.log(`✅ Multer processing completed successfully`);
     try {
       const file = req.file;
       const { fileName, bucket } = req.body;

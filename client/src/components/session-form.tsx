@@ -44,6 +44,16 @@ export function SessionForm() {
   });
 
   const handleFileSelect = (file: File) => {
+    const maxSize = 200 * 1024 * 1024; // 200MB limit for now to test
+    const fileSizeMB = file.size / (1024 * 1024);
+    
+    console.log(`📁 File selected: ${file.name}, Size: ${fileSizeMB.toFixed(2)}MB`);
+    
+    if (file.size > maxSize) {
+      setErrorMessage(`File too large: ${fileSizeMB.toFixed(2)}MB. Maximum size is 200MB. Please try a smaller file.`);
+      return;
+    }
+    
     setSelectedFile(file);
     setErrorMessage(null);
   };

@@ -7,8 +7,10 @@ export class S3UploadService {
       try {
         const config = getAwsConfig();
         
+        const fileSizeMB = file.size / (1024 * 1024);
         console.log('🔄 Starting file upload process...');
-        console.log(`📁 Uploading file: ${file.name} (${file.size} bytes)`);
+        console.log(`📁 Uploading file: ${file.name} (${fileSizeMB.toFixed(2)}MB / ${file.size} bytes)`);
+        console.log(`🏷️ File type: ${file.type}, Key: ${key}`);
         
         // Create FormData for multipart upload
         const formData = new FormData();

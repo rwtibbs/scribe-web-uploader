@@ -1,51 +1,75 @@
-import AWS from 'aws-sdk';
 import { getAwsConfig } from './aws-config';
 import { S3UploadParams } from '@/types/aws';
-
-// Configure AWS dynamically
-const getS3Client = () => {
-  const config = getAwsConfig();
-  AWS.config.update({
-    region: config.region,
-    accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID,
-    secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY,
-  });
-  return new AWS.S3();
-};
 
 export class S3UploadService {
   static async uploadFile({ key, file, onProgress }: S3UploadParams): Promise<string> {
     return new Promise((resolve, reject) => {
       const config = getAwsConfig();
-      const s3 = getS3Client();
       
-      const uploadParams = {
-        Bucket: config.s3Bucket,
-        Key: `public/audioUploads/${key}`,
-        Body: file,
-        ContentType: file.type,
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const arrayBuffer = reader.result as ArrayBuffer;
+          const base64String = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+          
+          // Simulate progress during file conversion
+          if (onProgress) {
+            onProgress({
+              loaded: file.size * 0.2,
+              total: file.size,
+              percentage: 20,
+            });
+          }
+
+          // Upload via backend endpoint
+          const response = await fetch('/api/upload-to-s3', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              fileName: key,
+              fileContent: base64String,
+              contentType: file.type,
+              bucket: config.s3Bucket,
+            }),
+          });
+
+          if (onProgress) {
+            onProgress({
+              loaded: file.size * 0.8,
+              total: file.size,
+              percentage: 80,
+            });
+          }
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Upload failed');
+          }
+
+          const result = await response.json();
+          
+          if (onProgress) {
+            onProgress({
+              loaded: file.size,
+              total: file.size,
+              percentage: 100,
+            });
+          }
+
+          resolve(result.location);
+        } catch (error) {
+          reject(new Error(`S3 upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`));
+        }
       };
 
-      const upload = s3.upload(uploadParams);
+      reader.onerror = () => {
+        reject(new Error('Failed to read file'));
+      };
 
-      if (onProgress) {
-        upload.on('httpUploadProgress', (progress) => {
-          const percentage = Math.round((progress.loaded / progress.total) * 100);
-          onProgress({
-            loaded: progress.loaded,
-            total: progress.total,
-            percentage,
-          });
-        });
-      }
-
-      upload.send((err, data) => {
-        if (err) {
-          reject(new Error(`S3 upload failed: ${err.message}`));
-        } else {
-          resolve(data.Location);
-        }
-      });
+      reader.readAsArrayBuffer(file);
     });
   }
 

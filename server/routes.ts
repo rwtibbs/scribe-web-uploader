@@ -10,7 +10,51 @@ const lambda = new AWS.Lambda({
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 });
 
+// Configure AWS S3
+const s3 = new AWS.S3({
+  region: awsConfig.region,
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // S3 upload endpoint
+  app.post('/api/upload-to-s3', async (req, res) => {
+    try {
+      const { fileName, fileContent, contentType, bucket } = req.body;
+
+      if (!fileName || !fileContent || !contentType || !bucket) {
+        return res.status(400).json({ 
+          message: 'Missing required fields: fileName, fileContent, contentType, bucket' 
+        });
+      }
+
+      // Convert base64 file content to buffer
+      const buffer = Buffer.from(fileContent, 'base64');
+
+      const uploadParams = {
+        Bucket: bucket,
+        Key: `public/audioUploads/${fileName}`,
+        Body: buffer,
+        ContentType: contentType,
+      };
+
+      const result = await s3.upload(uploadParams).promise();
+
+      res.json({ 
+        success: true, 
+        location: result.Location,
+        key: result.Key
+      });
+    } catch (error) {
+      console.error('Error uploading to S3:', error);
+      res.status(500).json({ 
+        message: 'Failed to upload file to S3',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Trigger Lambda function for audio processing
   app.post('/api/trigger-lambda', async (req, res) => {
     try {

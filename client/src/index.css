@@ -133,11 +133,17 @@
   
   .form-input {
     transition: all 0.2s ease;
+    color: hsl(240, 10%, 15%) !important; /* Dark text for readability on light backgrounds */
+  }
+  
+  .form-input::placeholder {
+    color: hsl(240, 5%, 50%) !important; /* Medium gray for placeholders */
   }
   
   .form-input:focus {
     outline: none;
     border-color: var(--game-accent);
+    color: hsl(240, 10%, 10%) !important; /* Even darker when focused */
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
   

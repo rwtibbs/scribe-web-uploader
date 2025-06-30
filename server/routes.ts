@@ -19,13 +19,14 @@ const s3 = new AWS.S3({
 });
 
 // Configure multer for file uploads (store in memory for direct S3 upload)
-// Set realistic limits that work with Replit infrastructure
-const maxFileSize = 45 * 1024 * 1024; // 45MB - safe limit for Replit
+// Support 300MB total files through chunked uploads
+const chunkSize = 45 * 1024 * 1024; // 45MB chunks to work with Replit infrastructure
+const maxTotalFileSize = 300 * 1024 * 1024; // 300MB total file size
 
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: maxFileSize,
+    fileSize: chunkSize, // Individual chunk limit
   },
 });
 
@@ -35,9 +36,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (err) {
       console.error('Multer error:', err);
       if (err.code === 'LIMIT_FILE_SIZE') {
-        const limitMB = Math.round(maxFileSize / (1024 * 1024));
+        const limitMB = Math.round(chunkSize / (1024 * 1024));
         return res.status(413).json({ 
-          message: `File too large. Maximum size is ${limitMB}MB.`,
+          message: `Chunk too large. Maximum chunk size is ${limitMB}MB.`,
           error: 'LIMIT_FILE_SIZE',
           maxSize: limitMB
         });
@@ -49,6 +50,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     next();
   };
+
+  // Chunked upload endpoints for large files
+  app.post('/api/upload-chunk', upload.single('chunk'), handleMulterError, async (req: Request, res: Response) => {
+    try {
+      const file = req.file;
+      const { uploadId, partNumber, fileName, bucket } = req.body;
+
+      if (!file || !uploadId || !partNumber || !fileName || !bucket) {
+        return res.status(400).json({ 
+          message: 'Missing required fields: chunk, uploadId, partNumber, fileName, bucket' 
+        });
+      }
+
+      console.log(`📦 Uploading chunk ${partNumber} for ${fileName}`);
+
+      const uploadParams = {
+        Bucket: bucket,
+        Key: `public/audioUploads/${fileName}`,
+        PartNumber: parseInt(partNumber),
+        UploadId: uploadId,
+        Body: file.buffer,
+      };
+
+      const result = await s3.uploadPart(uploadParams).promise();
+      
+      res.json({
+        success: true,
+        partNumber: parseInt(partNumber),
+        etag: result.ETag
+      });
+    } catch (error) {
+      console.error('Error uploading chunk:', error);
+      res.status(500).json({ 
+        message: 'Failed to upload chunk',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.post('/api/initiate-multipart', async (req: Request, res: Response) => {
+    try {
+      const { fileName, bucket, totalSize } = req.body;
+
+      if (!fileName || !bucket || !totalSize) {
+        return res.status(400).json({ 
+          message: 'Missing required fields: fileName, bucket, totalSize' 
+        });
+      }
+
+      if (totalSize > maxTotalFileSize) {
+        return res.status(413).json({
+          message: `File too large. Maximum size is ${Math.round(maxTotalFileSize / (1024 * 1024))}MB.`,
+          error: 'FILE_TOO_LARGE'
+        });
+      }
+
+      console.log(`🚀 Initiating multipart upload for ${fileName} (${Math.round(totalSize / (1024 * 1024))}MB)`);
+
+      const uploadParams = {
+        Bucket: bucket,
+        Key: `public/audioUploads/${fileName}`,
+        ContentType: 'audio/mpeg', // Default to MP3, can be made dynamic
+      };
+
+      const result = await s3.createMultipartUpload(uploadParams).promise();
+      
+      res.json({
+        success: true,
+        uploadId: result.UploadId,
+        key: result.Key
+      });
+    } catch (error) {
+      console.error('Error initiating multipart upload:', error);
+      res.status(500).json({ 
+        message: 'Failed to initiate multipart upload',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.post('/api/complete-multipart', async (req: Request, res: Response) => {
+    try {
+      const { uploadId, fileName, bucket, parts } = req.body;
+
+      if (!uploadId || !fileName || !bucket || !parts) {
+        return res.status(400).json({ 
+          message: 'Missing required fields: uploadId, fileName, bucket, parts' 
+        });
+      }
+
+      console.log(`✅ Completing multipart upload for ${fileName}`);
+
+      const completeParams = {
+        Bucket: bucket,
+        Key: `public/audioUploads/${fileName}`,
+        UploadId: uploadId,
+        MultipartUpload: {
+          Parts: parts.map((part: any) => ({
+            ETag: part.etag,
+            PartNumber: part.partNumber
+          }))
+        }
+      };
+
+      const result = await s3.completeMultipartUpload(completeParams).promise();
+      
+      res.json({
+        success: true,
+        location: result.Location,
+        key: result.Key
+      });
+    } catch (error) {
+      console.error('Error completing multipart upload:', error);
+      res.status(500).json({ 
+        message: 'Failed to complete multipart upload',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.post('/api/abort-multipart', async (req: Request, res: Response) => {
+    try {
+      const { uploadId, fileName, bucket } = req.body;
+
+      if (!uploadId || !fileName || !bucket) {
+        return res.status(400).json({ 
+          message: 'Missing required fields: uploadId, fileName, bucket' 
+        });
+      }
+
+      console.log(`❌ Aborting multipart upload for ${fileName}`);
+
+      const abortParams = {
+        Bucket: bucket,
+        Key: `public/audioUploads/${fileName}`,
+        UploadId: uploadId
+      };
+
+      await s3.abortMultipartUpload(abortParams).promise();
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error aborting multipart upload:', error);
+      res.status(500).json({ 
+        message: 'Failed to abort multipart upload',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
 
   // S3 upload endpoint with multipart file support
   app.post('/api/upload-to-s3', (req: Request, res: Response, next: NextFunction) => {

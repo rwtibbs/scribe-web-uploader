@@ -16,10 +16,10 @@ app.use((req, res, next) => {
     const sizeInMB = parseInt(contentLength) / (1024 * 1024);
     console.log(`📊 Incoming request: ${req.method} ${req.path} - Content-Length: ${contentLength} bytes (${sizeInMB.toFixed(2)}MB)`);
     
-    if (sizeInMB > 45) {
-      console.error(`❌ Request too large: ${sizeInMB.toFixed(2)}MB exceeds 45MB limit`);
+    if (sizeInMB > 50) {
+      console.error(`❌ Request too large: ${sizeInMB.toFixed(2)}MB exceeds 50MB chunk limit`);
       return res.status(413).json({ 
-        message: `Request too large: ${sizeInMB.toFixed(2)}MB exceeds 45MB limit. Replit infrastructure limits uploads to 45MB.`,
+        message: `Request chunk too large: ${sizeInMB.toFixed(2)}MB exceeds 50MB chunk limit.`,
         error: 'REQUEST_TOO_LARGE'
       });
     }

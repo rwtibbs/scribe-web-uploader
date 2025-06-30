@@ -77,7 +77,8 @@ TabletopScribe is a web application for uploading and processing tabletop gaming
   - Production: scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-dev
   - Development: scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-devsort
 - **AppSync**: GraphQL API for campaign and session data
-  - Both environments use: https://lm5nq7s75raxnd24y67v3civhm.appsync-api.us-east-2.amazonaws.com/graphql
+  - Production (DEV): https://lm5nq7s75raxnd24y67v3civhm.appsync-api.us-east-2.amazonaws.com/graphql
+  - Development (DEVSORT): https://bbypecanqjgyblz7ikrrk46rbe.appsync-api.us-east-2.amazonaws.com/graphql
 - **Lambda**: Audio processing and transcription service
 
 ### Development Dependencies
@@ -110,6 +111,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 28, 2025. Updated DEVSORT to use correct GraphQL endpoint (https://bbypecanqjgyblz7ikrrk46rbe.appsync-api.us-east-2.amazonaws.com/graphql)
 - June 28, 2025. Fixed GraphQL endpoint connectivity issue - both environments now use the same working endpoint
 - June 27, 2025. Fixed DEVSORT authentication with correct client ID (kpk9rjugfg5997ann3v40s7hs)
 - June 27, 2025. Updated GraphQL client to handle schema differences between DEV and DEVSORT environments

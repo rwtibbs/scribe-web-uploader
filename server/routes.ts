@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import AWS from 'aws-sdk';
+import multer from 'multer';
 import { awsConfig } from './services/aws';
 
 // Configure AWS Lambda
@@ -17,29 +18,35 @@ const s3 = new AWS.S3({
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 });
 
-export async function registerRoutes(app: Express): Promise<Server> {
-  // S3 upload endpoint with multipart support
-  app.post('/api/upload-to-s3', async (req, res) => {
-    try {
-      const { fileName, fileContent, contentType, bucket } = req.body;
+// Configure multer for file uploads (store in memory for direct S3 upload)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 200 * 1024 * 1024, // 200MB limit
+  },
+});
 
-      if (!fileName || !fileContent || !contentType || !bucket) {
+export async function registerRoutes(app: Express): Promise<Server> {
+  // S3 upload endpoint with multipart file support
+  app.post('/api/upload-to-s3', upload.single('audioFile'), async (req, res) => {
+    try {
+      const file = req.file;
+      const { fileName, bucket } = req.body;
+
+      if (!file || !fileName || !bucket) {
         return res.status(400).json({ 
-          message: 'Missing required fields: fileName, fileContent, contentType, bucket' 
+          message: 'Missing required fields: file, fileName, bucket' 
         });
       }
-
-      // Convert base64 file content to buffer
-      const buffer = Buffer.from(fileContent, 'base64');
 
       const uploadParams = {
         Bucket: bucket,
         Key: `public/audioUploads/${fileName}`,
-        Body: buffer,
-        ContentType: contentType,
+        Body: file.buffer,
+        ContentType: file.mimetype,
       };
 
-      console.log(`🔄 Uploading file to S3: ${fileName} (${buffer.length} bytes)`);
+      console.log(`🔄 Uploading file to S3: ${fileName} (${file.size} bytes)`);
       const result = await s3.upload(uploadParams).promise();
       console.log(`✅ Upload successful: ${result.Location}`);
 

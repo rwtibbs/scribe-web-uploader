@@ -3,80 +3,73 @@ import { S3UploadParams } from '@/types/aws';
 
 export class S3UploadService {
   static async uploadFile({ key, file, onProgress }: S3UploadParams): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const config = getAwsConfig();
-      
-      // Convert file to base64 using simpler method
-      const reader = new FileReader();
-      reader.onload = async () => {
-        try {
-          console.log('🔄 Starting file upload process...');
-          const base64Result = reader.result as string;
-          // Remove the data URL prefix (e.g., "data:audio/wav;base64,")
-          const base64String = base64Result.split(',')[1];
-          
-          console.log(`📁 File converted to base64: ${file.name} (${file.size} bytes)`);
-          
-          // Simulate progress during file conversion
-          if (onProgress) {
-            onProgress({
-              loaded: file.size * 0.2,
-              total: file.size,
-              percentage: 20,
-            });
-          }
+    return new Promise(async (resolve, reject) => {
+      try {
+        const config = getAwsConfig();
+        
+        console.log('🔄 Starting file upload process...');
+        console.log(`📁 Uploading file: ${file.name} (${file.size} bytes)`);
+        
+        // Create FormData for multipart upload
+        const formData = new FormData();
+        formData.append('audioFile', file);
+        formData.append('fileName', key);
+        formData.append('bucket', config.s3Bucket);
 
-          // Upload via backend endpoint
-          console.log(`🚀 Uploading to backend: ${key}`);
-          const response = await fetch('/api/upload-to-s3', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              fileName: key,
-              fileContent: base64String,
-              contentType: file.type,
-              bucket: config.s3Bucket,
-            }),
+        if (onProgress) {
+          onProgress({
+            loaded: 0,
+            total: file.size,
+            percentage: 0,
           });
-
-          console.log(`📡 Backend response status: ${response.status}`);
-
-          if (onProgress) {
-            onProgress({
-              loaded: file.size * 0.8,
-              total: file.size,
-              percentage: 80,
-            });
-          }
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Upload failed');
-          }
-
-          const result = await response.json();
-          
-          if (onProgress) {
-            onProgress({
-              loaded: file.size,
-              total: file.size,
-              percentage: 100,
-            });
-          }
-
-          resolve(result.location);
-        } catch (error) {
-          reject(new Error(`S3 upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`));
         }
-      };
 
-      reader.onerror = () => {
-        reject(new Error('Failed to read file'));
-      };
+        console.log(`🚀 Uploading to backend: ${key}`);
+        
+        // Create XMLHttpRequest for progress tracking
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable && onProgress) {
+            const percentage = Math.round((event.loaded / event.total) * 100);
+            onProgress({
+              loaded: event.loaded,
+              total: event.total,
+              percentage,
+            });
+          }
+        });
 
-      reader.readAsDataURL(file);
+        xhr.addEventListener('load', () => {
+          console.log(`📡 Backend response status: ${xhr.status}`);
+          
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const result = JSON.parse(xhr.responseText);
+              resolve(result.location);
+            } catch (parseError) {
+              reject(new Error('Failed to parse response'));
+            }
+          } else {
+            try {
+              const errorData = JSON.parse(xhr.responseText);
+              reject(new Error(errorData.message || 'Upload failed'));
+            } catch {
+              reject(new Error(`Upload failed with status: ${xhr.status}`));
+            }
+          }
+        });
+
+        xhr.addEventListener('error', () => {
+          reject(new Error('Network error during upload'));
+        });
+
+        xhr.open('POST', '/api/upload-to-s3');
+        xhr.send(formData);
+
+      } catch (error) {
+        reject(new Error(`S3 upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`));
+      }
     });
   }
 

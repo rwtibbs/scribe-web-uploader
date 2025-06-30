@@ -6,12 +6,16 @@ export class S3UploadService {
     return new Promise((resolve, reject) => {
       const config = getAwsConfig();
       
-      // Convert file to base64
+      // Convert file to base64 using simpler method
       const reader = new FileReader();
       reader.onload = async () => {
         try {
-          const arrayBuffer = reader.result as ArrayBuffer;
-          const base64String = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+          console.log('🔄 Starting file upload process...');
+          const base64Result = reader.result as string;
+          // Remove the data URL prefix (e.g., "data:audio/wav;base64,")
+          const base64String = base64Result.split(',')[1];
+          
+          console.log(`📁 File converted to base64: ${file.name} (${file.size} bytes)`);
           
           // Simulate progress during file conversion
           if (onProgress) {
@@ -23,6 +27,7 @@ export class S3UploadService {
           }
 
           // Upload via backend endpoint
+          console.log(`🚀 Uploading to backend: ${key}`);
           const response = await fetch('/api/upload-to-s3', {
             method: 'POST',
             headers: {
@@ -35,6 +40,8 @@ export class S3UploadService {
               bucket: config.s3Bucket,
             }),
           });
+
+          console.log(`📡 Backend response status: ${response.status}`);
 
           if (onProgress) {
             onProgress({
@@ -69,7 +76,7 @@ export class S3UploadService {
         reject(new Error('Failed to read file'));
       };
 
-      reader.readAsArrayBuffer(file);
+      reader.readAsDataURL(file);
     });
   }
 

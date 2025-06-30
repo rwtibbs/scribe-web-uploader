@@ -18,7 +18,7 @@ const s3 = new AWS.S3({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // S3 upload endpoint
+  // S3 upload endpoint with multipart support
   app.post('/api/upload-to-s3', async (req, res) => {
     try {
       const { fileName, fileContent, contentType, bucket } = req.body;
@@ -39,7 +39,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ContentType: contentType,
       };
 
+      console.log(`🔄 Uploading file to S3: ${fileName} (${buffer.length} bytes)`);
       const result = await s3.upload(uploadParams).promise();
+      console.log(`✅ Upload successful: ${result.Location}`);
 
       res.json({ 
         success: true, 

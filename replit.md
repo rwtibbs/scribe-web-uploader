@@ -75,7 +75,7 @@ TabletopScribe is a web application for uploading and processing tabletop gaming
   - Development (DEVSORT): us-east-2_N5trdtp4e (client: kpk9rjugfg5997ann3v40s7hs)
 - **S3**: Audio file storage with public/audioUploads prefix
   - Production: scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-dev
-  - Development: scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-devsort
+  - Development: scribe8a8fcf3f6cb14734bce4bd48352f8043acdd4-devsort
 - **AppSync**: GraphQL API for campaign and session data
   - Production (DEV): https://lm5nq7s75raxnd24y67v3civhm.appsync-api.us-east-2.amazonaws.com/graphql
   - Development (DEVSORT): https://bbypecanqjgyblz7ikrrk46rbe.appsync-api.us-east-2.amazonaws.com/graphql
@@ -111,6 +111,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 30, 2025. Fixed DEVSORT S3 bucket name to correct value: scribe8a8fcf3f6cb14734bce4bd48352f8043acdd4-devsort
 - June 28, 2025. Fixed dropdown contrast issue with white background and dark text on Select component
 - June 28, 2025. Fixed input text readability by ensuring dark text on light input backgrounds
 - June 28, 2025. Updated DEVSORT to use correct GraphQL endpoint (https://bbypecanqjgyblz7ikrrk46rbe.appsync-api.us-east-2.amazonaws.com/graphql)

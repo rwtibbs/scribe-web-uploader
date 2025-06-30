@@ -3,7 +3,7 @@ import logoPath from '@assets/Main-logo_1751318189156.png';
 import { LoginForm } from './login-form';
 import { UserInfo } from './user-info';
 import { SessionForm } from './session-form';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/contexts/auth-context';
 
 export function AudioUploader() {
   const { isAuthenticated, isLoading } = useAuth();

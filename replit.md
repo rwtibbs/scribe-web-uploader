@@ -111,6 +111,8 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 30, 2025. Fixed 413 "Request Entity Too Large" error in deployed environment by implementing environment-aware file size limits (100MB deployed, 500MB development)
+- June 30, 2025. Added comprehensive debugging and error handling for file upload issues
 - June 30, 2025. Fixed authentication state management issue - app now updates automatically on login/logout without page refresh
 - June 30, 2025. Created AuthContext to manage authentication state globally across all components
 - June 30, 2025. Moved upload-related text to only display when authenticated, cleaned up login page

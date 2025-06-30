@@ -19,10 +19,13 @@ const s3 = new AWS.S3({
 });
 
 // Configure multer for file uploads (store in memory for direct S3 upload)
+// Set consistent 300MB limit for all environments
+const maxFileSize = 300 * 1024 * 1024; // 300MB for all environments
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 500 * 1024 * 1024, // 500MB limit
+    fileSize: maxFileSize,
   },
 });
 
@@ -32,9 +35,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (err) {
       console.error('Multer error:', err);
       if (err.code === 'LIMIT_FILE_SIZE') {
+        const limitMB = Math.round(maxFileSize / (1024 * 1024));
         return res.status(413).json({ 
-          message: 'File too large. Maximum size is 500MB.',
-          error: 'LIMIT_FILE_SIZE'
+          message: `File too large. Maximum size is ${limitMB}MB.`,
+          error: 'LIMIT_FILE_SIZE',
+          maxSize: limitMB
         });
       }
       return res.status(400).json({ 

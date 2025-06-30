@@ -4,6 +4,11 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
+// Log environment info
+const isDeployed = process.env.REPLIT_DEPLOYMENT_ID || process.env.NODE_ENV === 'production';
+console.log(`🌍 Environment: ${isDeployed ? 'DEPLOYED' : 'DEVELOPMENT'}`);
+console.log(`📊 File size limits: ${isDeployed ? '100MB' : '500MB'}`);
+
 // Add raw body parser for debugging large requests
 app.use((req, res, next) => {
   const contentLength = req.get('content-length');

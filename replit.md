@@ -111,7 +111,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
-- June 30, 2025. Set file size limits to 45MB due to Replit infrastructure constraints (413 errors occur with files >50MB)
+- June 30, 2025. Implemented chunked upload system to support 300MB files by breaking them into 45MB chunks that work around Replit infrastructure limits
 - June 30, 2025. Added comprehensive debugging and error handling for file upload issues
 - June 30, 2025. Fixed authentication state management issue - app now updates automatically on login/logout without page refresh
 - June 30, 2025. Created AuthContext to manage authentication state globally across all components

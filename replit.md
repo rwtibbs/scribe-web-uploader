@@ -111,6 +111,9 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 30, 2025. Fixed authentication state management issue - app now updates automatically on login/logout without page refresh
+- June 30, 2025. Created AuthContext to manage authentication state globally across all components
+- June 30, 2025. Moved upload-related text to only display when authenticated, cleaned up login page
 - June 30, 2025. Fixed DEVSORT S3 bucket name to correct value: scribe8a8fcf3f6cb14734bce4bd48352f8043acdd4-devsort
 - June 28, 2025. Fixed dropdown contrast issue with white background and dark text on Select component
 - June 28, 2025. Fixed input text readability by ensuring dark text on light input backgrounds

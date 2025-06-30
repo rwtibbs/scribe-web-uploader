@@ -69,7 +69,14 @@ export class AuthService {
       }
 
       cognitoUser.getSession((err: any, session: any) => {
-        if (err || !session.isValid()) {
+        if (err) {
+          console.log('🔐 Session error:', err.message);
+          resolve(null);
+          return;
+        }
+        
+        if (!session || !session.isValid()) {
+          console.log('🔐 Session invalid or expired');
           resolve(null);
           return;
         }

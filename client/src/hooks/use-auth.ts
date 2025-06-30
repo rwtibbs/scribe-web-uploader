@@ -9,6 +9,13 @@ export function useAuth() {
 
   useEffect(() => {
     checkCurrentSession();
+    
+    // Set up a periodic check for auth state changes (e.g., token expiration)
+    const interval = setInterval(() => {
+      checkCurrentSession();
+    }, 5 * 60 * 1000); // Check every 5 minutes
+    
+    return () => clearInterval(interval);
   }, []);
 
   const checkCurrentSession = async () => {
@@ -31,6 +38,7 @@ export function useAuth() {
       setIsLoading(true);
       const authUser = await AuthService.signIn(username, password);
       setUser(authUser);
+      console.log('✅ Authentication successful');
       return authUser;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
@@ -42,9 +50,12 @@ export function useAuth() {
   };
 
   const signOut = () => {
+    console.log('🚪 Signing out user');
     AuthService.signOut();
     setUser(null);
     setError(null);
+    setIsLoading(false);
+    console.log('✅ User signed out successfully');
   };
 
   return {

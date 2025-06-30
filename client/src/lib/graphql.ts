@@ -132,7 +132,7 @@ class GraphQLClient {
     transcriptionStatus: string;
     campaignSessionsId: string;
     date: string;
-  }): Promise<{ id: string; _version: number }> {
+  }, accessToken?: string): Promise<{ id: string; _version: number }> {
     const isDevelopment = getEnvironment() === 'development';
     
     // DEVSORT (development) supports purchaseStatus, DEV (production) does not
@@ -177,12 +177,12 @@ class GraphQLClient {
 
     const result = await this.query<{ createSession: { id: string; _version: number } }>(mutation, {
       input,
-    });
+    }, accessToken);
 
     return result.createSession;
   }
 
-  async updateSessionAudioFile(sessionId: string, audioFile: string, version?: number): Promise<void> {
+  async updateSessionAudioFile(sessionId: string, audioFile: string, version?: number, accessToken?: string): Promise<void> {
     const mutation = `
       mutation UpdateSession($input: UpdateSessionInput!) {
         updateSession(input: $input) {
@@ -208,7 +208,7 @@ class GraphQLClient {
       input._version = version;
     }
 
-    await this.query(mutation, { input });
+    await this.query(mutation, { input }, accessToken);
   }
 }
 

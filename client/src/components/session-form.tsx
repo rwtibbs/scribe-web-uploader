@@ -89,7 +89,7 @@ export function SessionForm() {
         transcriptionStatus: "NOTSTARTED",
         campaignSessionsId: data.campaignId,
         date: data.date || getLocalDateString(new Date()),
-      });
+      }, user?.accessToken);
 
       // Validate session was created properly
       if (!session || !session.id) {
@@ -120,7 +120,7 @@ export function SessionForm() {
       // Step 3: Update session data with uploaded file information
       setUploadProgress({ percentage: 80, loaded: 0, total: 100, status: 'Updating session data...' });
       
-      await graphqlClient.updateSessionAudioFile(session.id, fileName, session._version);
+      await graphqlClient.updateSessionAudioFile(session.id, fileName, session._version, user?.accessToken);
 
       setUploadProgress({ percentage: 100, loaded: 100, total: 100, status: 'Upload complete!' });
       setUploadStatus('success');

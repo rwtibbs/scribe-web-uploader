@@ -6,6 +6,7 @@ export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [renderKey, setRenderKey] = useState(0);
 
   useEffect(() => {
     checkCurrentSession();
@@ -39,6 +40,7 @@ export function useAuth() {
       const authUser = await AuthService.signIn(username, password);
       console.log('✅ Authentication successful, setting user:', authUser);
       setUser(authUser);
+      setRenderKey(prev => prev + 1); // Force re-render
       console.log('🔄 User state updated in hook');
       return authUser;
     } catch (err) {
@@ -56,6 +58,7 @@ export function useAuth() {
     setUser(null);
     setError(null);
     setIsLoading(false);
+    setRenderKey(prev => prev + 1); // Force re-render
     console.log('✅ User signed out successfully');
   };
 
@@ -66,5 +69,6 @@ export function useAuth() {
     error,
     signIn,
     signOut,
+    renderKey,
   };
 }

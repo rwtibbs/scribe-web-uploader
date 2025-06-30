@@ -5,7 +5,7 @@ import { SessionForm } from './session-form';
 import { useAuth } from '@/hooks/use-auth';
 
 export function AudioUploader() {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user, renderKey } = useAuth();
   
   // Authentication state is working correctly
 
@@ -33,7 +33,7 @@ export function AudioUploader() {
         </div>
 
         {/* Authentication Container */}
-        <div key={isAuthenticated ? 'authenticated' : 'unauthenticated'}>
+        <div key={`${isAuthenticated ? 'authenticated' : 'unauthenticated'}-${renderKey}`}>
           {!isAuthenticated ? (
             <LoginForm />
           ) : (

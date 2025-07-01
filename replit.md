@@ -111,6 +111,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- July 01, 2025. Updated metadata: Title "Scribe App | Turn your sessions into stories", description focuses on campaign wiki features, added social share image
 - July 01, 2025. Fixed presigned URL generation by removing ContentLength parameter and ensuring proper S3 configuration
 - June 30, 2025. Implemented presigned URL uploads to support 300MB files by bypassing Replit server entirely - files upload directly from client to S3
 - June 30, 2025. Added comprehensive debugging and error handling for file upload issues

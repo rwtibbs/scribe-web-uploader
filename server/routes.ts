@@ -200,66 +200,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // S3 upload endpoint with multipart file support
-  app.post('/api/upload-to-s3', (req: Request, res: Response, next: NextFunction) => {
-    console.log(`🔄 Received upload request - Content-Length: ${req.get('content-length')}`);
-    console.log(`📊 Request headers:`, {
-      'content-type': req.get('content-type'),
-      'content-length': req.get('content-length'),
-      'user-agent': req.get('user-agent')
-    });
-    next();
-  }, upload.single('audioFile'), handleMulterError, async (req: Request, res: Response) => {
-    console.log(`✅ Multer processing completed successfully`);
+  // Generate presigned URL for direct client-to-S3 upload
+  app.post('/api/generate-presigned-url', async (req: Request, res: Response) => {
     try {
-      const file = req.file;
-      const { fileName, bucket } = req.body;
+      const { fileName, fileSize, contentType } = req.body;
 
-      if (!file || !fileName || !bucket) {
+      if (!fileName || !fileSize || !contentType) {
         return res.status(400).json({ 
-          message: 'Missing required fields: file, fileName, bucket' 
+          message: 'Missing required fields: fileName, fileSize, contentType' 
         });
       }
 
+      const maxFileSize = 300 * 1024 * 1024; // 300MB
+      if (fileSize > maxFileSize) {
+        return res.status(413).json({
+          message: `File too large: ${Math.round(fileSize / (1024 * 1024))}MB. Maximum size is 300MB.`,
+          error: 'FILE_TOO_LARGE'
+        });
+      }
+
+      console.log(`🔗 Generating presigned URL for: ${fileName} (${Math.round(fileSize / (1024 * 1024))}MB)`);
+
+      const key = `public/audioUploads/${fileName}`;
       const uploadParams = {
-        Bucket: bucket,
-        Key: `public/audioUploads/${fileName}`,
-        Body: file.buffer,
-        ContentType: file.mimetype,
+        Bucket: process.env.AWS_S3_BUCKET || awsConfig.s3Bucket,
+        Key: key,
+        ContentType: contentType,
+        ContentLength: fileSize,
+        Expires: 3600, // 1 hour expiration
       };
 
-      console.log(`🔄 Uploading file to S3: ${fileName} (${file.size} bytes)`);
-      console.log(`📦 Using S3 bucket: ${bucket}`);
-      console.log(`🔑 S3 Key: public/audioUploads/${fileName}`);
-      const result = await s3.upload(uploadParams).promise();
-      console.log(`✅ Upload successful: ${result.Location}`);
-
-      res.json({ 
-        success: true, 
-        location: result.Location,
-        key: result.Key
+      const presignedUrl = s3.getSignedUrl('putObject', uploadParams);
+      
+      res.json({
+        success: true,
+        presignedUrl,
+        key,
+        bucket: awsConfig.s3Bucket
       });
     } catch (error) {
-      console.error('Error uploading to S3:', error);
-      
-      // Check if this is a multer error
-      if (error && typeof error === 'object' && 'code' in error) {
-        if (error.code === 'LIMIT_FILE_SIZE') {
-          return res.status(413).json({ 
-            message: 'File too large. Maximum size is 500MB.',
-            error: 'LIMIT_FILE_SIZE'
-          });
-        }
-        if (error.code === 'LIMIT_UNEXPECTED_FILE') {
-          return res.status(400).json({ 
-            message: 'Unexpected file field. Use "audioFile" field name.',
-            error: 'LIMIT_UNEXPECTED_FILE'
-          });
-        }
-      }
-      
+      console.error('Error generating presigned URL:', error);
       res.status(500).json({ 
-        message: 'Failed to upload file to S3',
+        message: 'Failed to generate presigned URL',
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }

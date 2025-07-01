@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle, AlertTriangle, Upload, RotateCcw } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Upload, RotateCcw, X } from 'lucide-react';
 import { FileUploadZone } from './file-upload-zone';
 import { UploadProgressComponent } from './upload-progress';
 import { useCampaigns } from '@/hooks/use-campaigns';
@@ -204,6 +204,10 @@ export function SessionForm() {
     setErrorMessage(null);
   };
 
+  const dismissSuccessMessage = () => {
+    setUploadStatus('idle');
+  };
+
   return (
     <Card className="bg-black/20 backdrop-blur-sm border-game-primary/20">
       <CardHeader>
@@ -314,12 +318,22 @@ export function SessionForm() {
 
           {/* Status Messages */}
           {uploadStatus === 'success' && (
-            <Alert className="bg-game-success/10 border-game-success/20">
+            <Alert className="bg-game-success/10 border-game-success/20 relative">
               <CheckCircle className="h-4 w-4 text-game-success" />
-              <AlertDescription className="text-game-success">
+              <AlertDescription className="text-game-success pr-8">
                 <div className="font-medium mb-1">Upload Successful!</div>
                 Your audio file has been uploaded. To continue, open the New Session page in the app to find your saved file.
               </AlertDescription>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-2 top-2 h-6 w-6 p-0 hover:bg-game-success/20"
+                onClick={dismissSuccessMessage}
+              >
+                <X className="h-4 w-4 text-game-success hover:text-game-success" />
+                <span className="sr-only">Dismiss success message</span>
+              </Button>
             </Alert>
           )}
 

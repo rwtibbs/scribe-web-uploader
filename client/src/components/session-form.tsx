@@ -306,6 +306,17 @@ export function SessionForm() {
             />
           </div>
 
+          {/* Background Upload Warning */}
+          {uploadStatus === 'uploading' && (
+            <Alert className="bg-game-accent/10 border-game-accent/20">
+              <AlertTriangle className="h-4 w-4 text-game-accent" />
+              <AlertDescription className="text-game-accent">
+                <div className="font-medium mb-1">Keep App Active</div>
+                Please keep this tab open and avoid switching to other apps during upload to prevent network interruptions.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Upload Progress */}
           {uploadProgress && uploadStatus === 'uploading' && (
             <UploadProgressComponent progress={uploadProgress} />

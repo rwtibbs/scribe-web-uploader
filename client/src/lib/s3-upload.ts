@@ -40,8 +40,8 @@ export class S3UploadService {
         
         // Request wake lock to prevent background suspension
         try {
-          if ('wakeLock' in navigator) {
-            wakeLock = await navigator.wakeLock.request('screen');
+          if ('wakeLock' in navigator && navigator.wakeLock) {
+            wakeLock = await (navigator.wakeLock as any).request('screen');
             console.log('🔒 Wake lock acquired - preventing background suspension');
           }
         } catch (wakeLockError) {

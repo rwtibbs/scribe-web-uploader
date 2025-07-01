@@ -283,6 +283,7 @@ export function SessionForm() {
               </Label>
               <Input
                 type="date"
+                max={new Date().toISOString().split('T')[0]}
                 {...form.register('date')}
                 className="form-input bg-game-primary/5 border-game-primary/20 text-game-primary"
               />

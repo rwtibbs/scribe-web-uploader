@@ -220,17 +220,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log(`🔗 Generating presigned URL for: ${fileName} (${Math.round(fileSize / (1024 * 1024))}MB)`);
+      console.log(`🔧 AWS Config:`, {
+        region: awsConfig.region,
+        bucket: awsConfig.s3Bucket,
+        hasAccessKey: !!process.env.AWS_ACCESS_KEY_ID,
+        hasSecretKey: !!process.env.AWS_SECRET_ACCESS_KEY
+      });
 
       const key = `public/audioUploads/${fileName}`;
       const uploadParams = {
         Bucket: process.env.AWS_S3_BUCKET || awsConfig.s3Bucket,
         Key: key,
-        ContentType: contentType,
-        ContentLength: fileSize,
         Expires: 3600, // 1 hour expiration
       };
 
+      console.log(`📝 Upload params:`, uploadParams);
       const presignedUrl = s3.getSignedUrl('putObject', uploadParams);
+      console.log(`✅ Presigned URL generated successfully`);
       
       res.json({
         success: true,

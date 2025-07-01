@@ -99,7 +99,7 @@ export function FileUploadZone({ onFileSelect, selectedFile, onFileRemove }: Fil
       <input
         ref={fileInputRef}
         type="file"
-        accept="audio/*"
+        accept=".mp3,.wav,.m4a,.ogg,.aac,.flac,.mp4,.mov,.avi"
         onChange={handleFileInputChange}
         className="hidden"
       />

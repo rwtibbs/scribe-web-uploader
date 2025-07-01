@@ -184,11 +184,6 @@ export function SessionForm() {
 
       setUploadProgress({ percentage: 100, loaded: 100, total: 100, status: 'Upload complete!' });
       setUploadStatus('success');
-      
-      // Reset form after 3 seconds
-      setTimeout(() => {
-        resetForm();
-      }, 3000);
 
     } catch (error) {
       setUploadStatus('error');

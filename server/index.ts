@@ -7,7 +7,7 @@ const app = express();
 // Log environment info
 const isDeployed = process.env.REPLIT_DEPLOYMENT_ID || process.env.NODE_ENV === 'production';
 console.log(`🌍 Environment: ${isDeployed ? 'DEPLOYED' : 'DEVELOPMENT'}`);
-console.log(`📊 File size limits: 300MB total (45MB chunks via multipart upload)`);
+console.log(`📊 File size limits: 300MB total (direct S3 upload via presigned URLs)`);
 
 // Add raw body parser for debugging large requests
 app.use((req, res, next) => {

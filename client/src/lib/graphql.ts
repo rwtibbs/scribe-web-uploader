@@ -99,9 +99,17 @@ class GraphQLClient {
   }
 
   async getCampaignsByOwner(owner: string, accessToken?: string): Promise<Campaign[]> {
+    console.log(`🔍 Searching campaigns for owner: "${owner}"`);
+    
+    // Try both exact match and contains for better compatibility
     const query = `
       query GetCampaignsByOwner($owner: String!) {
-        listCampaigns(filter: { owner: { contains: $owner } }) {
+        listCampaigns(filter: { 
+          or: [
+            { owner: { eq: $owner } },
+            { owner: { contains: $owner } }
+          ]
+        }) {
           items {
             id
             name
@@ -121,7 +129,43 @@ class GraphQLClient {
     `;
 
     const result = await this.query<{ listCampaigns: { items: Campaign[] } }>(query, { owner }, accessToken);
-    return result.listCampaigns.items.filter(campaign => !campaign._deleted);
+    const campaigns = result.listCampaigns.items.filter(campaign => !campaign._deleted);
+    
+    console.log(`📋 Found ${campaigns.length} campaigns for owner "${owner}"`);
+    campaigns.forEach(campaign => {
+      console.log(`   - Campaign "${campaign.name}" (ID: ${campaign.id}) owned by "${campaign.owner}"`);
+    });
+    
+    // If no campaigns found, try a broader search to see what campaigns exist
+    if (campaigns.length === 0) {
+      console.log(`🔍 No campaigns found for "${owner}". Checking all campaigns for debugging...`);
+      
+      const debugQuery = `
+        query ListAllCampaigns {
+          listCampaigns {
+            items {
+              id
+              name
+              owner
+              _deleted
+            }
+          }
+        }
+      `;
+      
+      try {
+        const debugResult = await this.query<{ listCampaigns: { items: any[] } }>(debugQuery, {}, accessToken);
+        const allCampaigns = debugResult.listCampaigns.items.filter(c => !c._deleted);
+        console.log(`📊 Total campaigns in system: ${allCampaigns.length}`);
+        allCampaigns.forEach(campaign => {
+          console.log(`   - "${campaign.name}" owned by "${campaign.owner}" (${campaign.owner === owner ? 'EXACT MATCH' : 'different'})`);
+        });
+      } catch (debugError) {
+        console.log(`⚠️ Debug query failed:`, debugError);
+      }
+    }
+    
+    return campaigns;
   }
 
   async createSession(sessionData: {

@@ -69,7 +69,12 @@ export class S3UploadService {
 
         // Upload directly to S3
         xhr.open('PUT', presignedUrl);
-        xhr.setRequestHeader('Content-Type', file.type || 'audio/mpeg');
+        
+        // Important: Set the exact same content type that was used to generate the presigned URL
+        const uploadContentType = file.type || 'audio/mpeg';
+        xhr.setRequestHeader('Content-Type', uploadContentType);
+        
+        console.log(`📤 Starting direct S3 upload with Content-Type: ${uploadContentType}`);
         xhr.send(file);
 
       } catch (error) {

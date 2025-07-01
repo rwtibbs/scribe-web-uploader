@@ -11,11 +11,12 @@ const lambda = new AWS.Lambda({
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 });
 
-// Configure AWS S3
+// Configure AWS S3 with minimal configuration for presigned URLs
 const s3 = new AWS.S3({
   region: awsConfig.region,
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  signatureVersion: 'v4', // Ensure we're using signature v4
 });
 
 // Configure multer for file uploads (store in memory for direct S3 upload)
@@ -228,21 +229,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const key = `public/audioUploads/${fileName}`;
-      const uploadParams = {
-        Bucket: process.env.AWS_S3_BUCKET || awsConfig.s3Bucket,
+      const bucketName = process.env.AWS_S3_BUCKET || awsConfig.s3Bucket;
+      
+      console.log(`📝 Generating presigned URL with params:`, {
+        Bucket: bucketName,
         Key: key,
-        Expires: 3600, // 1 hour expiration
-      };
+        Operation: 'putObject',
+        Expires: 3600
+      });
 
-      console.log(`📝 Upload params:`, uploadParams);
-      const presignedUrl = s3.getSignedUrl('putObject', uploadParams);
-      console.log(`✅ Presigned URL generated successfully`);
+      let presignedUrl;
+      try {
+        presignedUrl = s3.getSignedUrl('putObject', {
+          Bucket: bucketName,
+          Key: key,
+          Expires: 3600, // 1 hour expiration
+          ContentType: contentType // Add back ContentType as it's usually required
+        });
+        console.log(`✅ Presigned URL generated successfully`);
+      } catch (urlError) {
+        console.error('🚨 Error in getSignedUrl:', urlError);
+        throw urlError;
+      }
       
       res.json({
         success: true,
         presignedUrl,
         key,
-        bucket: awsConfig.s3Bucket
+        bucket: bucketName
       });
     } catch (error) {
       console.error('Error generating presigned URL:', error);

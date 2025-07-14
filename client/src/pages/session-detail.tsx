@@ -82,17 +82,7 @@ export default function SessionDetailPage() {
       </div>
       {/* Content */}
       <div className="max-w-4xl mx-auto p-4 space-y-8">
-        {/* Primary Image */}
-        {session.primaryImage && (
-          <div className="w-full bg-slate-800 rounded-xl overflow-hidden">
-            <AuthenticatedImage 
-              imageUrl={session.primaryImage} 
-              alt={session.name}
-              className="w-full h-auto object-cover"
-              fallbackClassName="w-full h-64 bg-gradient-to-br from-game-accent/20 to-game-primary/20 flex items-center justify-center"
-            />
-          </div>
-        )}
+
 
         {/* TLDR Section */}
         {session.tldr && (
@@ -116,19 +106,7 @@ export default function SessionDetailPage() {
               <Card key={segment.id} className="bg-slate-800/50 border-0">
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                    {/* Segment Image */}
-                    {segment.image ? (
-                      <AuthenticatedImage 
-                        imageUrl={segment.image}
-                        alt={segment.title || `Segment ${index + 1}`}
-                        className="w-full h-auto object-cover rounded-lg"
-                        fallbackClassName="w-full h-64 bg-gradient-to-br from-game-accent/20 to-game-primary/20 rounded-lg flex items-center justify-center"
-                      />
-                    ) : (
-                      <div className="w-full h-64 bg-gradient-to-br from-game-accent/20 to-game-primary/20 rounded-lg flex items-center justify-center">
-                        <Users className="h-8 w-8 text-game-accent/60" />
-                      </div>
-                    )}
+
                     
                     {/* Segment Content */}
                     <div className="space-y-4">

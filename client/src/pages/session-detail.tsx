@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useSession } from '@/hooks/use-sessions';
 import { formatDistanceToNow } from 'date-fns';
+import { awsConfig } from '@/lib/aws-config';
 
 export default function SessionDetailPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -48,6 +49,20 @@ export default function SessionDetailPage() {
     return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
   }) || [];
 
+  // Helper function to convert relative image paths to S3 URLs
+  const getImageUrl = (imagePath: string) => {
+    if (!imagePath) return null;
+    
+    // If it's already a full URL, return as is
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    
+    // Remove leading 'public/' if present and construct S3 URL
+    const cleanPath = imagePath.replace(/^public\//, '');
+    return `https://${awsConfig.s3Bucket}.s3.${awsConfig.region}.amazonaws.com/public/${cleanPath}`;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
@@ -86,9 +101,12 @@ export default function SessionDetailPage() {
         {session.primaryImage && (
           <div className="w-full h-64 md:h-80 bg-slate-800 rounded-xl overflow-hidden">
             <img 
-              src={session.primaryImage} 
+              src={getImageUrl(session.primaryImage)} 
               alt={session.name}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
             />
           </div>
         )}
@@ -109,6 +127,11 @@ export default function SessionDetailPage() {
         {sortedSegments.length > 0 && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-game-primary">Session Highlights</h2>
+            {sortedSegments.some((segment: any) => segment.image) && (
+              <p className="text-sm text-game-secondary/70 mb-4">
+                Note: Some segment images may not display due to access permissions. The content descriptions are still available below.
+              </p>
+            )}
             
             {sortedSegments.map((segment: any, index: number) => (
               <Card key={segment.id} className="bg-slate-800/50 border-slate-600/30">
@@ -118,16 +141,12 @@ export default function SessionDetailPage() {
                     <div className="md:col-span-1">
                       {segment.image ? (
                         <img 
-                          src={segment.image}
+                          src={getImageUrl(segment.image)}
                           alt={segment.title || `Segment ${index + 1}`}
                           className="w-full h-48 object-cover rounded-lg"
                           onError={(e) => {
-                            console.error('Image failed to load:', segment.image);
                             e.currentTarget.style.display = 'none';
                             e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                          }}
-                          onLoad={() => {
-                            console.log('Image loaded successfully:', segment.image);
                           }}
                         />
                       ) : null}
@@ -150,21 +169,9 @@ export default function SessionDetailPage() {
                         </div>
                       )}
                       
-                      {/* Debug: Show image URL if it exists */}
-                      {segment.image && (
-                        <div className="text-xs text-game-secondary/50 font-mono break-all">
-                          Image URL: {segment.image}
-                        </div>
-                      )}
-                      
                       {/* Segment Meta */}
                       <div className="text-xs text-game-secondary/70 pt-4 border-t border-slate-600/20">
-                        {segment.order !== undefined && `Segment ${segment.order + 1}`}
-                        {segment.createdAt && (
-                          <span className="ml-4">
-                            Added {formatDistanceToNow(new Date(segment.createdAt), { addSuffix: true })}
-                          </span>
-                        )}
+                        Added {formatDistanceToNow(new Date(segment.createdAt), { addSuffix: true })}
                       </div>
                     </div>
                   </div>

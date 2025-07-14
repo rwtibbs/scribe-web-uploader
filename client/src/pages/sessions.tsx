@@ -66,19 +66,11 @@ export default function SessionsPage() {
     <div className="min-h-screen p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Link href="/upload">
-            <Button variant="ghost" size="sm" className="text-game-secondary hover:text-game-primary">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Upload
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-game-primary mb-2">
-              {selectedCampaign.name} Sessions
-            </h1>
-            <p className="text-game-secondary">Browse and manage your sessions for this campaign</p>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-game-primary mb-2">
+            {selectedCampaign.name} Sessions
+          </h1>
+          <p className="text-game-secondary">Browse and manage your sessions for this campaign</p>
         </div>
 
         {/* Sessions Grid */}

@@ -264,6 +264,123 @@ class GraphQLClient {
 
     await this.query(mutation, { input }, accessToken);
   }
+
+  async getSessionsByOwner(owner: string, accessToken?: string): Promise<any[]> {
+    // First get user's campaigns, then get sessions for those campaigns
+    const campaigns = await this.getCampaignsByOwner(owner, accessToken);
+    const campaignIds = campaigns.map(campaign => campaign.id);
+    
+    if (campaignIds.length === 0) {
+      console.log('📋 No campaigns found for owner, returning empty sessions list');
+      return [];
+    }
+
+    const query = `
+      query ListSessions($filter: ModelSessionFilterInput!) {
+        listSessions(filter: $filter) {
+          items {
+            id
+            name
+            date
+            duration
+            audioFile
+            transcriptionFile
+            transcriptionStatus
+            campaignSessionsId
+            createdAt
+            updatedAt
+            _version
+            _deleted
+            _lastChangedAt
+          }
+        }
+      }
+    `;
+
+    console.log('🔍 Fetching sessions for campaigns:', campaignIds);
+    
+    const result = await this.query<{ 
+      listSessions: { 
+        items: any[] 
+      } 
+    }>(query, {
+      filter: {
+        or: campaignIds.map(campaignId => ({
+          campaignSessionsId: { eq: campaignId }
+        }))
+      }
+    }, accessToken);
+
+    const sessions = result.listSessions?.items?.filter(session => !session._deleted) || [];
+    
+    // Add campaign info to each session
+    const sessionsWithCampaigns = sessions.map(session => {
+      const campaign = campaigns.find(c => c.id === session.campaignSessionsId);
+      return {
+        ...session,
+        campaign: campaign ? { id: campaign.id, name: campaign.name, owner: campaign.owner } : null
+      };
+    });
+    
+    console.log(`📋 Found ${sessionsWithCampaigns.length} sessions for owner "${owner}"`);
+    sessionsWithCampaigns.forEach(session => {
+      console.log(`   - Session "${session.name}" (ID: ${session.id}) from campaign ${session.campaign?.name || 'Unknown'}`);
+    });
+    
+    return sessionsWithCampaigns;
+  }
+
+  async getSession(sessionId: string, accessToken?: string): Promise<any> {
+    const query = `
+      query GetSession($id: ID!) {
+        getSession(id: $id) {
+          id
+          name
+          date
+          duration
+          audioFile
+          transcriptionFile
+          transcriptionStatus
+          campaignSessionsId
+          createdAt
+          updatedAt
+          _version
+          campaign {
+            id
+            name
+            owner
+          }
+          segments {
+            items {
+              id
+              title
+              description
+              image
+              order
+              createdAt
+              updatedAt
+            }
+          }
+          primaryImage
+          tldr
+        }
+      }
+    `;
+
+    console.log('🔍 Fetching session:', sessionId);
+    
+    const result = await this.query<{ 
+      getSession: any 
+    }>(query, { id: sessionId }, accessToken);
+
+    if (!result.getSession) {
+      throw new Error('Session not found');
+    }
+    
+    console.log(`📋 Found session "${result.getSession.name}"`);
+    
+    return result.getSession;
+  }
 }
 
 export const graphqlClient = new GraphQLClient();

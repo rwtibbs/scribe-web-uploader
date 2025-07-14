@@ -1,9 +1,11 @@
-import { Dice6, Home } from 'lucide-react';
+import { Dice6, Home, BookOpen } from 'lucide-react';
 import logoPath from '@assets/Main-logo_1751318189156.png';
 import { LoginForm } from './login-form';
 import { UserInfo } from './user-info';
 import { SessionForm } from './session-form';
 import { useAuth } from '@/contexts/auth-context';
+import { Link } from 'wouter';
+import { Button } from '@/components/ui/button';
 
 export function AudioUploader() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -42,7 +44,15 @@ export function AudioUploader() {
           </div>
           {isAuthenticated && (
             <>
-              <p className="text-game-secondary mb-4 font-bold text-[22px]">Add Session</p>
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <p className="text-game-secondary font-bold text-[22px]">Add Session</p>
+                <Link href="/sessions">
+                  <Button variant="outline" className="border-game-primary/30 hover:border-game-primary/50 text-game-primary hover:text-game-accent">
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Sessions
+                  </Button>
+                </Link>
+              </div>
               <p className="text-game-secondary text-sm max-w-lg mx-auto">Upload your audio file here to save it to your campaign. Once uploaded, you can access it on the Add Session page in the app to customize your session details and submit for processing.</p>
             </>
           )}

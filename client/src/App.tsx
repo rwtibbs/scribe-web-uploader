@@ -4,6 +4,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AudioUploader } from "@/components/audio-uploader";
 import { AuthProvider } from "@/contexts/auth-context";
+import { Route, Switch } from "wouter";
+import SessionsPage from "@/pages/sessions";
+import SessionDetailPage from "@/pages/session-detail";
 
 function App() {
   return (
@@ -11,7 +14,12 @@ function App() {
       <AuthProvider>
         <TooltipProvider>
           <Toaster />
-          <AudioUploader />
+          <Switch>
+            <Route path="/sessions/:sessionId" component={SessionDetailPage} />
+            <Route path="/sessions" component={SessionsPage} />
+            <Route path="/upload" component={AudioUploader} />
+            <Route path="/" component={AudioUploader} />
+          </Switch>
         </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>

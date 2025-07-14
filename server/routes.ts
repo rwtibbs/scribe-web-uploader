@@ -268,6 +268,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Serve images with Cognito authentication
+  app.get('/api/public-session/:sessionId', async (req: Request, res: Response) => {
+    try {
+      const { sessionId } = req.params;
+      
+      // Fetch session data from GraphQL without authentication
+      const response = await fetch(awsConfig.graphqlEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': awsConfig.appsyncApiKey,
+        },
+        body: JSON.stringify({
+          query: `
+            query GetSession($id: ID!) {
+              getSession(id: $id) {
+                id
+                name
+                date
+                duration
+                campaign {
+                  id
+                  name
+                }
+                segments {
+                  items {
+                    id
+                    title
+                    description
+                    image
+                    createdAt
+                    updatedAt
+                  }
+                }
+                tldr
+              }
+            }
+          `,
+          variables: { id: sessionId }
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.errors || !data.data?.getSession) {
+        return res.status(404).json({ error: 'Session not found' });
+      }
+
+      res.json(data.data.getSession);
+    } catch (error) {
+      console.error('Error fetching public session:', error);
+      res.status(500).json({ error: 'Failed to fetch session' });
+    }
+  });
+
+  app.get('/api/public-image/:encodedKey', async (req: Request, res: Response) => {
+    try {
+      const { encodedKey } = req.params;
+      const key = Buffer.from(encodedKey, 'base64').toString('utf-8');
+      
+      // Create S3 client
+      const s3 = new AWS.S3({
+        accessKeyId: awsConfig.accessKeyId,
+        secretAccessKey: awsConfig.secretAccessKey,
+        region: awsConfig.region
+      });
+
+      // Get object from S3
+      const params = {
+        Bucket: awsConfig.s3Bucket,
+        Key: key
+      };
+
+      const s3Object = await s3.getObject(params).promise();
+      
+      if (!s3Object.Body) {
+        return res.status(404).json({ error: 'Image not found' });
+      }
+
+      // Set appropriate headers
+      res.set({
+        'Content-Type': s3Object.ContentType || 'image/jpeg',
+        'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
+        'Content-Length': s3Object.ContentLength?.toString() || '0'
+      });
+
+      // Send the image data
+      res.send(s3Object.Body);
+    } catch (error) {
+      console.error('Error serving public image:', error);
+      res.status(500).json({ error: 'Failed to serve image' });
+    }
+  });
+
   app.get('/api/image/:encodedKey', async (req: Request, res: Response) => {
     try {
       const authHeader = req.headers.authorization;

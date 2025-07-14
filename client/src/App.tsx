@@ -6,19 +6,24 @@ import { AudioUploader } from "@/components/audio-uploader";
 import { AuthProvider } from "@/contexts/auth-context";
 import { CampaignProvider } from "@/contexts/campaign-context";
 import { CampaignSelector } from "@/components/campaign-selector";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import SessionsPage from "@/pages/sessions";
 import SessionDetailPage from "@/pages/session-detail";
+import PublicSessionPage from "@/pages/public-session";
 
 function App() {
+  const [location] = useLocation();
+  const isPublicRoute = location.startsWith('/public/');
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <CampaignProvider>
           <TooltipProvider>
             <Toaster />
-            <CampaignSelector />
+            {!isPublicRoute && <CampaignSelector />}
             <Switch>
+              <Route path="/public/:sessionId" component={PublicSessionPage} />
               <Route path="/sessions/:sessionId" component={SessionDetailPage} />
               <Route path="/sessions" component={SessionsPage} />
               <Route path="/upload" component={AudioUploader} />

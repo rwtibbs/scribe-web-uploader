@@ -1,14 +1,33 @@
-import { ArrowLeft, Calendar, Clock, Users } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Users, Share2 } from 'lucide-react';
 import { Link, useParams } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useSession } from '@/hooks/use-sessions';
 import { AuthenticatedImage } from '@/components/authenticated-image';
 import { formatDistanceToNow } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
 
 export default function SessionDetailPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const { data: session, isLoading, error } = useSession(sessionId!);
+  const { toast } = useToast();
+
+  const handleShare = async () => {
+    const publicUrl = `${window.location.origin}/public/${sessionId}`;
+    try {
+      await navigator.clipboard.writeText(publicUrl);
+      toast({
+        title: "Share URL copied!",
+        description: "The public session link has been copied to your clipboard.",
+      });
+    } catch (err) {
+      toast({
+        title: "Copy failed",
+        description: "Unable to copy to clipboard. Please copy the URL manually.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -54,29 +73,42 @@ export default function SessionDetailPage() {
       {/* Header */}
       <div className="sticky top-0 bg-slate-900/95 backdrop-blur-sm border-b border-slate-700/50 z-10">
         <div className="max-w-4xl mx-auto p-4">
-          <div className="flex items-center gap-4">
-            <Link href="/sessions">
-              <Button variant="ghost" size="sm" className="text-game-secondary hover:text-game-primary">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Sessions
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-2xl font-bold text-game-primary">{session.name}</h1>
-              <div className="flex items-center gap-4 text-sm text-game-secondary mt-1">
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  <span>{new Date(session.date).toLocaleDateString()}</span>
-                </div>
-                {session.duration && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link href="/sessions">
+                <Button variant="ghost" size="sm" className="text-game-secondary hover:text-game-primary">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Sessions
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-2xl font-bold text-game-primary">{session.name}</h1>
+                <div className="flex items-center gap-4 text-sm text-game-secondary mt-1">
                   <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    <span>{Math.round(session.duration / 60000)} minutes</span>
+                    <Calendar className="h-4 w-4" />
+                    <span>{new Date(session.date).toLocaleDateString()}</span>
                   </div>
-                )}
-                <span>Campaign: {session.campaign?.name || 'Unknown'}</span>
+                  {session.duration && (
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      <span>{Math.round(session.duration / 60000)} minutes</span>
+                    </div>
+                  )}
+                  <span>Campaign: {session.campaign?.name || 'Unknown'}</span>
+                </div>
               </div>
             </div>
+            
+            {/* Share Button */}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleShare}
+              className="border-game-primary/30 hover:border-game-primary/50 text-game-primary hover:text-game-accent"
+            >
+              <Share2 className="h-4 w-4 mr-2" />
+              Share
+            </Button>
           </div>
         </div>
       </div>

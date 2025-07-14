@@ -20,6 +20,7 @@ function App() {
             <CampaignSelector />
             <Switch>
               <Route path="/sessions/:sessionId" component={SessionDetailPage} />
+              <Route path="/sessions" component={SessionsPage} />
               <Route path="/upload" component={AudioUploader} />
               <Route path="/" component={SessionsPage} />
             </Switch>

@@ -39,11 +39,13 @@ export function CampaignProvider({ children }: CampaignProviderProps) {
 
   const autoSelectMostRecent = (campaigns: Campaign[]) => {
     if (!selectedCampaign && campaigns.length > 0) {
-      const mostRecentCampaign = campaigns.sort((a, b) => 
+      // Filter out deleted campaigns and sort by creation date
+      const activeCampaigns = campaigns.filter(campaign => !campaign._deleted);
+      const mostRecentCampaign = activeCampaigns.sort((a, b) => 
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       )[0];
       setSelectedCampaign(mostRecentCampaign);
-      console.log('🎯 Auto-selected most recent campaign:', mostRecentCampaign.name);
+      console.log('🎯 Auto-selected most recent campaign:', mostRecentCampaign.name, mostRecentCampaign.id);
     }
   };
 

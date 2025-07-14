@@ -15,14 +15,7 @@ export function useSessions() {
       }
       // Get sessions for the specific campaign only
       const allSessions = await graphqlClient.getSessionsByOwner(user.username, user.accessToken);
-      console.log('🔍 All sessions:', allSessions.length);
-      console.log('🎯 Selected campaign ID:', selectedCampaign.id);
-      console.log('📊 Session campaign IDs:', allSessions.map(s => ({ name: s.name, campaignId: s.campaignSessionsId })));
-      
-      const filteredSessions = allSessions.filter(session => session.campaignSessionsId === selectedCampaign.id);
-      console.log('✅ Filtered sessions:', filteredSessions.length);
-      
-      return filteredSessions;
+      return allSessions.filter(session => session.campaignSessionsId === selectedCampaign.id);
     },
     enabled: !!user?.username && !!selectedCampaign,
   });

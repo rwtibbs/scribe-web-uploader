@@ -41,7 +41,6 @@ export function CampaignSelector() {
       <div className="max-w-4xl mx-auto p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Dice6 className="h-5 w-5 text-game-accent" />
             <span className="text-sm font-medium text-game-secondary">Campaign:</span>
           </div>
           

@@ -57,7 +57,7 @@ export function CampaignSelector() {
                 )}
               >
                 {selectedCampaign ? (
-                  <span className="text-game-primary font-medium">{selectedCampaign.name}</span>
+                  <span className="font-medium text-[010101]">{selectedCampaign.name}</span>
                 ) : (
                   <span className="text-game-secondary">Select campaign...</span>
                 )}

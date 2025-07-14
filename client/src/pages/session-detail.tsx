@@ -13,7 +13,7 @@ export default function SessionDetailPage() {
   const { toast } = useToast();
 
   const handleShare = async () => {
-    const publicUrl = `${window.location.origin}/public/${sessionId}`;
+    const publicUrl = `${window.location.origin}/share/${sessionId}`;
     try {
       await navigator.clipboard.writeText(publicUrl);
       toast({

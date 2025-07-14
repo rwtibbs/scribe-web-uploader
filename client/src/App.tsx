@@ -13,7 +13,7 @@ import PublicSessionPage from "@/pages/public-session";
 
 function App() {
   const [location] = useLocation();
-  const isPublicRoute = location.startsWith('/public/');
+  const isPublicRoute = location.startsWith('/share/');
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -23,7 +23,7 @@ function App() {
             <Toaster />
             {!isPublicRoute && <CampaignSelector />}
             <Switch>
-              <Route path="/public/:sessionId" component={PublicSessionPage} />
+              <Route path="/share/:sessionId" component={PublicSessionPage} />
               <Route path="/sessions/:sessionId" component={SessionDetailPage} />
               <Route path="/sessions" component={SessionsPage} />
               <Route path="/upload" component={AudioUploader} />

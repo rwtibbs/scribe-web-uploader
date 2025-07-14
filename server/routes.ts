@@ -268,7 +268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Serve images with Cognito authentication
-  app.get('/api/public-session/:sessionId', async (req: Request, res: Response) => {
+  app.get('/api/share/:sessionId', async (req: Request, res: Response) => {
     try {
       const { sessionId } = req.params;
       
@@ -322,7 +322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/public-image/:encodedKey', async (req: Request, res: Response) => {
+  app.get('/api/share-image/:encodedKey', async (req: Request, res: Response) => {
     try {
       const { encodedKey } = req.params;
       const key = Buffer.from(encodedKey, 'base64').toString('utf-8');

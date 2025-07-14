@@ -30,8 +30,8 @@ export default function PublicSessionPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
 
   const { data: session, isLoading, error } = useQuery({
-    queryKey: ['/api/public-session', sessionId],
-    queryFn: () => apiRequest<PublicSession>(`/api/public-session/${sessionId}`, { on401: 'returnNull' }),
+    queryKey: ['/api/share', sessionId],
+    queryFn: () => apiRequest<PublicSession>(`/api/share/${sessionId}`, { on401: 'returnNull' }),
     enabled: !!sessionId,
   });
 
@@ -118,7 +118,7 @@ export default function PublicSessionPage() {
                     {/* Segment Image */}
                     {segment.image && (
                       <img 
-                        src={`/api/public-image/${btoa(segment.image)}`}
+                        src={`/api/share-image/${btoa(segment.image)}`}
                         alt={segment.title || `Segment ${index + 1}`}
                         className="w-full h-auto object-cover rounded-lg"
                         onError={(e) => {

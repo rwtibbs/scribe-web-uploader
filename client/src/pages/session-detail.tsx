@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useSession } from '@/hooks/use-sessions';
 import { formatDistanceToNow } from 'date-fns';
-import { awsConfig } from '@/lib/aws-config';
+import { useState, useEffect } from 'react';
 
 export default function SessionDetailPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -49,18 +49,95 @@ export default function SessionDetailPage() {
     return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
   }) || [];
 
-  // Helper function to convert relative image paths to S3 URLs
-  const getImageUrl = (imagePath: string) => {
+  // State to store presigned URLs for images
+  const [imageUrls, setImageUrls] = useState<Map<string, string>>(new Map());
+
+  // Helper function to get presigned URL for an image
+  const getPresignedImageUrl = async (imagePath: string): Promise<string | null> => {
     if (!imagePath) return null;
     
     // If it's already a full URL, return as is
     if (imagePath.startsWith('http')) {
       return imagePath;
     }
-    
-    // Remove leading 'public/' if present and construct S3 URL
-    const cleanPath = imagePath.replace(/^public\//, '');
-    return `https://${awsConfig.s3Bucket}.s3.${awsConfig.region}.amazonaws.com/public/${cleanPath}`;
+
+    // Check if we already have this URL cached
+    if (imageUrls.has(imagePath)) {
+      return imageUrls.get(imagePath) || null;
+    }
+
+    try {
+      const response = await fetch('/api/generate-view-url', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ key: imagePath }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to get presigned URL:', response.statusText);
+        return null;
+      }
+
+      const data = await response.json();
+      if (data.success && data.viewUrl) {
+        // Cache the URL
+        setImageUrls(prev => new Map(prev).set(imagePath, data.viewUrl));
+        return data.viewUrl;
+      }
+    } catch (error) {
+      console.error('Error generating presigned URL:', error);
+    }
+
+    return null;
+  };
+
+  // Component for presigned image display
+  const PresignedImage = ({ imagePath, alt, className, onError }: {
+    imagePath: string;
+    alt: string;
+    className: string;
+    onError?: () => void;
+  }) => {
+    const [presignedUrl, setPresignedUrl] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      const loadImage = async () => {
+        setLoading(true);
+        const url = await getPresignedImageUrl(imagePath);
+        setPresignedUrl(url);
+        setLoading(false);
+      };
+
+      loadImage();
+    }, [imagePath]);
+
+    if (loading) {
+      return (
+        <div className={`${className} bg-slate-700 animate-pulse flex items-center justify-center`}>
+          <div className="text-game-secondary/50">Loading...</div>
+        </div>
+      );
+    }
+
+    if (!presignedUrl) {
+      return (
+        <div className={`${className} bg-gradient-to-br from-game-accent/20 to-game-primary/20 flex items-center justify-center`}>
+          <Users className="h-8 w-8 text-game-accent/60" />
+        </div>
+      );
+    }
+
+    return (
+      <img 
+        src={presignedUrl}
+        alt={alt}
+        className={className}
+        onError={onError}
+      />
+    );
   };
 
   return (
@@ -100,13 +177,10 @@ export default function SessionDetailPage() {
         {/* Primary Image */}
         {session.primaryImage && (
           <div className="w-full h-64 md:h-80 bg-slate-800 rounded-xl overflow-hidden">
-            <img 
-              src={getImageUrl(session.primaryImage)} 
+            <PresignedImage 
+              imagePath={session.primaryImage}
               alt={session.name}
               className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
             />
           </div>
         )}
@@ -127,11 +201,7 @@ export default function SessionDetailPage() {
         {sortedSegments.length > 0 && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-game-primary">Session Highlights</h2>
-            {sortedSegments.some((segment: any) => segment.image) && (
-              <p className="text-sm text-game-secondary/70 mb-4">
-                Note: Some segment images may not display due to access permissions. The content descriptions are still available below.
-              </p>
-            )}
+
             
             {sortedSegments.map((segment: any, index: number) => (
               <Card key={segment.id} className="bg-slate-800/50 border-slate-600/30">
@@ -140,19 +210,16 @@ export default function SessionDetailPage() {
                     {/* Segment Image */}
                     <div className="md:col-span-1">
                       {segment.image ? (
-                        <img 
-                          src={getImageUrl(segment.image)}
+                        <PresignedImage 
+                          imagePath={segment.image}
                           alt={segment.title || `Segment ${index + 1}`}
                           className="w-full h-48 object-cover rounded-lg"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                          }}
                         />
-                      ) : null}
-                      <div className={`w-full h-48 bg-gradient-to-br from-game-accent/20 to-game-primary/20 rounded-lg flex items-center justify-center ${segment.image ? 'hidden' : ''}`}>
-                        <Users className="h-8 w-8 text-game-accent/60" />
-                      </div>
+                      ) : (
+                        <div className="w-full h-48 bg-gradient-to-br from-game-accent/20 to-game-primary/20 rounded-lg flex items-center justify-center">
+                          <Users className="h-8 w-8 text-game-accent/60" />
+                        </div>
+                      )}
                     </div>
                     
                     {/* Segment Content */}

@@ -267,6 +267,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate presigned URL for viewing images
+  app.post('/api/generate-view-url', async (req: Request, res: Response) => {
+    try {
+      const { key } = req.body;
+      
+      if (!key) {
+        return res.status(400).json({ error: 'Key is required' });
+      }
+
+      console.log(`🖼️ Generating view URL for: ${key}`);
+
+      const bucketName = process.env.AWS_S3_BUCKET || awsConfig.s3Bucket;
+      
+      const viewUrl = s3.getSignedUrl('getObject', {
+        Bucket: bucketName,
+        Key: key,
+        Expires: 3600, // 1 hour expiration
+      });
+
+      console.log(`✅ View URL generated successfully`);
+      
+      res.json({
+        success: true,
+        viewUrl
+      });
+    } catch (error) {
+      console.error('Error generating view URL:', error);
+      res.status(500).json({ 
+        message: 'Failed to generate view URL',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Trigger Lambda function for audio processing
   app.post('/api/trigger-lambda', async (req, res) => {
     try {

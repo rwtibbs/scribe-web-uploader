@@ -139,7 +139,7 @@ export default function SessionDetailPage() {
                       )}
                       
                       {segment.description && (
-                        <div className="text-game-secondary leading-relaxed whitespace-pre-wrap">
+                        <div className="leading-relaxed whitespace-pre-wrap text-[FCEBD5]">
                           {segment.description}
                         </div>
                       )}

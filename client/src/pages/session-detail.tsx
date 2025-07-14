@@ -79,7 +79,6 @@ export default function SessionDetailPage() {
           </div>
         </div>
       </div>
-
       {/* Content */}
       <div className="max-w-4xl mx-auto p-4 space-y-8">
         {/* Primary Image */}
@@ -108,7 +107,8 @@ export default function SessionDetailPage() {
         {/* Session Segments */}
         {sortedSegments.length > 0 && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-game-primary">Session Highlights</h2>
+            <h2 className="text-2xl font-bold text-game-primary">Full Summary
+</h2>
             
             {sortedSegments.map((segment: any, index: number) => (
               <Card key={segment.id} className="bg-slate-800/50 border-slate-600/30">

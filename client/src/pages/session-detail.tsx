@@ -113,7 +113,7 @@ export default function SessionDetailPage() {
 </h2>
             
             {sortedSegments.map((segment: any, index: number) => (
-              <Card key={segment.id} className="bg-slate-800/50 border-slate-600/30">
+              <Card key={segment.id} className="bg-slate-800/50 border-0">
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     {/* Segment Image */}
@@ -153,7 +153,7 @@ export default function SessionDetailPage() {
 
         {/* No Content Message */}
         {!session.tldr && sortedSegments.length === 0 && (
-          <Card className="bg-slate-800/50 border-slate-600/30">
+          <Card className="bg-slate-800/50 border-0">
             <CardContent className="p-12 text-center">
               <Users className="h-16 w-16 text-game-secondary mx-auto mb-4 opacity-50" />
               <h3 className="text-xl font-medium text-game-primary mb-2">Session Processing</h3>

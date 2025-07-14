@@ -68,7 +68,7 @@ export default function SessionsPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-game-primary mb-2">
-            {selectedCampaign.name} Sessions
+            Sessions
           </h1>
           <p className="text-game-secondary">Browse and manage your sessions for this campaign</p>
         </div>

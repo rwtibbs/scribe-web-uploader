@@ -142,16 +142,6 @@ export default function SessionDetailPage() {
                           {segment.description}
                         </div>
                       )}
-                      
-                      {/* Segment Meta */}
-                      <div className="text-xs text-game-secondary/70 pt-4 border-t border-slate-600/20">
-                        {segment.order !== undefined && `Segment ${segment.order + 1}`}
-                        {segment.createdAt && (
-                          <span className="ml-4">
-                            Added {formatDistanceToNow(new Date(segment.createdAt), { addSuffix: true })}
-                          </span>
-                        )}
-                      </div>
                     </div>
                   </div>
                 </CardContent>

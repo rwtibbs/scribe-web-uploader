@@ -113,6 +113,9 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- July 14, 2025. Removed primary image from session detail pages: Removed lead image display while preserving segment images for cleaner layout
+- July 14, 2025. Updated session card styling: Changed background to white with 10% opacity (bg-white/10) and set thumbnail images to auto height for better layout
+- July 14, 2025. Fixed gradient background display: Removed conflicting background overrides from sessions and session-detail pages to allow main vertical gradient (#01032d to #010101) to show through
 - July 14, 2025. Implemented Cognito authentication for image viewing: Replaced presigned URLs with new `/api/image/:encodedImageUrl` endpoint that requires Cognito Bearer token authentication, updated AuthenticatedImage component to fetch images with proper auth headers
 - July 14, 2025. Added Scribe logo to top navigation bar: Logo displays on left side with campaign selector moved to center and upload button remaining on right
 - July 14, 2025. Restructured application architecture: Sessions page is now home page, most recent campaign auto-selects on load, upload button moved to header next to campaign selector for improved user experience

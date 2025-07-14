@@ -4,6 +4,7 @@ import { Campaign } from '@/types/aws';
 interface CampaignContextValue {
   selectedCampaign: Campaign | null;
   setSelectedCampaign: (campaign: Campaign | null) => void;
+  autoSelectMostRecent: (campaigns: Campaign[]) => void;
 }
 
 const CampaignContext = createContext<CampaignContextValue | undefined>(undefined);
@@ -21,7 +22,11 @@ interface CampaignProviderProps {
 }
 
 export function CampaignProvider({ children }: CampaignProviderProps) {
-  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(() => {
+    // Load from localStorage on initial load
+    const saved = localStorage.getItem('selectedCampaign');
+    return saved ? JSON.parse(saved) : null;
+  });
 
   // Save selected campaign to localStorage
   useEffect(() => {
@@ -32,22 +37,20 @@ export function CampaignProvider({ children }: CampaignProviderProps) {
     }
   }, [selectedCampaign]);
 
-  // Load selected campaign from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem('selectedCampaign');
-    if (saved) {
-      try {
-        setSelectedCampaign(JSON.parse(saved));
-      } catch (error) {
-        console.error('Failed to parse saved campaign:', error);
-        localStorage.removeItem('selectedCampaign');
-      }
+  const autoSelectMostRecent = (campaigns: Campaign[]) => {
+    if (!selectedCampaign && campaigns.length > 0) {
+      const mostRecentCampaign = campaigns.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )[0];
+      setSelectedCampaign(mostRecentCampaign);
+      console.log('🎯 Auto-selected most recent campaign:', mostRecentCampaign.name);
     }
-  }, []);
+  };
 
   const value: CampaignContextValue = {
     selectedCampaign,
     setSelectedCampaign,
+    autoSelectMostRecent,
   };
 
   return (

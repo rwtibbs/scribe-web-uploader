@@ -38,14 +38,6 @@ export default function SessionsPage() {
 
   // Sort sessions by date (newest first)
   const sortedSessions = sessions?.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) || [];
-  
-  // Debug: Log session data to see if primaryImage is available
-  console.log('📊 Sessions data:', sortedSessions.map(s => ({ 
-    id: s.id, 
-    name: s.name, 
-    primaryImage: s.primaryImage,
-    hasPrimaryImage: !!s.primaryImage 
-  })));
 
   // Show message if no campaign is selected
   if (!selectedCampaign) {

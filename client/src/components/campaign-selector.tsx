@@ -1,8 +1,10 @@
-import { Check, ChevronDown, Dice6 } from 'lucide-react';
+import { useEffect } from 'react';
+import { Check, ChevronDown, Dice6, Upload } from 'lucide-react';
 import { useCampaigns } from '@/hooks/use-campaigns';
 import { useCampaign } from '@/contexts/campaign-context';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
+import { Link } from 'wouter';
 import {
   Popover,
   PopoverContent,
@@ -20,8 +22,15 @@ import { cn } from '@/lib/utils';
 
 export function CampaignSelector() {
   const { user, isAuthenticated } = useAuth();
-  const { selectedCampaign, setSelectedCampaign } = useCampaign();
+  const { selectedCampaign, setSelectedCampaign, autoSelectMostRecent } = useCampaign();
   const { data: campaigns, isLoading } = useCampaigns(user?.username);
+
+  // Auto-select most recent campaign when campaigns are loaded
+  useEffect(() => {
+    if (campaigns?.length && !selectedCampaign) {
+      autoSelectMostRecent(campaigns);
+    }
+  }, [campaigns, selectedCampaign, autoSelectMostRecent]);
 
   if (!isAuthenticated) {
     return null;
@@ -36,7 +45,8 @@ export function CampaignSelector() {
             <span className="text-sm font-medium text-game-secondary">Campaign:</span>
           </div>
           
-          <Popover>
+          <div className="flex items-center gap-3">
+            <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -97,14 +107,15 @@ export function CampaignSelector() {
               </Command>
             </PopoverContent>
           </Popover>
-        </div>
-        
-        {selectedCampaign && (
-          <div className="mt-2 text-xs text-game-secondary/70">
-            Selected: {selectedCampaign.name}
-            {selectedCampaign.description && ` • ${selectedCampaign.description}`}
+          
+          <Link href="/upload">
+            <Button className="bg-game-accent hover:bg-game-hover text-white flex items-center gap-2">
+              <Upload className="h-4 w-4" />
+              Upload Session
+            </Button>
+          </Link>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

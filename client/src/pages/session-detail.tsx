@@ -133,7 +133,7 @@ export default function SessionDetailPage() {
                     {/* Segment Content */}
                     <div className="space-y-4">
                       {segment.title && (
-                        <h3 className="text-xl font-semibold text-game-primary">
+                        <h3 className="text-xl font-semibold text-[FCEBD5]">
                           {segment.title}
                         </h3>
                       )}

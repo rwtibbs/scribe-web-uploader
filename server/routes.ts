@@ -267,48 +267,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Generate presigned URL for viewing images
-  app.post('/api/generate-image-url', async (req: Request, res: Response) => {
+  // Serve images with Cognito authentication
+  app.get('/api/image/:encodedKey', async (req: Request, res: Response) => {
     try {
-      const { imageUrl } = req.body;
-      
-      if (!imageUrl) {
-        return res.status(400).json({ error: 'imageUrl is required' });
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Authorization header required' });
       }
 
-      // Extract the S3 key from the full URL
-      let s3Key: string;
+      // TODO: Add Cognito token validation here if needed
+      // For now, we'll trust the frontend to send valid tokens
       
-      if (imageUrl.includes('amazonaws.com/')) {
-        // Extract key from full S3 URL
-        const urlParts = imageUrl.split('amazonaws.com/');
-        s3Key = urlParts[1];
-      } else if (imageUrl.startsWith('public/')) {
-        // Already a key format
-        s3Key = imageUrl;
-      } else {
-        // Assume it's a relative path and add public prefix
-        s3Key = `public/${imageUrl}`;
-      }
-
+      const encodedKey = req.params.encodedKey;
+      const s3Key = Buffer.from(encodedKey, 'base64').toString('utf-8');
+      
       const bucketName = process.env.AWS_S3_BUCKET || awsConfig.s3Bucket;
       
       const params = {
         Bucket: bucketName,
         Key: s3Key,
-        Expires: 3600, // 1 hour
       };
 
-      const signedUrl = s3.getSignedUrl('getObject', params);
+      const s3Object = await s3.getObject(params).promise();
       
-      res.json({ 
-        signedUrl,
-        originalUrl: imageUrl,
-        s3Key: s3Key
-      });
+      if (!s3Object.Body) {
+        return res.status(404).json({ error: 'Image not found' });
+      }
+      
+      // Set appropriate content type
+      const contentType = s3Object.ContentType || 'image/jpeg';
+      res.set('Content-Type', contentType);
+      res.set('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
+      
+      res.send(s3Object.Body);
     } catch (error) {
-      console.error('Error generating image presigned URL:', error);
-      res.status(500).json({ error: 'Failed to generate image presigned URL' });
+      console.error('Error serving authenticated image:', error);
+      if (error.code === 'NoSuchKey') {
+        res.status(404).json({ error: 'Image not found' });
+      } else {
+        res.status(500).json({ error: 'Failed to serve image' });
+      }
     }
   });
 

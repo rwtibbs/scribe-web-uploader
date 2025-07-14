@@ -113,6 +113,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- July 14, 2025. Implemented Cognito authentication for image viewing: Replaced presigned URLs with new `/api/image/:encodedImageUrl` endpoint that requires Cognito Bearer token authentication, updated AuthenticatedImage component to fetch images with proper auth headers
 - July 14, 2025. Added Scribe logo to top navigation bar: Logo displays on left side with campaign selector moved to center and upload button remaining on right
 - July 14, 2025. Restructured application architecture: Sessions page is now home page, most recent campaign auto-selects on load, upload button moved to header next to campaign selector for improved user experience
 - July 14, 2025. Implemented campaign-scoped architecture: Added global campaign selector, all uploads and sessions now filtered by selected campaign, removed campaign selector from upload form

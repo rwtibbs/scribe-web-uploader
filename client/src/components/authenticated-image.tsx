@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Users } from 'lucide-react';
-import { apiRequest } from '@/lib/queryClient';
+import { useAuth } from '@/contexts/auth-context';
 
 interface AuthenticatedImageProps {
   imageUrl: string;
@@ -10,45 +10,72 @@ interface AuthenticatedImageProps {
 }
 
 export function AuthenticatedImage({ imageUrl, alt, className, fallbackClassName }: AuthenticatedImageProps) {
-  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (!imageUrl) {
+    if (!imageUrl || !user?.accessToken) {
       setIsLoading(false);
       setHasError(true);
       return;
     }
 
-    const fetchSignedUrl = async () => {
+    const fetchAuthenticatedImage = async () => {
       try {
         setIsLoading(true);
         setHasError(false);
         
-        const response = await apiRequest(
-          'POST',
-          '/api/generate-image-url',
-          { imageUrl }
-        );
+        // Extract the S3 key from the full URL
+        let s3Key: string;
         
-        const data = await response.json();
-        
-        if (data.signedUrl) {
-          setSignedUrl(data.signedUrl);
+        if (imageUrl.includes('amazonaws.com/')) {
+          // Extract key from full S3 URL
+          const urlParts = imageUrl.split('amazonaws.com/');
+          s3Key = urlParts[1];
+        } else if (imageUrl.startsWith('public/')) {
+          // Already a key format
+          s3Key = imageUrl;
         } else {
-          setHasError(true);
+          // Assume it's a relative path and add public prefix
+          s3Key = `public/${imageUrl}`;
         }
+        
+        // Base64 encode the S3 key for URL safety (using browser btoa)
+        const encodedKey = btoa(s3Key);
+        
+        // Fetch the image with Cognito authentication
+        const response = await fetch(`/api/image/${encodedKey}`, {
+          headers: {
+            'Authorization': `Bearer ${user.accessToken}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image: ${response.status}`);
+        }
+        
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        setBlobUrl(url);
+        setIsLoading(false);
       } catch (error) {
-        console.error('Failed to generate signed URL for image:', error);
+        console.error('Failed to fetch authenticated image:', error);
         setHasError(true);
-      } finally {
         setIsLoading(false);
       }
     };
 
-    fetchSignedUrl();
-  }, [imageUrl]);
+    fetchAuthenticatedImage();
+    
+    // Cleanup blob URL on unmount
+    return () => {
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
+    };
+  }, [imageUrl, user?.accessToken]);
 
   if (isLoading) {
     return (
@@ -58,7 +85,15 @@ export function AuthenticatedImage({ imageUrl, alt, className, fallbackClassName
     );
   }
 
-  if (hasError || !signedUrl) {
+  if (hasError || !user?.accessToken) {
+    return (
+      <div className={fallbackClassName || "w-full h-64 bg-gradient-to-br from-game-accent/20 to-game-primary/20 rounded-lg flex items-center justify-center"}>
+        <Users className="h-8 w-8 text-game-accent/60" />
+      </div>
+    );
+  }
+
+  if (!blobUrl) {
     return (
       <div className={fallbackClassName || "w-full h-64 bg-gradient-to-br from-game-accent/20 to-game-primary/20 rounded-lg flex items-center justify-center"}>
         <Users className="h-8 w-8 text-game-accent/60" />
@@ -68,7 +103,7 @@ export function AuthenticatedImage({ imageUrl, alt, className, fallbackClassName
 
   return (
     <img 
-      src={signedUrl}
+      src={blobUrl}
       alt={alt}
       className={className}
       onError={() => setHasError(true)}

@@ -235,11 +235,7 @@ export default function SessionDetailPage() {
                           {Array.isArray(segment.description) ? segment.description.join('\n\n') : segment.description}
                         </div>
                       )}
-                      
-                      {/* Segment Meta */}
-                      <div className="text-xs text-game-secondary/70 pt-4 border-t border-slate-600/20">
-                        Added {formatDistanceToNow(new Date(segment.createdAt), { addSuffix: true })}
-                      </div>
+
                     </div>
                   </div>
                 </CardContent>

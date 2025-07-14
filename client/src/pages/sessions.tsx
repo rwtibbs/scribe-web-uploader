@@ -42,7 +42,7 @@ export default function SessionsPage() {
   // Show message if no campaign is selected
   if (!selectedCampaign) {
     return (
-      <div className="min-h-screen p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="min-h-screen p-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center py-12">
             <Dice6 className="h-16 w-16 text-game-secondary mx-auto mb-4 opacity-50" />
@@ -63,7 +63,7 @@ export default function SessionsPage() {
   }
 
   return (
-    <div className="min-h-screen p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">

@@ -50,7 +50,7 @@ export default function SessionDetailPage() {
   }) || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen">
       {/* Header */}
       <div className="sticky top-0 bg-slate-900/95 backdrop-blur-sm border-b border-slate-700/50 z-10">
         <div className="max-w-4xl mx-auto p-4">

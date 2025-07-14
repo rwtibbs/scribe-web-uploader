@@ -43,6 +43,8 @@ TabletopScribe is a web application for uploading and processing tabletop gaming
 - **Data Source**: AWS AppSync GraphQL API
 - **Schema**: Campaign entities with owner-based filtering
 - **Integration**: Custom GraphQL client with API key authentication
+- **Campaign Selection**: Global campaign selector at top of application
+- **Scoped Content**: All uploads and sessions filtered by selected campaign
 
 ### Audio Processing Pipeline
 - **Trigger**: Express.js endpoint `/api/trigger-lambda`
@@ -111,6 +113,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- July 14, 2025. Implemented campaign-scoped architecture: Added global campaign selector, all uploads and sessions now filtered by selected campaign, removed campaign selector from upload form
 - July 01, 2025. Updated metadata: Title "Scribe App | Turn your sessions into stories", description focuses on campaign wiki features, added social share image
 - July 01, 2025. Fixed presigned URL generation by removing ContentLength parameter and ensuring proper S3 configuration
 - June 30, 2025. Implemented presigned URL uploads to support 300MB files by bypassing Replit server entirely - files upload directly from client to S3

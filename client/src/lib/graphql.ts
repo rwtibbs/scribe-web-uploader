@@ -356,7 +356,6 @@ class GraphQLClient {
               title
               description
               image
-              order
               createdAt
               updatedAt
             }

@@ -1,11 +1,13 @@
-import { Calendar, Clock, Users, ArrowLeft } from 'lucide-react';
+import { Calendar, Clock, Users, ArrowLeft, Dice6 } from 'lucide-react';
 import { Link } from 'wouter';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useSessions } from '@/hooks/use-sessions';
+import { useCampaign } from '@/contexts/campaign-context';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function SessionsPage() {
+  const { selectedCampaign } = useCampaign();
   const { data: sessions, isLoading, error } = useSessions();
 
   if (isLoading) {
@@ -36,6 +38,29 @@ export default function SessionsPage() {
   // Sort sessions by date (newest first)
   const sortedSessions = sessions?.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) || [];
 
+  // Show message if no campaign is selected
+  if (!selectedCampaign) {
+    return (
+      <div className="min-h-screen p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center py-12">
+            <Dice6 className="h-16 w-16 text-game-secondary mx-auto mb-4 opacity-50" />
+            <h3 className="text-xl font-medium text-game-primary mb-2">Select a Campaign</h3>
+            <p className="text-game-secondary mb-6">
+              Please select a campaign from the dropdown above to view your sessions.
+            </p>
+            <Link href="/">
+              <Button className="btn-primary bg-game-accent hover:bg-game-hover text-white">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Upload
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="max-w-4xl mx-auto">
@@ -48,8 +73,10 @@ export default function SessionsPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-game-primary mb-2">Your Sessions</h1>
-            <p className="text-game-secondary">Browse and manage your tabletop gaming sessions</p>
+            <h1 className="text-3xl font-bold text-game-primary mb-2">
+              {selectedCampaign.name} Sessions
+            </h1>
+            <p className="text-game-secondary">Browse and manage your sessions for this campaign</p>
           </div>
         </div>
 

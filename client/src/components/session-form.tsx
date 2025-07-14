@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,11 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle, AlertTriangle, Upload, RotateCcw, X } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Upload, RotateCcw, X, Dice6 } from 'lucide-react';
 import { FileUploadZone } from './file-upload-zone';
 import { UploadProgressComponent } from './upload-progress';
 import { useCampaigns } from '@/hooks/use-campaigns';
 import { useAuth } from '@/contexts/auth-context';
+import { useCampaign } from '@/contexts/campaign-context';
 import { graphqlClient } from '@/lib/graphql';
 import { S3UploadService } from '@/lib/s3-upload';
 import { UploadProgress } from '@shared/schema';
@@ -27,6 +28,7 @@ type SessionFormData = z.infer<typeof sessionFormSchema>;
 
 export function SessionForm() {
   const { user } = useAuth();
+  const { selectedCampaign } = useCampaign();
   const { data: campaigns, isLoading: campaignsLoading } = useCampaigns(user?.username);
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -37,11 +39,18 @@ export function SessionForm() {
   const form = useForm<SessionFormData>({
     resolver: zodResolver(sessionFormSchema),
     defaultValues: {
-      campaignId: '',
+      campaignId: selectedCampaign?.id || '',
       name: '',
       date: new Date().toISOString().split('T')[0],
     },
   });
+
+  // Update campaignId when selectedCampaign changes
+  useEffect(() => {
+    if (selectedCampaign) {
+      form.setValue('campaignId', selectedCampaign.id);
+    }
+  }, [selectedCampaign, form]);
 
   const handleFileSelect = (file: File) => {
     const maxSize = 300 * 1024 * 1024; // 300MB limit with chunked upload support
@@ -203,62 +212,33 @@ export function SessionForm() {
     setUploadStatus('idle');
   };
 
+  // Show message if no campaign is selected
+  if (!selectedCampaign) {
+    return (
+      <Card className="bg-black/20 backdrop-blur-sm border-game-primary/20">
+        <CardContent className="p-12 text-center">
+          <Dice6 className="h-16 w-16 text-game-secondary mx-auto mb-4 opacity-50" />
+          <h3 className="text-xl font-medium text-game-primary mb-2">Select a Campaign</h3>
+          <p className="text-game-secondary">
+            Please select a campaign from the dropdown above to upload session recordings.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="bg-black/20 backdrop-blur-sm border-game-primary/20">
       <CardHeader>
         <CardTitle className="text-2xl font-semibold text-game-primary">
           Upload Session Recording
         </CardTitle>
+        <p className="text-game-secondary">
+          Uploading to campaign: <span className="text-game-accent font-medium">{selectedCampaign.name}</span>
+        </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          {/* Campaign Selection */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-game-primary">
-              Campaign <span className="text-game-error">*</span>
-            </Label>
-            <Select
-              value={form.watch('campaignId')}
-              onValueChange={(value) => form.setValue('campaignId', value)}
-            >
-              <SelectTrigger className="form-input bg-white/95 border-game-primary/20 text-gray-900">
-                <SelectValue placeholder="Select a campaign..." />
-              </SelectTrigger>
-              <SelectContent>
-                {campaignsLoading ? (
-                  <SelectItem value="loading" disabled>Loading campaigns...</SelectItem>
-                ) : campaigns && campaigns.length > 0 ? (
-                  campaigns.map((campaign) => (
-                    <SelectItem key={campaign.id} value={campaign.id}>
-                      {campaign.name}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="no-campaigns" disabled>
-                    No campaigns found
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-            {form.formState.errors.campaignId && (
-              <p className="text-sm text-game-error">{form.formState.errors.campaignId.message}</p>
-            )}
-            
-            {/* Manual Campaign ID Entry */}
-            {(!campaigns || campaigns.length === 0) && (
-              <div className="mt-2">
-                <Label className="text-sm font-medium text-game-primary">
-                  Or enter Campaign ID manually
-                </Label>
-                <Input
-                  value={form.watch('campaignId')}
-                  onChange={(e) => form.setValue('campaignId', e.target.value)}
-                  className="form-input bg-game-primary/5 border-game-primary/20 text-game-primary placeholder:text-game-secondary/50"
-                  placeholder="Enter campaign ID (e.g., campaign-123)"
-                />
-              </div>
-            )}
-          </div>
 
           {/* Session Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

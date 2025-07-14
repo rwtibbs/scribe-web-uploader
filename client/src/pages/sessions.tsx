@@ -129,24 +129,7 @@ export default function SessionsPage() {
                         Campaign: {session.campaign?.name || 'Unknown'}
                       </div>
 
-                      {/* Status Badge */}
-                      <div className="pt-2">
-                        <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                          session.transcriptionStatus === 'completed' 
-                            ? 'bg-game-success/20 text-game-success' 
-                            : session.transcriptionStatus === 'processing'
-                            ? 'bg-game-accent/20 text-game-accent'
-                            : session.transcriptionStatus === 'error'
-                            ? 'bg-game-error/20 text-game-error'
-                            : 'bg-game-secondary/20 text-game-secondary'
-                        }`}>
-                          {session.transcriptionStatus === 'completed' && 'Ready'}
-                          {session.transcriptionStatus === 'processing' && 'Processing'}
-                          {session.transcriptionStatus === 'error' && 'Error'}
-                          {session.transcriptionStatus === 'UPLOADED' && 'Uploaded'}
-                          {session.transcriptionStatus === 'NOTSTARTED' && 'Pending'}
-                        </span>
-                      </div>
+                      
                     </div>
                   </CardContent>
                 </Card>

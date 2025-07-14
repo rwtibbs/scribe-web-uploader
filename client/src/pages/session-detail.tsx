@@ -121,12 +121,19 @@ export default function SessionDetailPage() {
                           src={segment.image}
                           alt={segment.title || `Segment ${index + 1}`}
                           className="w-full h-48 object-cover rounded-lg"
+                          onError={(e) => {
+                            console.error('Image failed to load:', segment.image);
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                          }}
+                          onLoad={() => {
+                            console.log('Image loaded successfully:', segment.image);
+                          }}
                         />
-                      ) : (
-                        <div className="w-full h-48 bg-gradient-to-br from-game-accent/20 to-game-primary/20 rounded-lg flex items-center justify-center">
-                          <Users className="h-8 w-8 text-game-accent/60" />
-                        </div>
-                      )}
+                      ) : null}
+                      <div className={`w-full h-48 bg-gradient-to-br from-game-accent/20 to-game-primary/20 rounded-lg flex items-center justify-center ${segment.image ? 'hidden' : ''}`}>
+                        <Users className="h-8 w-8 text-game-accent/60" />
+                      </div>
                     </div>
                     
                     {/* Segment Content */}
@@ -139,7 +146,14 @@ export default function SessionDetailPage() {
                       
                       {segment.description && (
                         <div className="text-game-secondary leading-relaxed whitespace-pre-wrap">
-                          {segment.description}
+                          {Array.isArray(segment.description) ? segment.description.join('\n\n') : segment.description}
+                        </div>
+                      )}
+                      
+                      {/* Debug: Show image URL if it exists */}
+                      {segment.image && (
+                        <div className="text-xs text-game-secondary/50 font-mono break-all">
+                          Image URL: {segment.image}
                         </div>
                       )}
                       

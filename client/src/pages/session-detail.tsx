@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useSession } from '@/hooks/use-sessions';
 import { formatDistanceToNow } from 'date-fns';
-import { useState, useEffect } from 'react';
 
 export default function SessionDetailPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -49,97 +48,6 @@ export default function SessionDetailPage() {
     return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
   }) || [];
 
-  // State to store presigned URLs for images
-  const [imageUrls, setImageUrls] = useState<Map<string, string>>(new Map());
-
-  // Helper function to get presigned URL for an image
-  const getPresignedImageUrl = async (imagePath: string): Promise<string | null> => {
-    if (!imagePath) return null;
-    
-    // If it's already a full URL, return as is
-    if (imagePath.startsWith('http')) {
-      return imagePath;
-    }
-
-    // Check if we already have this URL cached
-    if (imageUrls.has(imagePath)) {
-      return imageUrls.get(imagePath) || null;
-    }
-
-    try {
-      const response = await fetch('/api/generate-view-url', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ key: imagePath }),
-      });
-
-      if (!response.ok) {
-        console.error('Failed to get presigned URL:', response.statusText);
-        return null;
-      }
-
-      const data = await response.json();
-      if (data.success && data.viewUrl) {
-        // Cache the URL
-        setImageUrls(prev => new Map(prev).set(imagePath, data.viewUrl));
-        return data.viewUrl;
-      }
-    } catch (error) {
-      console.error('Error generating presigned URL:', error);
-    }
-
-    return null;
-  };
-
-  // Component for presigned image display
-  const PresignedImage = ({ imagePath, alt, className, onError }: {
-    imagePath: string;
-    alt: string;
-    className: string;
-    onError?: () => void;
-  }) => {
-    const [presignedUrl, setPresignedUrl] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-      const loadImage = async () => {
-        setLoading(true);
-        const url = await getPresignedImageUrl(imagePath);
-        setPresignedUrl(url);
-        setLoading(false);
-      };
-
-      loadImage();
-    }, [imagePath]);
-
-    if (loading) {
-      return (
-        <div className={`${className} bg-slate-700 animate-pulse flex items-center justify-center`}>
-          <div className="text-game-secondary/50">Loading...</div>
-        </div>
-      );
-    }
-
-    if (!presignedUrl) {
-      return (
-        <div className={`${className} bg-gradient-to-br from-game-accent/20 to-game-primary/20 flex items-center justify-center`}>
-          <Users className="h-8 w-8 text-game-accent/60" />
-        </div>
-      );
-    }
-
-    return (
-      <img 
-        src={presignedUrl}
-        alt={alt}
-        className={className}
-        onError={onError}
-      />
-    );
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
@@ -177,8 +85,8 @@ export default function SessionDetailPage() {
         {/* Primary Image */}
         {session.primaryImage && (
           <div className="w-full h-64 md:h-80 bg-slate-800 rounded-xl overflow-hidden">
-            <PresignedImage 
-              imagePath={session.primaryImage}
+            <img 
+              src={session.primaryImage} 
               alt={session.name}
               className="w-full h-full object-cover"
             />
@@ -201,7 +109,6 @@ export default function SessionDetailPage() {
         {sortedSegments.length > 0 && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-game-primary">Session Highlights</h2>
-
             
             {sortedSegments.map((segment: any, index: number) => (
               <Card key={segment.id} className="bg-slate-800/50 border-slate-600/30">
@@ -210,8 +117,8 @@ export default function SessionDetailPage() {
                     {/* Segment Image */}
                     <div className="md:col-span-1">
                       {segment.image ? (
-                        <PresignedImage 
-                          imagePath={segment.image}
+                        <img 
+                          src={segment.image}
                           alt={segment.title || `Segment ${index + 1}`}
                           className="w-full h-48 object-cover rounded-lg"
                         />
@@ -232,10 +139,19 @@ export default function SessionDetailPage() {
                       
                       {segment.description && (
                         <div className="text-game-secondary leading-relaxed whitespace-pre-wrap">
-                          {Array.isArray(segment.description) ? segment.description.join('\n\n') : segment.description}
+                          {segment.description}
                         </div>
                       )}
-
+                      
+                      {/* Segment Meta */}
+                      <div className="text-xs text-game-secondary/70 pt-4 border-t border-slate-600/20">
+                        {segment.order !== undefined && `Segment ${segment.order + 1}`}
+                        {segment.createdAt && (
+                          <span className="ml-4">
+                            Added {formatDistanceToNow(new Date(segment.createdAt), { addSuffix: true })}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent>

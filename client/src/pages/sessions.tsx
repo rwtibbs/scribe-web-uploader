@@ -89,7 +89,7 @@ export default function SessionsPage() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {sortedSessions.map((session) => (
               <Link key={session.id} href={`/sessions/${session.id}`}>
-                <Card className="group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl bg-slate-800/50 border-slate-600/30 hover:border-game-accent/50">
+                <Card className="group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl bg-white/10 border-slate-600/30 hover:border-game-accent/50">
                   <CardContent className="p-6">
                     {/* Session Image */}
                     <div className="w-full h-32 bg-gradient-to-br from-game-accent/20 to-game-primary/20 rounded-lg mb-4 overflow-hidden group-hover:from-game-accent/30 group-hover:to-game-primary/30 transition-all duration-300">

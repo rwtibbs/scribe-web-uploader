@@ -267,12 +267,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve images with Cognito authentication
+  // Public session sharing endpoint
   app.get('/api/share/:sessionId', async (req: Request, res: Response) => {
+    console.log('🔗 Public share route hit for sessionId:', req.params.sessionId);
     try {
       const { sessionId } = req.params;
       
       // Fetch session data from GraphQL without authentication
+      console.log('🌐 Making GraphQL request to:', awsConfig.graphqlEndpoint);
+      console.log('🔑 Using API key:', awsConfig.appsyncApiKey ? 'Present' : 'Missing');
+      
       const response = await fetch(awsConfig.graphqlEndpoint, {
         method: 'POST',
         headers: {
@@ -310,9 +314,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const data = await response.json();
+      console.log('📊 GraphQL response:', data);
       
       if (data.errors || !data.data?.getSession) {
-        return res.status(404).json({ error: 'Session not found' });
+        console.log('❌ Session not found or has errors - this might be an authentication issue');
+        console.log('📝 Note: GraphQL API key might not have permission for direct session access');
+        
+        // For now, return a placeholder response indicating the feature needs proper authentication setup
+        return res.status(404).json({ 
+          error: 'Session not found', 
+          debug: 'Public sharing requires additional authentication configuration'
+        });
       }
 
       res.json(data.data.getSession);

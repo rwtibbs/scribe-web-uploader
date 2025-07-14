@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Check, ChevronDown, Dice6, Upload } from 'lucide-react';
+import scribeLogo from '@assets/Main-logo_1752518475604.png';
 import { useCampaigns } from '@/hooks/use-campaigns';
 import { useCampaign } from '@/contexts/campaign-context';
 import { useAuth } from '@/contexts/auth-context';
@@ -42,7 +43,7 @@ export function CampaignSelector() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <img 
-              src="/attached_assets/Main-logo_1752518475604.png" 
+              src={scribeLogo} 
               alt="Scribe" 
               className="h-8 w-auto"
             />

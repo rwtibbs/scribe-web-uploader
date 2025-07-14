@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useSessions } from '@/hooks/use-sessions';
 import { useCampaign } from '@/contexts/campaign-context';
+import { AuthenticatedImage } from '@/components/authenticated-image';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function SessionsPage() {
@@ -98,9 +99,20 @@ export default function SessionsPage() {
               <Link key={session.id} href={`/sessions/${session.id}`}>
                 <Card className="group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl bg-slate-800/50 border-slate-600/30 hover:border-game-accent/50">
                   <CardContent className="p-6">
-                    {/* Session Image Placeholder */}
-                    <div className="w-full h-32 bg-gradient-to-br from-game-accent/20 to-game-primary/20 rounded-lg mb-4 flex items-center justify-center group-hover:from-game-accent/30 group-hover:to-game-primary/30 transition-all duration-300">
-                      <Users className="h-8 w-8 text-game-accent/60" />
+                    {/* Session Image */}
+                    <div className="w-full h-32 bg-gradient-to-br from-game-accent/20 to-game-primary/20 rounded-lg mb-4 overflow-hidden group-hover:from-game-accent/30 group-hover:to-game-primary/30 transition-all duration-300">
+                      {session.primaryImage ? (
+                        <AuthenticatedImage 
+                          imageUrl={session.primaryImage}
+                          alt={session.name}
+                          className="w-full h-full object-cover"
+                          fallbackClassName="w-full h-full bg-gradient-to-br from-game-accent/20 to-game-primary/20 flex items-center justify-center"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Users className="h-8 w-8 text-game-accent/60" />
+                        </div>
+                      )}
                     </div>
 
                     {/* Session Info */}

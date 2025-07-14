@@ -113,24 +113,22 @@ export default function SessionDetailPage() {
             {sortedSegments.map((segment: any, index: number) => (
               <Card key={segment.id} className="bg-slate-800/50 border-slate-600/30">
                 <CardContent className="p-6">
-                  <div className="grid md:grid-cols-3 gap-6">
+                  <div className="space-y-4">
                     {/* Segment Image */}
-                    <div className="md:col-span-1">
-                      {segment.image ? (
-                        <img 
-                          src={segment.image}
-                          alt={segment.title || `Segment ${index + 1}`}
-                          className="w-full h-48 object-cover rounded-lg"
-                        />
-                      ) : (
-                        <div className="w-full h-48 bg-gradient-to-br from-game-accent/20 to-game-primary/20 rounded-lg flex items-center justify-center">
-                          <Users className="h-8 w-8 text-game-accent/60" />
-                        </div>
-                      )}
-                    </div>
+                    {segment.image ? (
+                      <img 
+                        src={segment.image}
+                        alt={segment.title || `Segment ${index + 1}`}
+                        className="w-full h-64 object-cover rounded-lg"
+                      />
+                    ) : (
+                      <div className="w-full h-64 bg-gradient-to-br from-game-accent/20 to-game-primary/20 rounded-lg flex items-center justify-center">
+                        <Users className="h-8 w-8 text-game-accent/60" />
+                      </div>
+                    )}
                     
                     {/* Segment Content */}
-                    <div className="md:col-span-2 space-y-4">
+                    <div className="space-y-4">
                       {segment.title && (
                         <h3 className="text-xl font-semibold text-game-primary">
                           {segment.title}

@@ -292,6 +292,7 @@ class GraphQLClient {
             _version
             _deleted
             _lastChangedAt
+            primaryImage
           }
         }
       }

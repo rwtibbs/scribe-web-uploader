@@ -99,7 +99,7 @@ export default function SessionDetailPage() {
           <Card className="bg-slate-800/50 border-slate-600/30">
             <CardContent className="p-6">
               <h2 className="text-xl font-semibold text-game-accent mb-4">TL;DR</h2>
-              <p className="text-game-secondary leading-relaxed whitespace-pre-wrap">
+              <p className="leading-relaxed whitespace-pre-wrap text-[#f8f3ed]">
                 {session.tldr}
               </p>
             </CardContent>

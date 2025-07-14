@@ -267,6 +267,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate presigned URL for viewing images
+  app.post('/api/generate-image-url', async (req: Request, res: Response) => {
+    try {
+      const { imageUrl } = req.body;
+      
+      if (!imageUrl) {
+        return res.status(400).json({ error: 'imageUrl is required' });
+      }
+
+      // Extract the S3 key from the full URL
+      let s3Key: string;
+      
+      if (imageUrl.includes('amazonaws.com/')) {
+        // Extract key from full S3 URL
+        const urlParts = imageUrl.split('amazonaws.com/');
+        s3Key = urlParts[1];
+      } else if (imageUrl.startsWith('public/')) {
+        // Already a key format
+        s3Key = imageUrl;
+      } else {
+        // Assume it's a relative path and add public prefix
+        s3Key = `public/${imageUrl}`;
+      }
+
+      const bucketName = process.env.AWS_S3_BUCKET || awsConfig.s3Bucket;
+      
+      const params = {
+        Bucket: bucketName,
+        Key: s3Key,
+        Expires: 3600, // 1 hour
+      };
+
+      const signedUrl = s3.getSignedUrl('getObject', params);
+      
+      res.json({ 
+        signedUrl,
+        originalUrl: imageUrl,
+        s3Key: s3Key
+      });
+    } catch (error) {
+      console.error('Error generating image presigned URL:', error);
+      res.status(500).json({ error: 'Failed to generate image presigned URL' });
+    }
+  });
+
   // Trigger Lambda function for audio processing
   app.post('/api/trigger-lambda', async (req, res) => {
     try {

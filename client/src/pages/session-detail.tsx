@@ -3,6 +3,7 @@ import { Link, useParams } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useSession } from '@/hooks/use-sessions';
+import { AuthenticatedImage } from '@/components/authenticated-image';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function SessionDetailPage() {
@@ -84,10 +85,11 @@ export default function SessionDetailPage() {
         {/* Primary Image */}
         {session.primaryImage && (
           <div className="w-full h-64 md:h-80 bg-slate-800 rounded-xl overflow-hidden">
-            <img 
-              src={session.primaryImage} 
+            <AuthenticatedImage 
+              imageUrl={session.primaryImage} 
               alt={session.name}
               className="w-full h-full object-cover"
+              fallbackClassName="w-full h-full bg-gradient-to-br from-game-accent/20 to-game-primary/20 flex items-center justify-center"
             />
           </div>
         )}
@@ -116,10 +118,11 @@ export default function SessionDetailPage() {
                   <div className="space-y-4">
                     {/* Segment Image */}
                     {segment.image ? (
-                      <img 
-                        src={segment.image}
+                      <AuthenticatedImage 
+                        imageUrl={segment.image}
                         alt={segment.title || `Segment ${index + 1}`}
                         className="w-full h-64 object-cover rounded-lg"
+                        fallbackClassName="w-full h-64 bg-gradient-to-br from-game-accent/20 to-game-primary/20 rounded-lg flex items-center justify-center"
                       />
                     ) : (
                       <div className="w-full h-64 bg-gradient-to-br from-game-accent/20 to-game-primary/20 rounded-lg flex items-center justify-center">

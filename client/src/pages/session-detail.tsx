@@ -109,7 +109,7 @@ export default function SessionDetailPage() {
         {/* Session Segments */}
         {sortedSegments.length > 0 && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-game-primary">Full Summary
+            <h2 className="text-2xl font-bold text-[F3A66F]">Full Summary
 </h2>
             
             {sortedSegments.map((segment: any, index: number) => (

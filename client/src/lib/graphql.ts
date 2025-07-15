@@ -276,8 +276,8 @@ class GraphQLClient {
     }
 
     const query = `
-      query ListSessions($filter: ModelSessionFilterInput!, $limit: Int) {
-        listSessions(filter: $filter, limit: $limit) {
+      query ListSessions($filter: ModelSessionFilterInput!) {
+        listSessions(filter: $filter, limit: 100) {
           items {
             id
             name
@@ -294,6 +294,7 @@ class GraphQLClient {
             _lastChangedAt
             primaryImage
           }
+          nextToken
         }
       }
     `;
@@ -302,18 +303,19 @@ class GraphQLClient {
     
     const result = await this.query<{ 
       listSessions: { 
-        items: any[] 
+        items: any[];
+        nextToken?: string;
       } 
     }>(query, {
       filter: {
         or: campaignIds.map(campaignId => ({
           campaignSessionsId: { eq: campaignId }
         }))
-      },
-      limit: 20 // Set limit to 20 to ensure we get all sessions (user expects 12)
+      }
     }, accessToken);
 
     console.log(`📊 Raw sessions from GraphQL: ${result.listSessions?.items?.length || 0}`);
+    console.log(`📊 Has next token: ${!!result.listSessions?.nextToken}`);
     console.log(`📊 Deleted sessions: ${result.listSessions?.items?.filter(s => s._deleted).length || 0}`);
     
     const sessions = result.listSessions?.items?.filter(session => !session._deleted) || [];

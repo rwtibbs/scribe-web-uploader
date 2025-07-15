@@ -318,6 +318,11 @@ class GraphQLClient {
     console.log(`📊 Has next token: ${!!result.listSessions?.nextToken}`);
     console.log(`📊 Deleted sessions: ${result.listSessions?.items?.filter(s => s._deleted).length || 0}`);
     
+    // Log all sessions with their deleted status for debugging
+    result.listSessions?.items?.forEach(session => {
+      console.log(`   📄 Session "${session.name}" - Deleted: ${session._deleted}, Campaign: ${session.campaignSessionsId}`);
+    });
+    
     const sessions = result.listSessions?.items?.filter(session => !session._deleted) || [];
     
     // Add campaign info to each session

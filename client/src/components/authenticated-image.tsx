@@ -45,6 +45,13 @@ export function AuthenticatedImage({ imageUrl, alt, className, fallbackClassName
         // Base64 encode the S3 key for URL safety (using browser btoa)
         const encodedKey = btoa(s3Key);
         
+        console.log('🖼️ AuthenticatedImage requesting:', {
+          originalUrl: imageUrl,
+          s3Key: s3Key,
+          s3KeyLength: s3Key.length,
+          encodedKey: encodedKey
+        });
+        
         // Fetch the image with Cognito authentication
         const response = await fetch(`/api/image/${encodedKey}`, {
           headers: {

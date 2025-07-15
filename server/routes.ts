@@ -339,7 +339,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { encodedKey } = req.params;
       const key = Buffer.from(encodedKey, 'base64').toString('utf-8');
       
-      // Create S3 client
+      // Create S3 client with explicit bucket configuration
+      console.log('🪣 Using S3 bucket:', awsConfig.s3Bucket);
       const s3 = new AWS.S3({
         accessKeyId: awsConfig.accessKeyId,
         secretAccessKey: awsConfig.secretAccessKey,
@@ -392,7 +393,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Bucket: bucketName,
         Key: s3Key,
       };
+      
+      console.log('🔗 Getting signed URL for authenticated image:', {
+        bucket: params.Bucket,
+        key: params.Key,
+        keyLength: s3Key.length,
+        keyPrefix: s3Key.substring(0, 30) + '...'
+      });
 
+      // Create S3 client with proper credentials
+      const s3 = new AWS.S3({
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        region: awsConfig.region
+      });
+      
       const s3Object = await s3.getObject(params).promise();
       
       if (!s3Object.Body) {

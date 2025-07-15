@@ -276,8 +276,8 @@ class GraphQLClient {
     }
 
     const query = `
-      query ListSessions($filter: ModelSessionFilterInput!) {
-        listSessions(filter: $filter) {
+      query ListSessions($filter: ModelSessionFilterInput!, $limit: Int) {
+        listSessions(filter: $filter, limit: $limit) {
           items {
             id
             name
@@ -309,9 +309,13 @@ class GraphQLClient {
         or: campaignIds.map(campaignId => ({
           campaignSessionsId: { eq: campaignId }
         }))
-      }
+      },
+      limit: 20 // Set limit to 20 to ensure we get all sessions (user expects 12)
     }, accessToken);
 
+    console.log(`📊 Raw sessions from GraphQL: ${result.listSessions?.items?.length || 0}`);
+    console.log(`📊 Deleted sessions: ${result.listSessions?.items?.filter(s => s._deleted).length || 0}`);
+    
     const sessions = result.listSessions?.items?.filter(session => !session._deleted) || [];
     
     // Add campaign info to each session

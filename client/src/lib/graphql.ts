@@ -275,55 +275,71 @@ class GraphQLClient {
       return [];
     }
 
-    const query = `
-      query ListSessions($filter: ModelSessionFilterInput!) {
-        listSessions(filter: $filter, limit: 100) {
-          items {
-            id
-            name
-            date
-            duration
-            audioFile
-            transcriptionFile
-            transcriptionStatus
-            campaignSessionsId
-            createdAt
-            updatedAt
-            _version
-            _deleted
-            _lastChangedAt
-            primaryImage
+    // Use recursive pagination to get ALL sessions
+    const getAllSessions = async (nextToken?: string): Promise<any[]> => {
+      const query = `
+        query ListSessions($filter: ModelSessionFilterInput!, $nextToken: String) {
+          listSessions(filter: $filter, limit: 100, nextToken: $nextToken) {
+            items {
+              id
+              name
+              date
+              duration
+              audioFile
+              transcriptionFile
+              transcriptionStatus
+              campaignSessionsId
+              createdAt
+              updatedAt
+              _version
+              _deleted
+              _lastChangedAt
+              primaryImage
+            }
+            nextToken
           }
-          nextToken
         }
+      `;
+
+      const result = await this.query<{ 
+        listSessions: { 
+          items: any[];
+          nextToken?: string;
+        } 
+      }>(query, {
+        filter: {
+          or: campaignIds.map(campaignId => ({
+            campaignSessionsId: { eq: campaignId }
+          }))
+        },
+        nextToken
+      }, accessToken);
+
+      let allItems = result.listSessions.items || [];
+      
+      // If there's a nextToken, recursively fetch more results
+      if (result.listSessions.nextToken) {
+        console.log(`📄 Found nextToken, fetching more sessions...`);
+        const moreItems = await getAllSessions(result.listSessions.nextToken);
+        allItems = [...allItems, ...moreItems];
       }
-    `;
+
+      return allItems;
+    };
+
+    const allSessionItems = await getAllSessions();
 
     console.log('🔍 Fetching sessions for campaigns:', campaignIds);
     
-    const result = await this.query<{ 
-      listSessions: { 
-        items: any[];
-        nextToken?: string;
-      } 
-    }>(query, {
-      filter: {
-        or: campaignIds.map(campaignId => ({
-          campaignSessionsId: { eq: campaignId }
-        }))
-      }
-    }, accessToken);
-
-    console.log(`📊 Raw sessions from GraphQL: ${result.listSessions?.items?.length || 0}`);
-    console.log(`📊 Has next token: ${!!result.listSessions?.nextToken}`);
-    console.log(`📊 Deleted sessions: ${result.listSessions?.items?.filter(s => s._deleted).length || 0}`);
+    console.log(`📊 Raw sessions from GraphQL (all pages): ${allSessionItems.length}`);
+    console.log(`📊 Deleted sessions: ${allSessionItems.filter(s => s._deleted).length || 0}`);
     
     // Log all sessions with their deleted status for debugging
-    result.listSessions?.items?.forEach(session => {
+    allSessionItems.forEach(session => {
       console.log(`   📄 Session "${session.name}" - Deleted: ${session._deleted}, Campaign: ${session.campaignSessionsId}`);
     });
     
-    const sessions = result.listSessions?.items?.filter(session => !session._deleted) || [];
+    const sessions = allSessionItems.filter(session => !session._deleted) || [];
     
     // Add campaign info to each session
     const sessionsWithCampaigns = sessions.map(session => {

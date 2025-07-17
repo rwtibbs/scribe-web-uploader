@@ -212,7 +212,9 @@ export function MultiSessionForm() {
       key: fileName,
       file: sessionData.file,
       onProgress: (progress) => {
+        console.log(`📊 S3 Upload progress for session ${sessionData.id}: ${progress.percentage}%`);
         updateSession(sessionData.id, {
+          uploadStatus: 'uploading', // Ensure status remains uploading
           uploadProgress: {
             ...progress,
             percentage: 30 + (progress.percentage * 0.4), // 30-70% range
@@ -272,6 +274,12 @@ export function MultiSessionForm() {
         setCurrentUploadingIndex(i);
         
         console.log(`🚀 Starting upload for session ${i + 1}/${sessionsWithFiles.length}: ${sessionData.name}`);
+        
+        // Mark session as uploading before starting
+        updateSession(sessionData.id, {
+          uploadStatus: 'uploading',
+          uploadProgress: { percentage: 0, loaded: 0, total: 100, status: 'Preparing upload...' }
+        });
         
         // Add delay between uploads to prevent resource conflicts
         if (i > 0) {

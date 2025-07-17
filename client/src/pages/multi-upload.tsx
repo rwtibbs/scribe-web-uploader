@@ -24,7 +24,9 @@ export default function MultiUploadPage() {
         {/* Header */}
         <div className="mb-12">
           <div className="flex items-center justify-center mb-6">
-            <img src={logoPath} alt="Scribe Logo" className="h-16 w-auto" />
+            <a href="https://www.tabletopscribe.com/" target="_blank" rel="noopener noreferrer">
+              <img src={logoPath} alt="Scribe Logo" className="h-16 w-auto hover:opacity-80 transition-opacity" />
+            </a>
           </div>
           <div className="text-center">
             <h1 className="text-4xl font-bold text-game-primary mb-4">Upload Sessions</h1>

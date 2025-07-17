@@ -14,6 +14,7 @@ import { UploadProgressComponent } from './upload-progress';
 import { useCampaigns } from '@/hooks/use-campaigns';
 import { useAuth } from '@/contexts/auth-context';
 import { useCampaign } from '@/contexts/campaign-context';
+import { CampaignSelector } from './campaign-selector';
 import { graphqlClient } from '@/lib/graphql';
 import { S3UploadService } from '@/lib/s3-upload';
 import { UploadProgress } from '@shared/schema';
@@ -391,10 +392,15 @@ export function MultiSessionForm() {
   return (
     <Card className="bg-black/20 backdrop-blur-sm border-game-primary/20">
       <CardHeader>
-        <CardTitle className="text-2xl font-semibold text-game-primary">Upload Sessions</CardTitle>
-        <p className="text-game-secondary">
-          Uploading to campaign: <span className="text-game-accent font-medium">{selectedCampaign.name}</span>
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-2xl font-semibold text-game-primary">Upload Sessions</CardTitle>
+            <p className="text-game-secondary">
+              Uploading to campaign: <span className="text-game-accent font-medium">{selectedCampaign.name}</span>
+            </p>
+          </div>
+          <CampaignSelector />
+        </div>
         {sessions.filter(s => s.file).length > 0 && (
           <p className="text-sm text-game-secondary">
             Sessions with files: {sessions.filter(s => s.file).length} / {sessions.length}

@@ -2,7 +2,6 @@ import logoPath from '@assets/Main-logo_1751318189156.png';
 import { LoginForm } from '../components/login-form';
 import { UserInfo } from '../components/user-info';
 import { MultiSessionForm } from '../components/multi-session-form';
-import { CampaignSelector } from '../components/campaign-selector';
 import { useAuth } from '../contexts/auth-context';
 
 export default function MultiUploadPage() {
@@ -27,13 +26,8 @@ export default function MultiUploadPage() {
           <div className="flex items-center justify-center mb-6">
             <img src={logoPath} alt="Scribe Logo" className="h-16 w-auto" />
           </div>
-          <div className="relative text-center">
+          <div className="text-center">
             <h1 className="text-4xl font-bold text-game-primary mb-4">Upload Sessions</h1>
-            {isAuthenticated && (
-              <div className="absolute -top-2 right-0">
-                <CampaignSelector />
-              </div>
-            )}
             {!isAuthenticated ? (
               <p className="text-game-secondary text-lg mb-4">Sign in to upload multiple session recordings at once</p>
             ) : (

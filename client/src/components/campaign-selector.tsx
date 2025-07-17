@@ -70,10 +70,6 @@ export function CampaignSelector() {
                 </PopoverTrigger>
                 <PopoverContent className="w-[300px] p-0 bg-slate-800 border-slate-600/30">
                   <Command className="bg-slate-800">
-                    <CommandInput 
-                      placeholder="Search campaigns..." 
-                      className="bg-slate-800 text-game-primary placeholder:text-game-secondary border-0"
-                    />
                     <CommandList>
                       <CommandEmpty className="text-game-secondary p-4 text-center">
                         {isLoading ? 'Loading campaigns...' : 'No campaigns found.'}

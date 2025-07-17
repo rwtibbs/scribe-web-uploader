@@ -498,7 +498,7 @@ export function MultiSessionForm() {
                           {session.uploadStatus === 'success' && (
                             <div className="flex items-center space-x-2 text-game-success">
                               <CheckCircle className="w-4 h-4" />
-                              <span className="text-sm font-medium">Complete</span>
+                              <span className="text-sm font-medium">Upload completed</span>
                             </div>
                           )}
                           
@@ -514,11 +514,11 @@ export function MultiSessionForm() {
                         {/* Progress Percentage */}
                         {session.uploadProgress && session.uploadStatus === 'uploading' && (
                           <span className="text-sm text-game-secondary">
-                            {session.uploadProgress.percentage}%
+                            {Math.round(session.uploadProgress.percentage)}%
                           </span>
                         )}
                         {session.uploadStatus === 'success' && (
-                          <span className="text-sm text-game-success">100%</span>
+                          <span className="text-sm text-game-success font-medium">Completed</span>
                         )}
                       </div>
 

@@ -384,7 +384,7 @@ export function MultiSessionForm() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* All Fields in One Row */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
+                  <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr_auto] gap-4 items-end">
                     {/* File Upload */}
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-game-primary">

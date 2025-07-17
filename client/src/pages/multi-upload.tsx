@@ -50,7 +50,7 @@ export default function MultiUploadPage() {
             </>
           ) : (
             <>
-              <p className="text-game-secondary text-lg max-w-lg mx-auto">Upload up to 5 session recordings at once. Each session will be processed individually to ensure reliable uploading.</p>
+              <p className="text-game-secondary text-sm max-w-lg mx-auto">Upload up to 5 audio files here to save them to your campaign. Once uploaded, you can access them on the Add Session page in the app to customize your session details and submit for processing. Each session will be processed individually to ensure reliable uploading.</p>
               <div className="flex justify-center gap-4 mt-6">
                 <Link href="/sessions">
                   <Button variant="outline" className="border-game-primary/30 hover:border-game-primary/50 text-game-primary hover:text-game-primary">

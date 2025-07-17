@@ -37,11 +37,10 @@ export function CampaignSelector() {
   }
 
   return (
-    <div className="bg-black/20 backdrop-blur-sm border border-game-primary/20 rounded-lg p-4">
-      <div className="flex items-center gap-3">
-        <span className="text-xs font-medium text-game-secondary">Campaign:</span>
-        <Popover>
-          <PopoverTrigger asChild>
+    <div className="flex items-center gap-3">
+      <span className="text-xs font-medium text-game-secondary">Campaign:</span>
+      <Popover>
+        <PopoverTrigger asChild>
             <Button
               variant="outline"
               role="combobox"
@@ -57,11 +56,11 @@ export function CampaignSelector() {
               )}
               <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[250px] p-0 bg-slate-800 border-slate-600/30">
-            <Command className="bg-slate-800">
+        </PopoverTrigger>
+        <PopoverContent className="w-[250px] p-0 bg-white border-gray-200">
+            <Command className="bg-white">
               <CommandList>
-                <CommandEmpty className="text-game-secondary p-4 text-center">
+                <CommandEmpty className="text-gray-500 p-4 text-center">
                   {isLoading ? 'Loading campaigns...' : 'No campaigns found.'}
                 </CommandEmpty>
                 <CommandGroup>
@@ -74,18 +73,18 @@ export function CampaignSelector() {
                           selectedCampaign?.id === campaign.id ? null : campaign
                         );
                       }}
-                      className="hover:bg-slate-700/50 cursor-pointer text-game-primary data-[selected=true]:bg-slate-700/50"
+                      className="hover:bg-gray-100 cursor-pointer text-gray-900 data-[selected=true]:bg-gray-100"
                     >
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          selectedCampaign?.id === campaign.id ? "opacity-100 text-game-accent" : "opacity-0"
+                          selectedCampaign?.id === campaign.id ? "opacity-100 text-blue-600" : "opacity-0"
                         )}
                       />
                       <div className="flex flex-col">
-                        <span className="font-medium">{campaign.name}</span>
+                        <span className="font-medium text-gray-900">{campaign.name}</span>
                         {campaign.description && (
-                          <span className="text-xs text-game-secondary truncate">
+                          <span className="text-xs text-gray-500 truncate">
                             {campaign.description}
                           </span>
                         )}
@@ -95,9 +94,8 @@ export function CampaignSelector() {
                 </CommandGroup>
               </CommandList>
             </Command>
-          </PopoverContent>
-        </Popover>
-      </div>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }

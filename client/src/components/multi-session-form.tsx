@@ -336,9 +336,7 @@ export function MultiSessionForm() {
   return (
     <Card className="bg-black/20 backdrop-blur-sm border-game-primary/20">
       <CardHeader>
-        <CardTitle className="text-2xl font-semibold text-game-primary">
-          Upload Multiple Sessions
-        </CardTitle>
+        <CardTitle className="text-2xl font-semibold text-game-primary">Upload Sessions</CardTitle>
         <p className="text-game-secondary">
           Uploading to campaign: <span className="text-game-accent font-medium">{selectedCampaign.name}</span>
         </p>

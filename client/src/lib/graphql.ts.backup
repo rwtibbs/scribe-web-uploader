@@ -1,57 +1,68 @@
-import { getAwsConfig, getEnvironment } from './aws-config';
-import { GraphQLResponse, Campaign } from '@/types/aws';
+// BACKUP: Experimental pagination version with recursive nextToken handling
+// This version includes the full pagination implementation to fetch all sessions
+
+import { getEnvironment } from './aws-config';
+import { Campaign } from '@/types/aws';
+
+interface GraphQLResponse<T = any> {
+  data?: T;
+  errors?: Array<{
+    message: string;
+    errorType?: string;
+  }>;
+}
 
 class GraphQLClient {
   private endpoint: string;
   private apiKey: string;
 
   constructor() {
-    const config = getAwsConfig();
-    this.endpoint = config.graphqlEndpoint;
-    this.apiKey = config.appsyncApiKey;
+    const isDevelopment = getEnvironment() === 'development';
+    
+    if (isDevelopment) {
+      // DEVSORT environment (development)
+      this.endpoint = 'https://bbypecanqjgyblz7ikrrk46rbe.appsync-api.us-east-2.amazonaws.com/graphql';
+      this.apiKey = 'da2-vgzwbhvvxvfvfgxs6l4xpfmxqu';
+    } else {
+      // DEV environment (production)
+      this.endpoint = 'https://lm5nq7s75raxnd24y67v3civhm.appsync-api.us-east-2.amazonaws.com/graphql';
+      this.apiKey = 'da2-vgzwbhvvxvfvfgxs6l4xpfmxqu';
+    }
+    
+    console.log(`🌍 GraphQL Client initialized for: ${isDevelopment ? 'DEVSORT (development)' : 'DEV (production)'}`);
+    console.log(`📡 Endpoint: ${this.endpoint}`);
   }
 
   async query<T = any>(query: string, variables?: Record<string, any>, accessToken?: string): Promise<T> {
-    console.log('🔄 Making GraphQL request to:', this.endpoint);
-    console.log('📋 Request details:', {
-      hasApiKey: !!this.apiKey,
-      apiKeyLength: this.apiKey?.length || 0,
-      hasAccessToken: !!accessToken,
-      query: query.replace(/\s+/g, ' ').trim(),
-      variables
-    });
+    console.log('📤 GraphQL Query:', query);
+    console.log('📤 Variables:', variables);
     
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      'x-api-key': this.apiKey,
+    };
+
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+
     try {
-      const requestBody = JSON.stringify({ query, variables });
-      console.log('📤 Request body:', requestBody);
-      
-      // Try Cognito authentication first if access token is available
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      
-      if (accessToken) {
-        headers['Authorization'] = `Bearer ${accessToken}`;
-        console.log('🔐 Using Cognito authentication');
-      } else {
-        headers['x-api-key'] = this.apiKey;
-        console.log('🔑 Using API key authentication');
-      }
-      
       const response = await fetch(this.endpoint, {
         method: 'POST',
         headers,
-        body: requestBody,
+        body: JSON.stringify({
+          query,
+          variables,
+        }),
       });
 
-      console.log('📥 Response status:', response.status, response.statusText);
+      console.log('📥 Response status:', response.status);
       console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()));
-
+      
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ GraphQL HTTP error:', response.status, response.statusText, errorText);
+        console.error('❌ GraphQL request failed:', response.status, response.statusText, errorText);
         
-        // Handle specific authentication errors
         if (response.status === 401) {
           throw new Error('GraphQL authentication failed. Please verify your API key.');
         }
@@ -233,10 +244,14 @@ class GraphQLClient {
         purchaseStatus?: string;
       } 
     }>(mutation, {
-      input,
+      input
     }, accessToken);
 
-    return result.createSession;
+    console.log('✅ Session created successfully:', result.createSession);
+    return {
+      id: result.createSession.id,
+      _version: result.createSession._version
+    };
   }
 
   async updateSessionAudioFile(sessionId: string, audioFile: string, transcriptionFile: string, version?: number, accessToken?: string): Promise<void> {
@@ -275,44 +290,71 @@ class GraphQLClient {
       return [];
     }
 
-    const query = `
-      query ListSessions($filter: ModelSessionFilterInput!) {
-        listSessions(filter: $filter) {
-          items {
-            id
-            name
-            date
-            duration
-            audioFile
-            transcriptionFile
-            transcriptionStatus
-            campaignSessionsId
-            createdAt
-            updatedAt
-            _version
-            _deleted
-            _lastChangedAt
-            primaryImage
+    // Use recursive pagination to get ALL sessions
+    const getAllSessions = async (nextToken?: string): Promise<any[]> => {
+      const query = `
+        query ListSessions($filter: ModelSessionFilterInput!, $nextToken: String) {
+          listSessions(filter: $filter, limit: 100, nextToken: $nextToken) {
+            items {
+              id
+              name
+              date
+              duration
+              audioFile
+              transcriptionFile
+              transcriptionStatus
+              campaignSessionsId
+              createdAt
+              updatedAt
+              _version
+              _deleted
+              _lastChangedAt
+              primaryImage
+            }
+            nextToken
           }
         }
+      `;
+
+      const result = await this.query<{ 
+        listSessions: { 
+          items: any[];
+          nextToken?: string;
+        } 
+      }>(query, {
+        filter: {
+          or: campaignIds.map(campaignId => ({
+            campaignSessionsId: { eq: campaignId }
+          }))
+        },
+        nextToken
+      }, accessToken);
+
+      let allItems = result.listSessions.items || [];
+      
+      // If there's a nextToken, recursively fetch more results
+      if (result.listSessions.nextToken) {
+        console.log(`📄 Found nextToken, fetching more sessions...`);
+        const moreItems = await getAllSessions(result.listSessions.nextToken);
+        allItems = [...allItems, ...moreItems];
       }
-    `;
+
+      return allItems;
+    };
+
+    const allSessionItems = await getAllSessions();
 
     console.log('🔍 Fetching sessions for campaigns:', campaignIds);
     
-    const result = await this.query<{ 
-      listSessions: { 
-        items: any[] 
-      } 
-    }>(query, {
-      filter: {
-        or: campaignIds.map(campaignId => ({
-          campaignSessionsId: { eq: campaignId }
-        }))
-      }
-    }, accessToken);
-
-    const sessions = result.listSessions?.items?.filter(session => !session._deleted) || [];
+    console.log(`📊 Raw sessions from GraphQL (all pages): ${allSessionItems.length}`);
+    console.log(`📊 Deleted sessions: ${allSessionItems.filter(s => s._deleted).length || 0}`);
+    
+    // Log all sessions with their deleted status for debugging
+    allSessionItems.forEach(session => {
+      console.log(`   📄 Session "${session.name}" - Deleted: ${session._deleted}, Campaign: ${session.campaignSessionsId}`);
+    });
+    
+    const sessions = allSessionItems.filter(session => !session._deleted) || [];
     
     // Add campaign info to each session
     const sessionsWithCampaigns = sessions.map(session => {
@@ -346,11 +388,10 @@ class GraphQLClient {
           createdAt
           updatedAt
           _version
-          campaign {
-            id
-            name
-            owner
-          }
+          _deleted
+          _lastChangedAt
+          primaryImage
+          tldr
           segments {
             items {
               id
@@ -361,24 +402,16 @@ class GraphQLClient {
               updatedAt
             }
           }
-          primaryImage
-          tldr
         }
       }
     `;
 
-    console.log('🔍 Fetching session:', sessionId);
+    const result = await this.query<{ getSession: any }>(query, { id: sessionId }, accessToken);
     
-    const result = await this.query<{ 
-      getSession: any 
-    }>(query, { id: sessionId }, accessToken);
-
     if (!result.getSession) {
-      throw new Error('Session not found');
+      throw new Error(`Session not found: ${sessionId}`);
     }
-    
-    console.log(`📋 Found session "${result.getSession.name}"`);
-    
+
     return result.getSession;
   }
 }

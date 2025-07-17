@@ -45,19 +45,17 @@ export function SimpleFileUpload({ onFileSelect, selectedFile, onFileRemove, dis
           <span className="ml-3 text-sm text-game-secondary">No file chosen</span>
         </div>
       ) : (
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => !disabled && fileInputRef.current?.click()}
-            disabled={disabled}
-            className="bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600 hover:border-slate-500 disabled:opacity-50"
-          >
-            Choose File
-          </Button>
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <span className="text-sm text-game-primary truncate">{selectedFile.name}</span>
-            <span className="text-xs text-game-secondary whitespace-nowrap">({formatFileSize(selectedFile.size)})</span>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => !disabled && fileInputRef.current?.click()}
+              disabled={disabled}
+              className="bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600 hover:border-slate-500 disabled:opacity-50"
+            >
+              Choose File
+            </Button>
             <Button
               type="button"
               variant="ghost"
@@ -68,6 +66,10 @@ export function SimpleFileUpload({ onFileSelect, selectedFile, onFileRemove, dis
             >
               <X className="h-3 w-3" />
             </Button>
+          </div>
+          <div className="text-sm text-game-primary break-words">
+            <span className="font-medium">{selectedFile.name}</span>
+            <span className="text-xs text-game-secondary ml-2">({formatFileSize(selectedFile.size)})</span>
           </div>
         </div>
       )}

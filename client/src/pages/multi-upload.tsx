@@ -29,7 +29,7 @@ export default function MultiUploadPage() {
           <div className="flex items-center justify-center mb-6">
             <img src={logoPath} alt="Scribe Logo" className="h-16 w-auto" />
           </div>
-          <h1 className="text-4xl font-bold text-game-primary mb-4">Upload Multiple Sessions</h1>
+          <h1 className="text-4xl font-bold text-game-primary mb-4">Upload Sessions</h1>
           {!isAuthenticated ? (
             <>
               <p className="text-game-secondary text-lg mb-4">Sign in to upload multiple session recordings at once</p>

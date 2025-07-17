@@ -472,23 +472,36 @@ export function MultiSessionForm() {
                   </div>
 
                   {/* Session Status & Progress */}
-                  {(session.uploadStatus === 'uploading' || session.uploadStatus === 'success' || session.uploadStatus === 'error') && (
+                  {session.file && (
                     <div className="space-y-3 pt-2 border-t border-game-primary/10">
                       {/* Status Header */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
+                          {/* Pending State */}
+                          {(!session.uploadStatus || session.uploadStatus === 'idle') && (
+                            <div className="flex items-center space-x-2 text-game-secondary">
+                              <div className="w-3 h-3 bg-game-secondary/40 rounded-full"></div>
+                              <span className="text-sm font-medium">Pending upload</span>
+                            </div>
+                          )}
+                          
+                          {/* Uploading State */}
                           {session.uploadStatus === 'uploading' && (
                             <div className="flex items-center space-x-2 text-game-accent">
                               <div className="w-3 h-3 border-2 border-game-accent border-t-transparent rounded-full animate-spin"></div>
                               <span className="text-sm font-medium">Uploading...</span>
                             </div>
                           )}
+                          
+                          {/* Success State */}
                           {session.uploadStatus === 'success' && (
                             <div className="flex items-center space-x-2 text-game-success">
                               <CheckCircle className="w-4 h-4" />
                               <span className="text-sm font-medium">Complete</span>
                             </div>
                           )}
+                          
+                          {/* Error State */}
                           {session.uploadStatus === 'error' && (
                             <div className="flex items-center space-x-2 text-game-error">
                               <AlertTriangle className="w-4 h-4" />
@@ -503,9 +516,12 @@ export function MultiSessionForm() {
                             {session.uploadProgress.percentage}%
                           </span>
                         )}
+                        {session.uploadStatus === 'success' && (
+                          <span className="text-sm text-game-success">100%</span>
+                        )}
                       </div>
 
-                      {/* Progress Bar */}
+                      {/* Progress Bar for Uploading */}
                       {session.uploadStatus === 'uploading' && session.uploadProgress && (
                         <div className="space-y-1">
                           <Progress 
@@ -523,11 +539,15 @@ export function MultiSessionForm() {
                         </div>
                       )}
 
-                      {/* Success Message */}
+                      {/* Completed Progress Bar */}
                       {session.uploadStatus === 'success' && (
-                        <div className="bg-game-success/10 border border-game-success/20 rounded-md p-2">
-                          <div className="text-sm text-game-success">
-                            Session uploaded successfully and ready for processing.
+                        <div className="space-y-1">
+                          <Progress 
+                            value={100} 
+                            className="h-2 bg-game-primary/10 [&>div]:bg-game-success"
+                          />
+                          <div className="text-xs text-game-success">
+                            Upload complete - Session ready for processing
                           </div>
                         </div>
                       )}

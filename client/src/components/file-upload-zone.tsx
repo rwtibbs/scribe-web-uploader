@@ -7,9 +7,10 @@ interface FileUploadZoneProps {
   selectedFile?: File | null;
   onFileRemove: () => void;
   disabled?: boolean;
+  compact?: boolean;
 }
 
-export function FileUploadZone({ onFileSelect, selectedFile, onFileRemove, disabled = false }: FileUploadZoneProps) {
+export function FileUploadZone({ onFileSelect, selectedFile, onFileRemove, disabled = false, compact = false }: FileUploadZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -64,7 +65,9 @@ export function FileUploadZone({ onFileSelect, selectedFile, onFileRemove, disab
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`file-drop-zone rounded-xl p-8 text-center transition-all duration-300 border-2 border-dashed ${
+        className={`file-drop-zone rounded-xl text-center transition-all duration-300 border-2 border-dashed ${
+          compact ? 'p-4' : 'p-8'
+        } ${
           disabled 
             ? 'cursor-not-allowed opacity-50 border-game-secondary/20' 
             : isDragOver
@@ -74,34 +77,71 @@ export function FileUploadZone({ onFileSelect, selectedFile, onFileRemove, disab
       >
         {!selectedFile ? (
           <div>
-            <CloudUpload className="h-16 w-16 text-game-accent mx-auto mb-4" />
-            <p className="text-lg font-medium mb-2 text-game-primary">Drop your audio file here</p>
-            <p className="text-game-secondary mb-4">or click to browse</p>
-            <p className="text-sm text-game-secondary">Supports: MP3, WAV, M4A, OGG (Max 300MB)</p>
+            <CloudUpload className={`text-game-accent mx-auto ${compact ? 'h-8 w-8 mb-2' : 'h-16 w-16 mb-4'}`} />
+            {compact ? (
+              <>
+                <p className="text-sm font-medium mb-1 text-game-primary">Drop audio file</p>
+                <p className="text-xs text-game-secondary">or click to browse</p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg font-medium mb-2 text-game-primary">Drop your audio file here</p>
+                <p className="text-game-secondary mb-4">or click to browse</p>
+                <p className="text-sm text-game-secondary">Supports: MP3, WAV, M4A, OGG (Max 300MB)</p>
+              </>
+            )}
           </div>
         ) : (
           <div>
-            <div className="flex items-center justify-center mb-4">
-              <FileAudio className="h-12 w-12 text-game-success mr-3" />
-              <div className="text-left">
-                <p className="font-medium text-game-primary">{selectedFile.name}</p>
-                <p className="text-sm text-game-secondary">{formatFileSize(selectedFile.size)}</p>
-              </div>
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onFileRemove();
-              }}
-              disabled={disabled}
-              className="text-game-error hover:text-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <X className="h-4 w-4 mr-1" />
-              Remove file
-            </Button>
+            {compact ? (
+              <>
+                <div className="flex items-center justify-center mb-2">
+                  <FileAudio className="h-6 w-6 text-game-success mr-2" />
+                  <div className="text-left min-w-0 flex-1">
+                    <p className="font-medium text-game-primary text-sm truncate">{selectedFile.name}</p>
+                    <p className="text-xs text-game-secondary">{formatFileSize(selectedFile.size)}</p>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onFileRemove();
+                  }}
+                  disabled={disabled}
+                  className="text-game-error hover:text-red-400 disabled:opacity-50 disabled:cursor-not-allowed text-xs h-6 px-2"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Remove
+                </Button>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center justify-center mb-4">
+                  <FileAudio className="h-12 w-12 text-game-success mr-3" />
+                  <div className="text-left">
+                    <p className="font-medium text-game-primary">{selectedFile.name}</p>
+                    <p className="text-sm text-game-secondary">{formatFileSize(selectedFile.size)}</p>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onFileRemove();
+                  }}
+                  disabled={disabled}
+                  className="text-game-error hover:text-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Remove file
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>

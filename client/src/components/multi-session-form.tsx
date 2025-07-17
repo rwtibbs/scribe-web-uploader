@@ -383,8 +383,9 @@ export function MultiSessionForm() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Session Details */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* All Fields in One Row */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
+                    {/* Session Name */}
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-game-primary">
                         Session Name <span className="text-game-error">*</span>
@@ -398,6 +399,7 @@ export function MultiSessionForm() {
                       />
                     </div>
 
+                    {/* Session Date */}
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-game-primary">
                         Session Date <span className="text-game-error">*</span>
@@ -411,19 +413,20 @@ export function MultiSessionForm() {
                         disabled={globalUploadStatus === 'uploading'}
                       />
                     </div>
-                  </div>
 
-                  {/* File Upload */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-game-primary">
-                      Audio Recording <span className="text-game-error">*</span>
-                    </Label>
-                    <FileUploadZone
-                      onFileSelect={(file) => handleFileSelect(session.id, file)}
-                      selectedFile={session.file}
-                      onFileRemove={() => handleFileRemove(session.id)}
-                      disabled={globalUploadStatus === 'uploading'}
-                    />
+                    {/* File Upload */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-game-primary">
+                        Audio Recording <span className="text-game-error">*</span>
+                      </Label>
+                      <FileUploadZone
+                        onFileSelect={(file) => handleFileSelect(session.id, file)}
+                        selectedFile={session.file}
+                        onFileRemove={() => handleFileRemove(session.id)}
+                        disabled={globalUploadStatus === 'uploading'}
+                        compact={true}
+                      />
+                    </div>
                   </div>
 
                   {/* Session Upload Progress */}

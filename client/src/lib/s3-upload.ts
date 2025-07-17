@@ -75,9 +75,16 @@ export class S3UploadService {
         // Step 2: Upload directly to S3 using presigned URL
         const xhr = new XMLHttpRequest();
         
+        // Set timeout to 10 minutes for large files
+        xhr.timeout = 10 * 60 * 1000; // 10 minutes
+        
+        let lastProgressTime = Date.now();
+        
         xhr.upload.addEventListener('progress', (event) => {
+          lastProgressTime = Date.now();
           if (event.lengthComputable && onProgress) {
             const percentage = Math.round((event.loaded / event.total) * 100);
+            console.log(`📈 Upload progress: ${percentage}% (${Math.round(event.loaded / (1024 * 1024))}MB / ${Math.round(event.total / (1024 * 1024))}MB)`);
             onProgress({ loaded: event.loaded, total: event.total, percentage });
           }
         });
@@ -90,6 +97,8 @@ export class S3UploadService {
             console.log('🔓 Wake lock released');
           }
           
+          console.log(`📥 Upload finished with status: ${xhr.status}, response: ${xhr.responseText || 'empty'}`);
+          
           if (xhr.status >= 200 && xhr.status < 300) {
             // Construct the S3 location URL
             const config = getAwsConfig();
@@ -97,9 +106,21 @@ export class S3UploadService {
             console.log('✅ Upload completed successfully');
             resolve(location);
           } else {
-            console.error(`❌ Upload failed with status: ${xhr.status}`);
-            reject(new Error(`Upload failed with status: ${xhr.status}`));
+            console.error(`❌ Upload failed with status: ${xhr.status}, response: ${xhr.responseText}`);
+            reject(new Error(`Upload failed with status: ${xhr.status}. ${xhr.responseText || 'Please try again.'}`));
           }
+        });
+
+        xhr.addEventListener('timeout', () => {
+          // Cleanup
+          document.removeEventListener('visibilitychange', handleVisibilityChange);
+          if (wakeLock) {
+            wakeLock.release();
+            console.log('🔓 Wake lock released (timeout)');
+          }
+          
+          console.error('⏰ Upload timed out after 10 minutes');
+          reject(new Error('Upload timed out. Please check your connection and try again with a smaller file.'));
         });
 
         xhr.addEventListener('error', (event) => {
@@ -111,12 +132,15 @@ export class S3UploadService {
           }
           
           console.error('❌ Network error during upload:', event);
+          console.error('❌ XHR status:', xhr.status, 'readyState:', xhr.readyState);
           
           // More specific error handling
           if (document.hidden) {
             reject(new Error('Upload failed: App was moved to background. Please keep the app active during upload.'));
+          } else if (xhr.status === 0) {
+            reject(new Error('Network connection lost. Please check your internet connection and try again.'));
           } else {
-            reject(new Error('Network error during upload. Please check your connection and try again.'));
+            reject(new Error(`Network error during upload (status: ${xhr.status}). Please check your connection and try again.`));
           }
         });
 
@@ -132,6 +156,20 @@ export class S3UploadService {
           reject(new Error('Upload was cancelled'));
         });
 
+        // Monitor for stalled uploads
+        const stallCheckInterval = setInterval(() => {
+          const timeSinceLastProgress = Date.now() - lastProgressTime;
+          if (timeSinceLastProgress > 2 * 60 * 1000) { // 2 minutes without progress
+            console.warn('⚠️ Upload appears stalled, no progress for 2 minutes');
+            clearInterval(stallCheckInterval);
+            xhr.abort();
+          }
+        }, 30000); // Check every 30 seconds
+
+        xhr.addEventListener('loadend', () => {
+          clearInterval(stallCheckInterval);
+        });
+
         // Upload directly to S3
         xhr.open('PUT', presignedUrl);
         
@@ -140,6 +178,7 @@ export class S3UploadService {
         xhr.setRequestHeader('Content-Type', uploadContentType);
         
         console.log(`📤 Starting direct S3 upload with Content-Type: ${uploadContentType}`);
+        console.log(`📊 File size: ${Math.round(file.size / (1024 * 1024))}MB, timeout: 10 minutes`);
         xhr.send(file);
 
       } catch (error) {

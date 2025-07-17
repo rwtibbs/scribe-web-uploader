@@ -274,9 +274,18 @@ export function MultiSessionForm() {
         
         try {
           await uploadSingleSession(sessionData, data.campaignId);
+          
+          // Explicitly mark session as successful
+          updateSession(sessionData.id, {
+            uploadStatus: 'success',
+            errorMessage: undefined,
+            uploadProgress: { percentage: 100, loaded: 100, total: 100, status: 'Upload complete!' }
+          });
+          
           setCompletedUploads(i + 1);
           console.log(`✅ Completed upload for session ${i + 1}/${sessionsWithFiles.length}`);
         } catch (error) {
+          console.error(`❌ Upload failed for session "${sessionData.name}":`, error);
           const errorMessage = error instanceof Error ? error.message : 'Upload failed';
           updateSession(sessionData.id, {
             uploadStatus: 'error',

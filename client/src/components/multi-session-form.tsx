@@ -101,9 +101,18 @@ export function MultiSessionForm() {
   };
 
   const updateSession = (sessionId: string, updates: Partial<SingleSession>) => {
-    setSessions(sessions.map(s => 
-      s.id === sessionId ? { ...s, ...updates } : s
-    ));
+    console.log(`🔄 Updating session ${sessionId} with:`, updates);
+    setSessions(prev => {
+      const updated = prev.map(session => {
+        if (session.id === sessionId) {
+          const newSession = { ...session, ...updates };
+          console.log(`✅ Session ${sessionId} updated:`, newSession);
+          return newSession;
+        }
+        return session;
+      });
+      return updated;
+    });
   };
 
   const handleFileSelect = (sessionId: string, file: File) => {
@@ -248,6 +257,8 @@ export function MultiSessionForm() {
       uploadProgress: { percentage: 100, loaded: 100, total: 100, status: 'Upload complete!' },
       uploadStatus: 'success'
     });
+    
+    console.log(`🎯 Successfully marked session ${sessionData.id} as complete`);
   };
 
   const handleSubmit = async (data: MultiSessionFormData) => {

@@ -302,6 +302,7 @@ export function MultiSessionForm() {
             await uploadSingleSession(sessionData, data.campaignId);
             
             // Explicitly mark session as successful
+            console.log(`🎯 Marking session ${sessionData.id} as successful`);
             updateSession(sessionData.id, {
               uploadStatus: 'success',
               errorMessage: undefined,
@@ -418,6 +419,12 @@ export function MultiSessionForm() {
                       )}
                       {session.uploadStatus === 'error' && (
                         <span className="ml-2 text-sm text-game-error font-medium">(Error)</span>
+                      )}
+                      {/* Debug: show current status */}
+                      {process.env.NODE_ENV === 'development' && (
+                        <span className="ml-2 text-xs text-gray-400">
+                          [Debug: {session.uploadStatus || 'no-status'}]
+                        </span>
                       )}
                     </h3>
                     {sessions.length > 1 && globalUploadStatus !== 'uploading' && (

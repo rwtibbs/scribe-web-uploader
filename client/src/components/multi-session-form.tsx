@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, AlertTriangle, Upload, RotateCcw, X, Dice6, Plus, Trash2 } from 'lucide-react';
-import { FileUploadZone } from './file-upload-zone';
+import { SimpleFileUpload } from './simple-file-upload';
 import { UploadProgressComponent } from './upload-progress';
 import { useCampaigns } from '@/hooks/use-campaigns';
 import { useAuth } from '@/contexts/auth-context';
@@ -419,12 +419,11 @@ export function MultiSessionForm() {
                       <Label className="text-sm font-medium text-game-primary">
                         Audio Recording <span className="text-game-error">*</span>
                       </Label>
-                      <FileUploadZone
+                      <SimpleFileUpload
                         onFileSelect={(file) => handleFileSelect(session.id, file)}
                         selectedFile={session.file}
                         onFileRemove={() => handleFileRemove(session.id)}
                         disabled={globalUploadStatus === 'uploading'}
-                        compact={true}
                       />
                     </div>
                   </div>

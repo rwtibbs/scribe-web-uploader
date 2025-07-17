@@ -1,11 +1,8 @@
-import { Dice6, Home, BookOpen } from 'lucide-react';
 import logoPath from '@assets/Main-logo_1751318189156.png';
 import { LoginForm } from '../components/login-form';
 import { UserInfo } from '../components/user-info';
 import { MultiSessionForm } from '../components/multi-session-form';
 import { useAuth } from '../contexts/auth-context';
-import { Link } from 'wouter';
-import { Button } from '../components/ui/button';
 
 export default function MultiUploadPage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -31,41 +28,9 @@ export default function MultiUploadPage() {
           </div>
           <h1 className="text-4xl font-bold text-game-primary mb-4">Upload Sessions</h1>
           {!isAuthenticated ? (
-            <>
-              <p className="text-game-secondary text-lg mb-4">Sign in to upload multiple session recordings at once</p>
-              <div className="flex justify-center gap-4 mb-8">
-                <Link href="/sessions">
-                  <Button variant="outline" className="border-game-primary/30 hover:border-game-primary/50 text-game-primary hover:text-game-primary">
-                    <Home className="h-4 w-4 mr-2" />
-                    View Sessions
-                  </Button>
-                </Link>
-                <Link href="/upload">
-                  <Button variant="outline" className="border-game-primary/30 hover:border-game-primary/50 text-game-primary hover:text-game-primary">
-                    <BookOpen className="h-4 w-4 mr-2" />
-                    Single Upload
-                  </Button>
-                </Link>
-              </div>
-            </>
+            <p className="text-game-secondary text-lg mb-4">Sign in to upload multiple session recordings at once</p>
           ) : (
-            <>
-              <p className="text-game-secondary text-sm max-w-lg mx-auto">Once your sessions are uploaded, you can access them on the Add Session page in the app to customize and submit for processing.</p>
-              <div className="flex justify-center gap-4 mt-6">
-                <Link href="/sessions">
-                  <Button variant="outline" className="border-game-primary/30 hover:border-game-primary/50 text-game-primary hover:text-game-primary">
-                    <Home className="h-4 w-4 mr-2" />
-                    View Sessions
-                  </Button>
-                </Link>
-                <Link href="/upload">
-                  <Button variant="outline" className="border-game-primary/30 hover:border-game-primary/50 text-game-primary hover:text-game-primary">
-                    <BookOpen className="h-4 w-4 mr-2" />
-                    Single Upload
-                  </Button>
-                </Link>
-              </div>
-            </>
+            <p className="text-game-secondary text-sm max-w-lg mx-auto">Your sessions have been uploaded successfully and will be processed for transcription.</p>
           )}
         </div>
 

@@ -19,7 +19,6 @@ function App() {
         <CampaignProvider>
           <TooltipProvider>
             <Toaster />
-            {!isPublicRoute && <CampaignSelector />}
             <Switch>
               <Route path="/share/:sessionId" component={PublicSessionPage} />
               <Route path="/" component={MultiUploadPage} />

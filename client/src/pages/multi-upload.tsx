@@ -2,6 +2,7 @@ import logoPath from '@assets/Main-logo_1751318189156.png';
 import { LoginForm } from '../components/login-form';
 import { UserInfo } from '../components/user-info';
 import { MultiSessionForm } from '../components/multi-session-form';
+import { CampaignSelector } from '../components/campaign-selector';
 import { useAuth } from '../contexts/auth-context';
 
 export default function MultiUploadPage() {
@@ -41,6 +42,9 @@ export default function MultiUploadPage() {
           <div className="space-y-8">
             {/* User Info */}
             <UserInfo />
+
+            {/* Campaign Selector */}
+            <CampaignSelector />
 
             {/* Multi-Session Upload Form */}
             <MultiSessionForm />

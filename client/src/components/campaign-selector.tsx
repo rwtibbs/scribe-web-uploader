@@ -37,16 +37,16 @@ export function CampaignSelector() {
   }
 
   return (
-    <div className="bg-black/20 backdrop-blur-sm border border-game-primary/20 rounded-lg p-6">
+    <div className="bg-black/20 backdrop-blur-sm border border-game-primary/20 rounded-lg p-4">
       <div className="flex items-center gap-3">
-        <span className="text-sm font-medium text-game-secondary">Campaign:</span>
+        <span className="text-xs font-medium text-game-secondary">Campaign:</span>
         <Popover>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               role="combobox"
               className={cn(
-                "w-[300px] justify-between bg-slate-800/50 border-slate-600/30 hover:border-game-accent/50",
+                "w-[250px] justify-between bg-slate-800/50 border-slate-600/30 hover:border-game-accent/50 text-sm",
                 !selectedCampaign && "text-game-secondary"
               )}
             >
@@ -58,7 +58,7 @@ export function CampaignSelector() {
               <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[300px] p-0 bg-slate-800 border-slate-600/30">
+          <PopoverContent className="w-[250px] p-0 bg-slate-800 border-slate-600/30">
             <Command className="bg-slate-800">
               <CommandList>
                 <CommandEmpty className="text-game-secondary p-4 text-center">

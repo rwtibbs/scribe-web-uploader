@@ -31,7 +31,8 @@ export default function MultiUploadPage() {
             {!isAuthenticated ? (
               <p className="text-game-secondary text-lg mb-4">Sign in to upload multiple session recordings at once</p>
             ) : (
-              <p className="text-game-secondary text-lg max-w-lg mx-auto">Uploaded audio can be found in the "Add Sessions" page. After upload </p>
+              <p className="text-game-secondary text-lg max-w-lg mx-auto">Uploaded audio can be found in the "Add Sessions" page of the Scribe app.
+</p>
             )}
           </div>
         </div>

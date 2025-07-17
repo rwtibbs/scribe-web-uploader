@@ -385,6 +385,19 @@ export function MultiSessionForm() {
                 <CardContent className="space-y-4">
                   {/* All Fields in One Row */}
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
+                    {/* File Upload */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-game-primary">
+                        Audio Recording <span className="text-game-error">*</span>
+                      </Label>
+                      <SimpleFileUpload
+                        onFileSelect={(file) => handleFileSelect(session.id, file)}
+                        selectedFile={session.file}
+                        onFileRemove={() => handleFileRemove(session.id)}
+                        disabled={globalUploadStatus === 'uploading'}
+                      />
+                    </div>
+
                     {/* Session Name */}
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-game-primary">
@@ -410,19 +423,6 @@ export function MultiSessionForm() {
                         value={session.date}
                         onChange={(e) => updateSession(session.id, { date: e.target.value })}
                         className="form-input bg-game-primary/5 border-game-primary/20 text-game-primary"
-                        disabled={globalUploadStatus === 'uploading'}
-                      />
-                    </div>
-
-                    {/* File Upload */}
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-game-primary">
-                        Audio Recording <span className="text-game-error">*</span>
-                      </Label>
-                      <SimpleFileUpload
-                        onFileSelect={(file) => handleFileSelect(session.id, file)}
-                        selectedFile={session.file}
-                        onFileRemove={() => handleFileRemove(session.id)}
                         disabled={globalUploadStatus === 'uploading'}
                       />
                     </div>

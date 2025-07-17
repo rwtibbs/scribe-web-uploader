@@ -101,18 +101,9 @@ export function MultiSessionForm() {
   };
 
   const updateSession = (sessionId: string, updates: Partial<SingleSession>) => {
-    console.log(`🔄 Updating session ${sessionId} with:`, updates);
-    setSessions(prev => {
-      const updated = prev.map(session => {
-        if (session.id === sessionId) {
-          const newSession = { ...session, ...updates };
-          console.log(`✅ Session ${sessionId} updated:`, newSession);
-          return newSession;
-        }
-        return session;
-      });
-      return updated;
-    });
+    setSessions(prev => prev.map(session => 
+      session.id === sessionId ? { ...session, ...updates } : session
+    ));
   };
 
   const handleFileSelect = (sessionId: string, file: File) => {
@@ -258,7 +249,7 @@ export function MultiSessionForm() {
       uploadStatus: 'success'
     });
     
-    console.log(`🎯 Successfully marked session ${sessionData.id} as complete`);
+
   };
 
   const handleSubmit = async (data: MultiSessionFormData) => {
@@ -313,7 +304,6 @@ export function MultiSessionForm() {
             await uploadSingleSession(sessionData, data.campaignId);
             
             // Explicitly mark session as successful
-            console.log(`🎯 Marking session ${sessionData.id} as successful`);
             updateSession(sessionData.id, {
               uploadStatus: 'success',
               errorMessage: undefined,
@@ -431,12 +421,7 @@ export function MultiSessionForm() {
                       {session.uploadStatus === 'error' && (
                         <span className="ml-2 text-sm text-game-error font-medium">(Error)</span>
                       )}
-                      {/* Debug: show current status */}
-                      {process.env.NODE_ENV === 'development' && (
-                        <span className="ml-2 text-xs text-gray-400">
-                          [Debug: {session.uploadStatus || 'no-status'}]
-                        </span>
-                      )}
+
                     </h3>
                     {sessions.length > 1 && globalUploadStatus !== 'uploading' && (
                       <Button

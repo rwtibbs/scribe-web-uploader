@@ -45,14 +45,14 @@ export function CampaignSelector() {
               variant="outline"
               role="combobox"
               className={cn(
-                "w-[250px] justify-between bg-slate-800/50 border-slate-600/30 hover:border-game-accent/50 text-sm",
-                !selectedCampaign && "text-game-secondary"
+                "w-[250px] justify-between bg-white border-gray-300 hover:border-blue-500 text-sm",
+                !selectedCampaign && "text-gray-500"
               )}
             >
               {selectedCampaign ? (
-                <span className="font-medium text-white">{selectedCampaign.name}</span>
+                <span className="font-medium text-gray-900">{selectedCampaign.name}</span>
               ) : (
-                <span className="text-game-secondary">Select campaign...</span>
+                <span className="text-gray-500">Select campaign...</span>
               )}
               <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>

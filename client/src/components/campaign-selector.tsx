@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react';
-import { Check, ChevronDown, Dice6, Upload, Plus } from 'lucide-react';
+import { useEffect } from 'react';
+import { Check, ChevronDown } from 'lucide-react';
 import scribeLogo from '@assets/Main-logo_1752518475604.png';
 import { useCampaigns } from '@/hooks/use-campaigns';
 import { useCampaign } from '@/contexts/campaign-context';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
-import { Link } from 'wouter';
 import {
   Popover,
   PopoverContent,
@@ -25,7 +24,6 @@ export function CampaignSelector() {
   const { user, isAuthenticated } = useAuth();
   const { selectedCampaign, setSelectedCampaign, autoSelectMostRecent } = useCampaign();
   const { data: campaigns, isLoading } = useCampaigns(user?.username);
-  const [showUploadDropdown, setShowUploadDropdown] = useState(false);
 
   // Auto-select most recent campaign when campaigns are loaded
   useEffect(() => {
@@ -108,42 +106,6 @@ export function CampaignSelector() {
                 </PopoverContent>
               </Popover>
             </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Popover open={showUploadDropdown} onOpenChange={setShowUploadDropdown}>
-              <PopoverTrigger asChild>
-                <Button className="bg-game-accent hover:bg-game-hover text-white flex items-center gap-2">
-                  <Upload className="h-4 w-4" />
-                  Upload Sessions
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-48 p-2 bg-slate-800 border-slate-600/30" align="end">
-                <div className="space-y-1">
-                  <Link href="/upload">
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-game-primary hover:bg-slate-700/50"
-                      onClick={() => setShowUploadDropdown(false)}
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      Single Session
-                    </Button>
-                  </Link>
-                  <Link href="/multi-upload">
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-game-primary hover:bg-slate-700/50"
-                      onClick={() => setShowUploadDropdown(false)}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Multiple Sessions
-                    </Button>
-                  </Link>
-                </div>
-              </PopoverContent>
-            </Popover>
           </div>
         </div>
       </div>

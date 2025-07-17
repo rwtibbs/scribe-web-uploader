@@ -113,6 +113,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- July 17, 2025. Simplified app to focus on multi-session uploads: Made multi-session upload the main and only page (besides login), removed single session upload entirely, removed sessions collection and individual session pages, simplified campaign selector by removing upload dropdown with search functionality
 - July 16, 2025. Created backup files for experimental pagination work: Saved pagination improvements to .backup files before reverting to production state for deployed version editing
 - July 14, 2025. Removed primary image from session detail pages: Removed lead image display while preserving segment images for cleaner layout
 - July 14, 2025. Updated session card styling: Changed background to white with 10% opacity (bg-white/10) and set thumbnail images to auto height for better layout

@@ -16,6 +16,11 @@ export class S3UploadService {
       throw new Error(`File too large: ${Math.round(file.size / (1024 * 1024))}MB. Maximum size is 300MB.`);
     }
 
+    // Force garbage collection before upload to free memory
+    if (window.gc) {
+      window.gc();
+    }
+
     // Use direct presigned URL upload (bypasses server completely)
     return S3UploadService.uploadFileWithPresignedUrl({ key, file, onProgress });
   }
@@ -78,7 +83,11 @@ export class S3UploadService {
         // Set timeout to 10 minutes for large files
         xhr.timeout = 10 * 60 * 1000; // 10 minutes
         
+        // Configure for better reliability with large files
+        xhr.withCredentials = false; // Disable credentials for S3 uploads
+        
         let lastProgressTime = Date.now();
+        let progressStalled = false;
         
         xhr.upload.addEventListener('progress', (event) => {
           lastProgressTime = Date.now();

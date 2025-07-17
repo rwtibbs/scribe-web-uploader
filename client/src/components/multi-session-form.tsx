@@ -272,6 +272,12 @@ export function MultiSessionForm() {
         
         console.log(`🚀 Starting upload for session ${i + 1}/${sessionsWithFiles.length}: ${sessionData.name}`);
         
+        // Add delay between uploads to prevent resource conflicts
+        if (i > 0) {
+          console.log(`⏳ Waiting 3 seconds before starting next upload...`);
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+        
         let retryCount = 0;
         const maxRetries = 2;
         
@@ -295,6 +301,12 @@ export function MultiSessionForm() {
             
             setCompletedUploads(i + 1);
             console.log(`✅ Completed upload for session ${i + 1}/${sessionsWithFiles.length}`);
+            
+            // Force memory cleanup after successful upload
+            if (window.gc) {
+              window.gc();
+            }
+            
             break; // Success, exit retry loop
             
           } catch (error) {

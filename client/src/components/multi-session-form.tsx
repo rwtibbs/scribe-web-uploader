@@ -272,27 +272,50 @@ export function MultiSessionForm() {
         
         console.log(`🚀 Starting upload for session ${i + 1}/${sessionsWithFiles.length}: ${sessionData.name}`);
         
-        try {
-          await uploadSingleSession(sessionData, data.campaignId);
-          
-          // Explicitly mark session as successful
-          updateSession(sessionData.id, {
-            uploadStatus: 'success',
-            errorMessage: undefined,
-            uploadProgress: { percentage: 100, loaded: 100, total: 100, status: 'Upload complete!' }
-          });
-          
-          setCompletedUploads(i + 1);
-          console.log(`✅ Completed upload for session ${i + 1}/${sessionsWithFiles.length}`);
-        } catch (error) {
-          console.error(`❌ Upload failed for session "${sessionData.name}":`, error);
-          const errorMessage = error instanceof Error ? error.message : 'Upload failed';
-          updateSession(sessionData.id, {
-            uploadStatus: 'error',
-            errorMessage,
-            uploadProgress: undefined
-          });
-          throw new Error(`Failed to upload session "${sessionData.name}": ${errorMessage}`);
+        let retryCount = 0;
+        const maxRetries = 2;
+        
+        while (retryCount <= maxRetries) {
+          try {
+            if (retryCount > 0) {
+              console.log(`🔄 Retry attempt ${retryCount}/${maxRetries} for session "${sessionData.name}"`);
+              updateSession(sessionData.id, {
+                uploadProgress: { percentage: 0, loaded: 0, total: 100, status: `Retrying upload (${retryCount}/${maxRetries})...` }
+              });
+            }
+            
+            await uploadSingleSession(sessionData, data.campaignId);
+            
+            // Explicitly mark session as successful
+            updateSession(sessionData.id, {
+              uploadStatus: 'success',
+              errorMessage: undefined,
+              uploadProgress: { percentage: 100, loaded: 100, total: 100, status: 'Upload complete!' }
+            });
+            
+            setCompletedUploads(i + 1);
+            console.log(`✅ Completed upload for session ${i + 1}/${sessionsWithFiles.length}`);
+            break; // Success, exit retry loop
+            
+          } catch (error) {
+            retryCount++;
+            console.error(`❌ Upload attempt ${retryCount} failed for session "${sessionData.name}":`, error);
+            
+            if (retryCount > maxRetries) {
+              // Final failure after all retries
+              const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+              updateSession(sessionData.id, {
+                uploadStatus: 'error',
+                errorMessage: `Failed after ${maxRetries} retries: ${errorMessage}`,
+                uploadProgress: undefined
+              });
+              throw new Error(`Failed to upload session "${sessionData.name}" after ${maxRetries} retries: ${errorMessage}`);
+            } else {
+              // Wait before retry
+              console.log(`⏳ Waiting 2 seconds before retry ${retryCount}...`);
+              await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+          }
         }
       }
 

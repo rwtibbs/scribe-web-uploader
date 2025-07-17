@@ -156,15 +156,15 @@ export class S3UploadService {
           reject(new Error('Upload was cancelled'));
         });
 
-        // Monitor for stalled uploads
+        // Monitor for stalled uploads - more aggressive detection
         const stallCheckInterval = setInterval(() => {
           const timeSinceLastProgress = Date.now() - lastProgressTime;
-          if (timeSinceLastProgress > 2 * 60 * 1000) { // 2 minutes without progress
-            console.warn('⚠️ Upload appears stalled, no progress for 2 minutes');
+          if (timeSinceLastProgress > 60 * 1000) { // 1 minute without progress
+            console.warn('⚠️ Upload appears stalled, no progress for 1 minute');
             clearInterval(stallCheckInterval);
             xhr.abort();
           }
-        }, 30000); // Check every 30 seconds
+        }, 15000); // Check every 15 seconds
 
         xhr.addEventListener('loadend', () => {
           clearInterval(stallCheckInterval);

@@ -411,13 +411,13 @@ export function MultiSessionForm() {
                     <h3 className="text-lg font-medium text-game-primary">
                       Session {index + 1}
                       {session.uploadStatus === 'uploading' && currentUploadingIndex === index && (
-                        <span className="ml-2 text-sm text-game-accent">(Uploading...)</span>
+                        <span className="ml-2 text-sm text-game-accent font-medium">(Uploading...)</span>
                       )}
                       {session.uploadStatus === 'success' && (
-                        <span className="ml-2 text-sm text-game-success">(✓ Complete)</span>
+                        <span className="ml-2 text-sm text-game-success font-bold bg-game-success/10 px-2 py-1 rounded">(Complete)</span>
                       )}
                       {session.uploadStatus === 'error' && (
-                        <span className="ml-2 text-sm text-game-error">(⚠ Error)</span>
+                        <span className="ml-2 text-sm text-game-error font-medium">(Error)</span>
                       )}
                     </h3>
                     {sessions.length > 1 && globalUploadStatus !== 'uploading' && (

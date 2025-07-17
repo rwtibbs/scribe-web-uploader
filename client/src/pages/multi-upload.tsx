@@ -31,7 +31,7 @@ export default function MultiUploadPage() {
             {!isAuthenticated ? (
               <p className="text-game-secondary text-lg mb-4">Sign in to upload multiple session recordings at once</p>
             ) : (
-              <p className="text-game-secondary text-sm max-w-lg mx-auto">Your sessions have been uploaded successfully and will be processed for transcription.</p>
+              <p className="text-game-secondary text-lg max-w-lg mx-auto">Upload multiple tabletop gaming session recordings for automated transcription and campaign wiki generation.</p>
             )}
           </div>
         </div>

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
 import { CheckCircle, AlertTriangle, Upload, RotateCcw, X, Dice6, Plus, Trash2 } from 'lucide-react';
 import { SimpleFileUpload } from './simple-file-upload';
 import { UploadProgressComponent } from './upload-progress';
@@ -470,19 +471,76 @@ export function MultiSessionForm() {
                     </div>
                   </div>
 
-                  {/* Session Upload Progress */}
-                  {session.uploadProgress && session.uploadStatus === 'uploading' && (
-                    <UploadProgressComponent progress={session.uploadProgress} />
-                  )}
+                  {/* Session Status & Progress */}
+                  {(session.uploadStatus === 'uploading' || session.uploadStatus === 'success' || session.uploadStatus === 'error') && (
+                    <div className="space-y-3 pt-2 border-t border-game-primary/10">
+                      {/* Status Header */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          {session.uploadStatus === 'uploading' && (
+                            <div className="flex items-center space-x-2 text-game-accent">
+                              <div className="w-3 h-3 border-2 border-game-accent border-t-transparent rounded-full animate-spin"></div>
+                              <span className="text-sm font-medium">Uploading...</span>
+                            </div>
+                          )}
+                          {session.uploadStatus === 'success' && (
+                            <div className="flex items-center space-x-2 text-game-success">
+                              <CheckCircle className="w-4 h-4" />
+                              <span className="text-sm font-medium">Complete</span>
+                            </div>
+                          )}
+                          {session.uploadStatus === 'error' && (
+                            <div className="flex items-center space-x-2 text-game-error">
+                              <AlertTriangle className="w-4 h-4" />
+                              <span className="text-sm font-medium">Error</span>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Progress Percentage */}
+                        {session.uploadProgress && session.uploadStatus === 'uploading' && (
+                          <span className="text-sm text-game-secondary">
+                            {session.uploadProgress.percentage}%
+                          </span>
+                        )}
+                      </div>
 
-                  {/* Session Error Message */}
-                  {session.errorMessage && (
-                    <Alert className="bg-game-error/10 border-game-error/20">
-                      <AlertTriangle className="h-4 w-4 text-game-error" />
-                      <AlertDescription className="text-game-error">
-                        {session.errorMessage}
-                      </AlertDescription>
-                    </Alert>
+                      {/* Progress Bar */}
+                      {session.uploadStatus === 'uploading' && session.uploadProgress && (
+                        <div className="space-y-1">
+                          <Progress 
+                            value={session.uploadProgress.percentage} 
+                            className="h-2 bg-game-primary/10 [&>div]:bg-game-accent"
+                          />
+                          <div className="flex justify-between text-xs text-game-secondary">
+                            <span>{session.uploadProgress.status || 'Uploading...'}</span>
+                            {session.uploadProgress.loaded && session.uploadProgress.total && (
+                              <span>
+                                {Math.round(session.uploadProgress.loaded / (1024 * 1024))}MB / {Math.round(session.uploadProgress.total / (1024 * 1024))}MB
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Success Message */}
+                      {session.uploadStatus === 'success' && (
+                        <div className="bg-game-success/10 border border-game-success/20 rounded-md p-2">
+                          <div className="text-sm text-game-success">
+                            Session uploaded successfully and ready for processing.
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Error Message */}
+                      {session.uploadStatus === 'error' && session.errorMessage && (
+                        <div className="bg-game-error/10 border border-game-error/20 rounded-md p-2">
+                          <div className="text-sm text-game-error">
+                            {session.errorMessage}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </CardContent>
               </Card>

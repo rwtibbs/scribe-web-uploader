@@ -6,15 +6,18 @@ interface FileUploadZoneProps {
   onFileSelect: (file: File) => void;
   selectedFile?: File | null;
   onFileRemove: () => void;
+  disabled?: boolean;
 }
 
-export function FileUploadZone({ onFileSelect, selectedFile, onFileRemove }: FileUploadZoneProps) {
+export function FileUploadZone({ onFileSelect, selectedFile, onFileRemove, disabled = false }: FileUploadZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragOver(true);
+    if (!disabled) {
+      setIsDragOver(true);
+    }
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
@@ -26,6 +29,8 @@ export function FileUploadZone({ onFileSelect, selectedFile, onFileRemove }: Fil
     e.preventDefault();
     setIsDragOver(false);
     
+    if (disabled) return;
+    
     const files = e.dataTransfer.files;
     if (files.length > 0) {
       const file = files[0];
@@ -36,6 +41,8 @@ export function FileUploadZone({ onFileSelect, selectedFile, onFileRemove }: Fil
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled) return;
+    
     const files = e.target.files;
     if (files && files.length > 0) {
       onFileSelect(files[0]);
@@ -53,14 +60,16 @@ export function FileUploadZone({ onFileSelect, selectedFile, onFileRemove }: Fil
   return (
     <div>
       <div
-        onClick={() => fileInputRef.current?.click()}
+        onClick={() => !disabled && fileInputRef.current?.click()}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`file-drop-zone rounded-xl p-8 text-center cursor-pointer transition-all duration-300 border-2 border-dashed ${
-          isDragOver
-            ? 'border-game-accent bg-game-accent/10'
-            : 'border-game-primary/30'
+        className={`file-drop-zone rounded-xl p-8 text-center transition-all duration-300 border-2 border-dashed ${
+          disabled 
+            ? 'cursor-not-allowed opacity-50 border-game-secondary/20' 
+            : isDragOver
+            ? 'cursor-pointer border-game-accent bg-game-accent/10'
+            : 'cursor-pointer border-game-primary/30'
         }`}
       >
         {!selectedFile ? (
@@ -87,7 +96,8 @@ export function FileUploadZone({ onFileSelect, selectedFile, onFileRemove }: Fil
                 e.stopPropagation();
                 onFileRemove();
               }}
-              className="text-game-error hover:text-red-400"
+              disabled={disabled}
+              className="text-game-error hover:text-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <X className="h-4 w-4 mr-1" />
               Remove file
@@ -101,6 +111,7 @@ export function FileUploadZone({ onFileSelect, selectedFile, onFileRemove }: Fil
         type="file"
         accept=".mp3,.wav,.m4a,.ogg,.aac,.flac,.mp4,.mov,.avi"
         onChange={handleFileInputChange}
+        disabled={disabled}
         className="hidden"
       />
     </div>

@@ -480,18 +480,11 @@ export function MultiSessionForm() {
                   </div>
 
                   {/* Session Status & Progress */}
-                  {session.file && (
+                  {session.file && (session.uploadStatus === 'uploading' || session.uploadStatus === 'success' || session.uploadStatus === 'error') && (
                     <div className="space-y-3 pt-2 border-t border-game-primary/10">
                       {/* Status Header */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          {/* Pending State */}
-                          {(!session.uploadStatus || session.uploadStatus === 'idle') && (
-                            <div className="flex items-center space-x-2 text-game-secondary">
-                              <div className="w-3 h-3 bg-game-secondary/40 rounded-full"></div>
-                              <span className="text-sm font-medium">Pending upload</span>
-                            </div>
-                          )}
                           
                           {/* Uploading State */}
                           {session.uploadStatus === 'uploading' && (

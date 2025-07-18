@@ -159,10 +159,8 @@ export function MultiSessionForm() {
       throw new Error('Missing file or user authentication');
     }
 
-    const selectedCampaign = campaigns?.find(c => c.id === campaignId);
-    if (!selectedCampaign) {
-      throw new Error('Selected campaign not found');
-    }
+    // Campaign validation is handled by campaign selector - no need to verify here
+    // The campaignId comes from the selected campaign in the context
 
     const getLocalDateString = (date: Date) => {
       return date.toLocaleDateString('en-CA'); // YYYY-MM-DD format

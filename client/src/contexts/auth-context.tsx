@@ -46,15 +46,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsLoading(true);
       console.log('🔄 Checking current session...');
       
-      // Clear any cached data when checking session to prevent cross-environment contamination
-      localStorage.removeItem('selectedCampaign');
-      
       const currentUser = await AuthService.getCurrentSession();
       setUser(currentUser);
       console.log('✅ Session check complete:', currentUser ? 'User found' : 'No active session');
     } catch (err) {
       console.error('❌ Error checking current session:', err);
       setUser(null);
+      // Only clear cache when session check fails (user not authenticated)
+      localStorage.removeItem('selectedCampaign');
     } finally {
       setIsLoading(false);
     }

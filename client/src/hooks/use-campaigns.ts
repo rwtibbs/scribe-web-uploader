@@ -11,21 +11,14 @@ export function useCampaigns(owner?: string) {
     queryFn: async () => {
       if (!owner) throw new Error('Owner is required to fetch campaigns');
       console.log('🔄 Fetching campaigns for owner:', owner, '(production environment only)');
-      try {
-        // Clear any existing campaign cache to prevent cross-environment contamination
-        localStorage.removeItem('selectedCampaign');
-        
-        // Try with Cognito access token first, then fallback to API key
-        const campaigns = await graphqlClient.getCampaignsByOwner(owner, user?.accessToken);
-        console.log('✅ Campaigns fetched:', campaigns.length, 'campaigns');
-        return campaigns;
-      } catch (error) {
-        console.error('❌ Failed to fetch campaigns, using fallback:', error);
-        // Return empty array when authentication fails
-        return [];
-      }
+      
+      // Try with Cognito access token first, then fallback to API key
+      const campaigns = await graphqlClient.getCampaignsByOwner(owner, user?.accessToken);
+      console.log('✅ Campaigns fetched:', campaigns.length, 'campaigns');
+      return campaigns;
     },
-    enabled: !!owner,
-    retry: false, // Don't retry failed requests
+    enabled: !!owner && !!user, // Ensure user is available
+    retry: 3, // Allow retries for transient network issues
+    retryDelay: 1000, // 1 second between retries
   });
 }

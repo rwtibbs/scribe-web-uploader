@@ -23,8 +23,19 @@ interface CampaignProviderProps {
 
 export function CampaignProvider({ children }: CampaignProviderProps) {
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(() => {
-    // Clear any cached campaign data when starting fresh - ensures no cross-environment contamination
-    localStorage.removeItem('selectedCampaign');
+    // Load from localStorage on initial load, but validate environment context
+    const saved = localStorage.getItem('selectedCampaign');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Only use cached campaign if it's from production environment
+        if (parsed._environment === 'production') {
+          return parsed;
+        }
+      } catch (e) {
+        console.warn('Invalid cached campaign data:', e);
+      }
+    }
     return null;
   });
 

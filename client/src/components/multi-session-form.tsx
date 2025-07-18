@@ -375,19 +375,7 @@ export function MultiSessionForm() {
     setGlobalUploadStatus('idle');
   };
 
-  // If no campaign is selected and we have campaigns, auto-select the most recent one
-  if (!selectedCampaign && campaigns?.length > 0) {
-    autoSelectMostRecent(campaigns);
-    // Show loading state while auto-selection happens
-    return (
-      <Card className="bg-black/20 backdrop-blur-sm border-game-primary/20">
-        <CardContent className="p-8 text-center">
-          <div className="animate-spin w-6 h-6 border-2 border-game-accent border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-game-secondary">Loading campaign...</p>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Campaign selection is handled by CampaignSelector component
 
   // If still no campaign and no campaigns available, show a minimal message
   if (!selectedCampaign) {

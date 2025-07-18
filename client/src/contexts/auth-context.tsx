@@ -61,11 +61,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setError(null);
       setIsLoading(true);
       
-      // Ensure we're only using production environment
-      if (getEnvironment() !== 'production') {
-        throw new Error('Only production accounts are permitted to access this application.');
-      }
-      
+      // Production environment is forced in aws-config.ts
       const authUser = await AuthService.signIn(username, password);
       setUser(authUser);
       console.log('✅ Authentication successful');

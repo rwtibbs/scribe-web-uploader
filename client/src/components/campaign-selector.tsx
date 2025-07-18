@@ -37,13 +37,28 @@ export function CampaignSelector() {
     });
   }, [user, isAuthenticated, campaigns, isLoading, error, selectedCampaign]);
 
-  // Auto-select most recent campaign when campaigns are loaded
+  // Auto-select most recent campaign when campaigns are loaded - more aggressive for mobile
   useEffect(() => {
     if (campaigns?.length && !selectedCampaign) {
       console.log('Auto-selecting campaign from:', campaigns.map(c => c.name));
-      autoSelectMostRecent(campaigns);
+      // Use setTimeout to ensure this runs after all other effects
+      setTimeout(() => {
+        autoSelectMostRecent(campaigns);
+      }, 100);
     }
   }, [campaigns, selectedCampaign, autoSelectMostRecent]);
+
+  // Additional effect to ensure auto-selection happens even if the first attempt fails
+  useEffect(() => {
+    if (campaigns?.length && !selectedCampaign && !isLoading) {
+      const retryTimeout = setTimeout(() => {
+        console.log('Retry auto-selecting campaign for mobile');
+        autoSelectMostRecent(campaigns);
+      }, 1000);
+      
+      return () => clearTimeout(retryTimeout);
+    }
+  }, [campaigns, selectedCampaign, isLoading, autoSelectMostRecent]);
 
   if (!isAuthenticated) {
     return null;

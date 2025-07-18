@@ -65,23 +65,23 @@ export function MultiSessionForm() {
   const [globalErrorMessage, setGlobalErrorMessage] = useState<string | null>(null);
   const [forceShowForm, setForceShowForm] = useState(false);
 
-  // Get effective campaign (selected or fallback to first available)
-  const effectiveCampaign = selectedCampaign || (campaigns && campaigns.length > 0 ? campaigns[0] : null);
-
   const form = useForm<MultiSessionFormData>({
     resolver: zodResolver(multiSessionFormSchema),
     defaultValues: {
-      campaignId: effectiveCampaign?.id || '',
+      campaignId: '',
       sessions: sessions.map(s => ({ name: s.name, date: s.date })),
     },
   });
 
-  // Update campaignId when selectedCampaign changes
+  // Get effective campaign (selected or fallback to first available)
+  const effectiveCampaign = selectedCampaign || (campaigns && campaigns.length > 0 ? campaigns[0] : null);
+
+  // Update campaignId when selectedCampaign or effectiveCampaign changes
   useEffect(() => {
-    if (selectedCampaign) {
-      form.setValue('campaignId', selectedCampaign.id);
+    if (effectiveCampaign) {
+      form.setValue('campaignId', effectiveCampaign.id);
     }
-  }, [selectedCampaign, form]);
+  }, [effectiveCampaign, form]);
 
   // Update form sessions when sessions state changes
   useEffect(() => {
@@ -393,17 +393,34 @@ export function MultiSessionForm() {
     }
   }, [campaigns, selectedCampaign, campaignsLoading, autoSelectMostRecent, isAuthenticated, user]);
 
-  // Fallback timeout for mobile - force show form after 10 seconds if stuck loading
+  // Fallback timeout for mobile - force show form after 5 seconds if stuck loading
   useEffect(() => {
     if (isAuthenticated && user && !forceShowForm) {
       const timeout = setTimeout(() => {
-        console.log('🚨 Mobile fallback: Forcing form display after 10 seconds');
+        console.log('🚨 Mobile fallback: Forcing form display after 5 seconds');
         setForceShowForm(true);
-      }, 10000);
+      }, 5000);
       
       return () => clearTimeout(timeout);
     }
   }, [isAuthenticated, user, forceShowForm]);
+
+  // Additional mobile-specific campaign auto-selection trigger
+  useEffect(() => {
+    if (campaigns?.length && !selectedCampaign && isAuthenticated && user && !campaignsLoading) {
+      // Multiple attempts with different delays to ensure mobile reliability
+      const timeouts = [200, 500, 1000, 2000].map((delay, index) =>
+        setTimeout(() => {
+          if (!selectedCampaign && campaigns?.length) {
+            console.log(`🔄 Mobile retry ${index + 1}: Auto-selecting campaign`);
+            autoSelectMostRecent(campaigns);
+          }
+        }, delay)
+      );
+      
+      return () => timeouts.forEach(clearTimeout);
+    }
+  }, [campaigns, selectedCampaign, isAuthenticated, user, campaignsLoading, autoSelectMostRecent]);
 
   // If not authenticated, don't show anything
   if (!isAuthenticated || !user) {

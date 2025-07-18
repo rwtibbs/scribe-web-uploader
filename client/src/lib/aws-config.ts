@@ -7,7 +7,7 @@ const productionConfig = {
   userPoolId: 'us-east-2_2sxvJnReu', // DEV environment (production)
   userPoolClientId: '1rlnjt8osc6d0lnrvb1o6c8bk5', // Production client ID
   s3Bucket: 'scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-dev',
-  appsyncApiKey: import.meta.env.VITE_AWS_APPSYNC_GRAPHQL_KEY || '',
+  appsyncApiKey: import.meta.env.VITE_APPSYNC_API_KEY || '',
   graphqlEndpoint: 'https://lm5nq7s75raxnd24y67v3civhm.appsync-api.us-east-2.amazonaws.com/graphql',
   lambdaEndpoint: 'https://642l8cabx1.execute-api.us-east-2.amazonaws.com/dev/start-summary',
 };

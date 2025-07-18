@@ -18,6 +18,7 @@ import { CampaignSelector } from './campaign-selector';
 import { graphqlClient } from '@/lib/graphql';
 import { S3UploadService } from '@/lib/s3-upload';
 import { UploadProgress } from '@shared/schema';
+import { cn } from '@/lib/utils';
 
 // Schema for a single session
 const singleSessionSchema = z.object({
@@ -667,27 +668,34 @@ export function MultiSessionForm() {
 
           {/* Submit Buttons */}
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button
-              type="submit"
-              disabled={globalUploadStatus === 'uploading' || sessions.filter(s => s.file).length === 0}
-              className="btn-primary flex-1 py-3 bg-game-accent hover:bg-game-hover text-white font-medium"
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              {globalUploadStatus === 'uploading' 
-                ? `Uploading ${currentUploadingIndex !== null ? currentUploadingIndex + 1 : ''}/${sessions.filter(s => s.file).length}...` 
-                : `Upload ${sessions.filter(s => s.file).length} Session${sessions.filter(s => s.file).length !== 1 ? 's' : ''}`
-              }
-            </Button>
+            {globalUploadStatus !== 'success' && (
+              <Button
+                type="submit"
+                disabled={globalUploadStatus === 'uploading' || sessions.filter(s => s.file).length === 0}
+                className="btn-primary flex-1 py-3 bg-game-accent hover:bg-game-hover text-white font-medium"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {globalUploadStatus === 'uploading' 
+                  ? `Uploading ${currentUploadingIndex !== null ? currentUploadingIndex + 1 : ''}/${sessions.filter(s => s.file).length}...` 
+                  : `Upload ${sessions.filter(s => s.file).length} Session${sessions.filter(s => s.file).length !== 1 ? 's' : ''}`
+                }
+              </Button>
+            )}
 
             <Button
               type="button"
               variant="outline"
               onClick={resetForm}
               disabled={globalUploadStatus === 'uploading'}
-              className="border-game-primary/30 hover:border-game-primary/50 text-game-primary hover:text-game-primary py-3 px-6 font-medium"
+              className={cn(
+                "py-3 px-6 font-medium",
+                globalUploadStatus === 'success' 
+                  ? "flex-1 border-game-success/50 hover:border-game-success text-game-success hover:text-game-success hover:bg-game-success/10" 
+                  : "border-game-primary/30 hover:border-game-primary/50 text-game-primary hover:text-game-primary"
+              )}
             >
               <RotateCcw className="h-4 w-4 mr-2" />
-              Reset Form
+              {globalUploadStatus === 'success' ? 'Start New Batch' : 'Reset Form'}
             </Button>
           </div>
         </form>

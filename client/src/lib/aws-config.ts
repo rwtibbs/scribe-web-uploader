@@ -5,7 +5,7 @@ import { AWSConfig } from '@/types/aws';
 const productionConfig = {
   region: 'us-east-2',
   userPoolId: 'us-east-2_2sxvJnReu', // DEV environment (production)
-  userPoolClientId: '1rlnjt8osc6d0lnrvb1o6c8bk5', // Production client ID
+  userPoolClientId: import.meta.env.VITE_USER_POOL_CLIENT_ID || '',
   s3Bucket: 'scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-dev',
   appsyncApiKey: import.meta.env.VITE_APPSYNC_API_KEY || '',
   graphqlEndpoint: 'https://lm5nq7s75raxnd24y67v3civhm.appsync-api.us-east-2.amazonaws.com/graphql',

@@ -3,29 +3,30 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { AlertCircle, Settings, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { EnvironmentSwitcher } from './environment-switcher';
-import { testCognitoConnection } from '@/lib/cognito-test';
+import { getEnvironment, setEnvironment } from '@/lib/aws-config';
 
 export function LoginForm() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [currentEnvironment, setCurrentEnvironment] = useState(getEnvironment());
   const { signIn, isLoading, error } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // First test direct connection
-    console.log('🧪 Testing direct Cognito connection...');
-    await testCognitoConnection(username, password);
-    
     try {
       await signIn(username, password);
     } catch (err) {
       // Error is handled in the hook
     }
+  };
+
+  const handleEnvironmentToggle = (checked: boolean) => {
+    const newEnv = checked ? 'development' : 'production';
+    setEnvironment(newEnv);
   };
 
   return (
@@ -88,9 +89,32 @@ export function LoginForm() {
             </div>
           </div>
 
-          {/* Environment Switcher */}
-          <div className="pt-2 border-t border-game-primary/20">
-            <EnvironmentSwitcher />
+          {/* Environment Toggle */}
+          <div className="space-y-2 pt-2 border-t border-game-primary/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Settings className="h-4 w-4 text-game-secondary" />
+                <Label htmlFor="environment" className="text-sm font-medium text-game-secondary">
+                  Environment
+                </Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs ${currentEnvironment === 'production' ? 'text-game-primary' : 'text-game-secondary/50'}`}>
+                  Production
+                </span>
+                <Switch
+                  id="environment"
+                  checked={currentEnvironment === 'development'}
+                  onCheckedChange={handleEnvironmentToggle}
+                />
+                <span className={`text-xs ${currentEnvironment === 'development' ? 'text-game-primary' : 'text-game-secondary/50'}`}>
+                  Development
+                </span>
+              </div>
+            </div>
+            <p className="text-xs text-game-secondary/70">
+              Current: {currentEnvironment === 'production' ? 'Production' : 'Development'} environment
+            </p>
           </div>
 
           {error && (

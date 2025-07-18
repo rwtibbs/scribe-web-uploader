@@ -28,13 +28,12 @@ export default function MultiUploadPage() {
               <img src={logoPath} alt="Scribe Logo" className="h-16 w-auto hover:opacity-80 transition-opacity" />
             </a>
           </div>
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-game-primary mb-4">Session uploader</h1>
-            {isAuthenticated && (
-              <p className="text-game-secondary text-[16px] w-full">Uploaded audio can be found in the "Add Sessions" page of the Scribe app.
-</p>
-            )}
-          </div>
+          {isAuthenticated && (
+            <div className="text-center">
+              <h1 className="text-4xl font-bold text-game-primary mb-4">Session uploader</h1>
+              <p className="text-game-secondary text-[16px] w-full">Uploaded audio can be found in the "Add Sessions" page of the Scribe app.</p>
+            </div>
+          )}
         </div>
 
         {/* Authentication Section */}

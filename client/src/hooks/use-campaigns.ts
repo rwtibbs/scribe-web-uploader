@@ -20,5 +20,9 @@ export function useCampaigns(owner?: string) {
     enabled: !!owner && !!user, // Ensure user is available
     retry: 3, // Allow retries for transient network issues
     retryDelay: 1000, // 1 second between retries
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    refetchOnWindowFocus: false, // Don't refetch on window focus
+    refetchOnMount: true, // Always refetch on component mount
   });
 }

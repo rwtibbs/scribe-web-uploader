@@ -2,6 +2,14 @@ import { CognitoUserPool, CognitoUser, AuthenticationDetails } from 'amazon-cogn
 import { getAwsConfig } from './aws-config';
 import { AuthUser } from '@shared/schema';
 
+// Polyfill for Cognito in browser environments
+if (typeof window !== 'undefined') {
+  (window as any).global = window;
+  if (!(window as any).crypto && (window as any).msCrypto) {
+    (window as any).crypto = (window as any).msCrypto;
+  }
+}
+
 const getUserPool = () => {
   const config = getAwsConfig();
   console.log('🔧 Creating Cognito User Pool with:', {
@@ -9,6 +17,7 @@ const getUserPool = () => {
     ClientId: config.userPoolClientId ? `${config.userPoolClientId.substring(0, 8)}...` : 'NOT SET',
     region: config.region
   });
+  
   return new CognitoUserPool({
     UserPoolId: config.userPoolId,
     ClientId: config.userPoolClientId,

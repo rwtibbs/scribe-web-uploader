@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { EnvironmentSwitcher } from './environment-switcher';
+import { testCognitoConnection } from '@/lib/cognito-test';
 
 export function LoginForm() {
   const [username, setUsername] = useState('');
@@ -15,6 +16,11 @@ export function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // First test direct connection
+    console.log('🧪 Testing direct Cognito connection...');
+    await testCognitoConnection(username, password);
+    
     try {
       await signIn(username, password);
     } catch (err) {

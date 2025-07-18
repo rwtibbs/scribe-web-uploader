@@ -43,7 +43,6 @@ export const awsConfig = getAwsConfig();
 
 // Debug: Print current configuration
 console.log('🔧 AWS Configuration:', {
-  environment: getEnvironment(),
   region: awsConfig.region,
   userPoolId: awsConfig.userPoolId,
   userPoolClientId: awsConfig.userPoolClientId ? `${awsConfig.userPoolClientId.substring(0, 8)}...` : 'NOT SET',

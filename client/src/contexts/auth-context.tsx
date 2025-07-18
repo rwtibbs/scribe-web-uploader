@@ -63,12 +63,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const authUser = await AuthService.signIn(username, password);
       setUser(authUser);
       console.log('✅ Authentication successful');
-      console.log('🔐 Auth Environment:', getEnvironment(), 'User Pool:', awsConfig.userPoolId);
       return authUser;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
       console.error('❌ Authentication failed:', err);
-      console.log('🔐 Failed Auth Environment:', getEnvironment(), 'User Pool:', awsConfig.userPoolId);
       setError(errorMessage);
       throw err;
     } finally {

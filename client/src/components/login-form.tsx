@@ -89,33 +89,35 @@ export function LoginForm() {
             </div>
           </div>
 
-          {/* Environment Toggle */}
-          <div className="space-y-2 pt-2 border-t border-game-primary/20">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Settings className="h-4 w-4 text-game-secondary" />
-                <Label htmlFor="environment" className="text-sm font-medium text-game-secondary">
-                  Environment
-                </Label>
+          {/* Environment Toggle - Hidden but keeping all functionality intact */}
+          {false && (
+            <div className="space-y-2 pt-2 border-t border-game-primary/20">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Settings className="h-4 w-4 text-game-secondary" />
+                  <Label htmlFor="environment" className="text-sm font-medium text-game-secondary">
+                    Environment
+                  </Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs ${currentEnvironment === 'production' ? 'text-game-primary' : 'text-game-secondary/50'}`}>
+                    Production
+                  </span>
+                  <Switch
+                    id="environment"
+                    checked={currentEnvironment === 'development'}
+                    onCheckedChange={handleEnvironmentToggle}
+                  />
+                  <span className={`text-xs ${currentEnvironment === 'development' ? 'text-game-primary' : 'text-game-secondary/50'}`}>
+                    Development
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className={`text-xs ${currentEnvironment === 'production' ? 'text-game-primary' : 'text-game-secondary/50'}`}>
-                  Production
-                </span>
-                <Switch
-                  id="environment"
-                  checked={currentEnvironment === 'development'}
-                  onCheckedChange={handleEnvironmentToggle}
-                />
-                <span className={`text-xs ${currentEnvironment === 'development' ? 'text-game-primary' : 'text-game-secondary/50'}`}>
-                  Development
-                </span>
-              </div>
+              <p className="text-xs text-game-secondary/70">
+                Current: {currentEnvironment === 'production' ? 'Production' : 'Development'} environment
+              </p>
             </div>
-            <p className="text-xs text-game-secondary/70">
-              Current: {currentEnvironment === 'production' ? 'Production' : 'Development'} environment
-            </p>
-          </div>
+          )}
 
           {error && (
             <div className="bg-game-error/10 border border-game-error/20 rounded-lg p-3">

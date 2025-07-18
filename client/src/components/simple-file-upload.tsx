@@ -81,16 +81,16 @@ export function SimpleFileUpload({ onFileSelect, selectedFile, onFileRemove, dis
           onDrop={handleDrop}
           onClick={() => !disabled && fileInputRef.current?.click()}
           className={cn(
-            "border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors",
+            "border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors",
             isDragOver && !disabled
               ? "border-game-accent bg-game-accent/10"
               : "border-game-primary/30 hover:border-game-accent/50",
             disabled && "cursor-not-allowed opacity-50"
           )}
         >
-          <div className="flex flex-col items-center space-y-2">
+          <div className="flex items-center justify-center space-x-2">
             <Upload className={cn(
-              "h-8 w-8",
+              "h-4 w-4",
               isDragOver && !disabled ? "text-game-accent" : "text-game-secondary"
             )} />
             <div className="text-sm">

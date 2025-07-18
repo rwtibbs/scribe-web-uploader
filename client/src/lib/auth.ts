@@ -4,6 +4,11 @@ import { AuthUser } from '@shared/schema';
 
 const getUserPool = () => {
   const config = getAwsConfig();
+  console.log('🔧 Creating Cognito User Pool with:', {
+    UserPoolId: config.userPoolId,
+    ClientId: config.userPoolClientId ? `${config.userPoolClientId.substring(0, 8)}...` : 'NOT SET',
+    region: config.region
+  });
   return new CognitoUserPool({
     UserPoolId: config.userPoolId,
     ClientId: config.userPoolClientId,
@@ -37,6 +42,12 @@ export class AuthService {
         },
         onFailure: (err) => {
           console.error('❌ Authentication failed:', err);
+          console.error('❌ Error details:', {
+            code: err.code,
+            message: err.message,
+            name: err.name,
+            stack: err.stack
+          });
           reject(new Error(err.message || 'Authentication failed'));
         },
         newPasswordRequired: (userAttributes, requiredAttributes) => {

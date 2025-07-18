@@ -48,7 +48,7 @@ const MAX_SESSIONS = 5;
 export function MultiSessionForm() {
   const { user } = useAuth();
   const { selectedCampaign, autoSelectMostRecent } = useCampaign();
-  // Remove duplicate useCampaigns call - CampaignSelector already handles this
+  const { data: campaigns, isLoading: campaignsLoading } = useCampaigns(user?.username);
   
   const [sessions, setSessions] = useState<SingleSession[]>([
     {
@@ -373,14 +373,44 @@ export function MultiSessionForm() {
     setGlobalUploadStatus('idle');
   };
 
-  // Campaign selection is handled by CampaignSelector component
+  // Auto-select campaign if campaigns are loaded but none selected
+  useEffect(() => {
+    if (campaigns?.length && !selectedCampaign && !campaignsLoading) {
+      console.log('MultiSessionForm: Auto-selecting campaign from loaded campaigns');
+      autoSelectMostRecent(campaigns);
+    }
+  }, [campaigns, selectedCampaign, campaignsLoading, autoSelectMostRecent]);
 
-  // If still no campaign and no campaigns available, show a minimal message
-  if (!selectedCampaign) {
+  // Show loading state only when campaigns are actually loading
+  if (campaignsLoading || (!selectedCampaign && campaigns?.length === 0)) {
     return (
       <Card className="bg-black/20 backdrop-blur-sm border-game-primary/20">
         <CardContent className="p-8 text-center">
+          <div className="animate-spin w-6 h-6 border-2 border-game-accent border-t-transparent rounded-full mx-auto mb-4"></div>
           <p className="text-game-secondary">Loading campaigns...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // If campaigns loaded but none found, show error state
+  if (!campaignsLoading && campaigns?.length === 0) {
+    return (
+      <Card className="bg-black/20 backdrop-blur-sm border-game-primary/20">
+        <CardContent className="p-8 text-center">
+          <p className="text-game-error">No campaigns found for your account.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // If campaigns exist but none selected, show selection prompt
+  if (!selectedCampaign && campaigns?.length > 0) {
+    return (
+      <Card className="bg-black/20 backdrop-blur-sm border-game-primary/20">
+        <CardContent className="p-8 text-center">
+          <p className="text-game-secondary mb-4">Please select a campaign to continue.</p>
+          <CampaignSelector />
         </CardContent>
       </Card>
     );

@@ -60,6 +60,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setError(null);
       setIsLoading(true);
+      
+      // Ensure we're only using production environment
+      if (getEnvironment() !== 'production') {
+        throw new Error('Only production accounts are permitted to access this application.');
+      }
+      
       const authUser = await AuthService.signIn(username, password);
       setUser(authUser);
       console.log('✅ Authentication successful');
@@ -67,7 +73,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
       console.error('❌ Authentication failed:', err);
-      setError(errorMessage);
+      
+      // Provide specific error message for non-production accounts
+      if (errorMessage.includes('User does not exist') || errorMessage.includes('Incorrect username or password')) {
+        setError('Only production accounts are permitted. Please contact support if you need access.');
+      } else {
+        setError(errorMessage);
+      }
+      
       throw err;
     } finally {
       setIsLoading(false);

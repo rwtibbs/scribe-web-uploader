@@ -23,9 +23,9 @@ const developmentConfig = {
   lambdaEndpoint: import.meta.env.VITE_LAMBDA_ENDPOINT || 'https://642l8cabx1.execute-api.us-east-2.amazonaws.com/dev/start-summary',
 };
 
-// Get environment from localStorage, defaults to production
+// Force production environment only - no user selection allowed
 export const getEnvironment = (): 'production' | 'development' => {
-  return (localStorage.getItem('tabletopscribe-environment') as 'production' | 'development') || 'production';
+  return 'production';
 };
 
 export const setEnvironment = (env: 'production' | 'development') => {

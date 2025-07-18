@@ -89,8 +89,8 @@ export function LoginForm() {
             </div>
           </div>
 
-          {/* Environment Toggle - Hidden but keeping all functionality intact */}
-          {false && (
+          {/* Environment Toggle - Temporarily visible for debugging deployment auth issue */}
+          {true && (
             <div className="space-y-2 pt-2 border-t border-game-primary/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

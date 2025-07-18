@@ -48,7 +48,7 @@ const MAX_SESSIONS = 5;
 export function MultiSessionForm() {
   const { user } = useAuth();
   const { selectedCampaign, autoSelectMostRecent } = useCampaign();
-  const { data: campaigns, isLoading: campaignsLoading } = useCampaigns(user?.username);
+  // Remove duplicate useCampaigns call - CampaignSelector already handles this
   
   const [sessions, setSessions] = useState<SingleSession[]>([
     {

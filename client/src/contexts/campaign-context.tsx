@@ -54,18 +54,27 @@ export function CampaignProvider({ children }: CampaignProviderProps) {
   }, [selectedCampaign]);
 
   const autoSelectMostRecent = (campaigns: Campaign[]) => {
+    console.log('🎯 autoSelectMostRecent called with:', campaigns.length, 'campaigns, current selected:', selectedCampaign?.name);
+    
     if (campaigns.length > 0) {
       // Filter out deleted campaigns and sort by creation date
       const activeCampaigns = campaigns.filter(campaign => !campaign._deleted);
+      console.log('🎯 Active campaigns after filtering:', activeCampaigns.length);
+      
       if (activeCampaigns.length > 0) {
         const mostRecentCampaign = activeCampaigns.sort((a, b) => 
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         )[0];
         
+        console.log('🎯 Most recent campaign:', mostRecentCampaign.name);
+        
         // Always auto-select if no campaign is selected, or if the saved campaign doesn't exist in current campaigns
         if (!selectedCampaign || !activeCampaigns.find(c => c.id === selectedCampaign.id)) {
+          console.log('🎯 Setting selected campaign to:', mostRecentCampaign.name);
           setSelectedCampaign(mostRecentCampaign);
           console.log('🎯 Auto-selected most recent campaign:', mostRecentCampaign.name, mostRecentCampaign.id);
+        } else {
+          console.log('🎯 Campaign already selected, not changing');
         }
       }
     }

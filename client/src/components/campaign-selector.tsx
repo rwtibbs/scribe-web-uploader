@@ -23,11 +23,24 @@ import { cn } from '@/lib/utils';
 export function CampaignSelector() {
   const { user, isAuthenticated } = useAuth();
   const { selectedCampaign, setSelectedCampaign, autoSelectMostRecent } = useCampaign();
-  const { data: campaigns, isLoading } = useCampaigns(user?.username);
+  const { data: campaigns, isLoading, error } = useCampaigns(user?.username);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('CampaignSelector state:', {
+      user: user?.username,
+      isAuthenticated,
+      campaignsCount: campaigns?.length || 0,
+      isLoading,
+      hasError: !!error,
+      selectedCampaign: selectedCampaign?.name
+    });
+  }, [user, isAuthenticated, campaigns, isLoading, error, selectedCampaign]);
 
   // Auto-select most recent campaign when campaigns are loaded
   useEffect(() => {
     if (campaigns?.length && !selectedCampaign) {
+      console.log('Auto-selecting campaign from:', campaigns.map(c => c.name));
       autoSelectMostRecent(campaigns);
     }
   }, [campaigns, selectedCampaign, autoSelectMostRecent]);
@@ -51,6 +64,8 @@ export function CampaignSelector() {
             >
               {selectedCampaign ? (
                 <span className="font-medium text-gray-900">{selectedCampaign.name}</span>
+              ) : isLoading ? (
+                <span className="text-gray-500">Loading campaigns...</span>
               ) : (
                 <span className="text-gray-500">Select campaign...</span>
               )}

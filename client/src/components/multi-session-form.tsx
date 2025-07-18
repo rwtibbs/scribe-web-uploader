@@ -381,8 +381,8 @@ export function MultiSessionForm() {
     }
   }, [campaigns, selectedCampaign, campaignsLoading, autoSelectMostRecent]);
 
-  // Show loading state only when campaigns are actually loading
-  if (campaignsLoading || (!selectedCampaign && campaigns?.length === 0)) {
+  // Show loading state when campaigns are loading or when campaigns data is not yet available
+  if (campaignsLoading || !campaigns) {
     return (
       <Card className="bg-black/20 backdrop-blur-sm border-game-primary/20">
         <CardContent className="p-8 text-center">
@@ -394,7 +394,7 @@ export function MultiSessionForm() {
   }
 
   // If campaigns loaded but none found, show error state
-  if (!campaignsLoading && campaigns?.length === 0) {
+  if (!campaignsLoading && campaigns && campaigns.length === 0) {
     return (
       <Card className="bg-black/20 backdrop-blur-sm border-game-primary/20">
         <CardContent className="p-8 text-center">

@@ -45,6 +45,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setIsLoading(true);
       console.log('🔄 Checking current session...');
+      
+      // Clear any cached data when checking session to prevent cross-environment contamination
+      localStorage.removeItem('selectedCampaign');
+      
       const currentUser = await AuthService.getCurrentSession();
       setUser(currentUser);
       console.log('✅ Session check complete:', currentUser ? 'User found' : 'No active session');
@@ -85,6 +89,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signOut = () => {
     console.log('🚪 Signing out user');
+    
+    // Clear all cached data on signout to prevent cross-environment contamination
+    localStorage.removeItem('selectedCampaign');
+    localStorage.removeItem('tabletopscribe-environment');
+    
     AuthService.signOut();
     setUser(null);
     setError(null);

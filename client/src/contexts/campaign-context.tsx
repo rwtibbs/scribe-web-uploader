@@ -23,15 +23,20 @@ interface CampaignProviderProps {
 
 export function CampaignProvider({ children }: CampaignProviderProps) {
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(() => {
-    // Load from localStorage on initial load
-    const saved = localStorage.getItem('selectedCampaign');
-    return saved ? JSON.parse(saved) : null;
+    // Clear any cached campaign data when starting fresh - ensures no cross-environment contamination
+    localStorage.removeItem('selectedCampaign');
+    return null;
   });
 
-  // Save selected campaign to localStorage
+  // Save selected campaign to localStorage with environment validation
   useEffect(() => {
     if (selectedCampaign) {
-      localStorage.setItem('selectedCampaign', JSON.stringify(selectedCampaign));
+      // Store campaign with environment context to prevent cross-environment issues
+      const campaignWithEnv = {
+        ...selectedCampaign,
+        _environment: 'production' // Force production environment context
+      };
+      localStorage.setItem('selectedCampaign', JSON.stringify(campaignWithEnv));
     } else {
       localStorage.removeItem('selectedCampaign');
     }

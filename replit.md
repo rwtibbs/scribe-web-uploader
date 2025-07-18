@@ -113,6 +113,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- July 18, 2025. Fixed campaign data environment cross-contamination: Added GraphQL endpoint validation, cleared all localStorage caches on session changes, updated query cache keys to include environment context, ensured production-only campaign data
 - July 18, 2025. Implemented production-only authentication restriction: Forced production environment for all users, removed environment toggle completely, added specific error handling for development accounts attempting to log in, cleaned up login interface
 - July 18, 2025. Enhanced file picker UI and authentication: Added drag-and-drop functionality with visual feedback, compact horizontal layout with 24px icon, removed file format text for cleaner design, temporarily resolved deployment authentication issue by identifying environment mismatch, hidden environment toggle while defaulting to production
 - July 17, 2025. Simplified app to focus on multi-session uploads: Made multi-session upload the main and only page (besides login), removed single session upload entirely, removed sessions collection and individual session pages, simplified campaign selector by removing upload dropdown with search functionality

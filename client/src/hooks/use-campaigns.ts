@@ -7,11 +7,14 @@ export function useCampaigns(owner?: string) {
   const { user } = useAuth();
   
   return useQuery<Campaign[]>({
-    queryKey: ['campaigns', owner],
+    queryKey: ['campaigns', owner, 'production'], // Add environment to cache key
     queryFn: async () => {
       if (!owner) throw new Error('Owner is required to fetch campaigns');
-      console.log('🔄 Fetching campaigns for owner:', owner);
+      console.log('🔄 Fetching campaigns for owner:', owner, '(production environment only)');
       try {
+        // Clear any existing campaign cache to prevent cross-environment contamination
+        localStorage.removeItem('selectedCampaign');
+        
         // Try with Cognito access token first, then fallback to API key
         const campaigns = await graphqlClient.getCampaignsByOwner(owner, user?.accessToken);
         console.log('✅ Campaigns fetched:', campaigns.length, 'campaigns');

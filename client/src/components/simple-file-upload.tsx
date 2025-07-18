@@ -98,7 +98,7 @@ export function SimpleFileUpload({ onFileSelect, selectedFile, onFileRemove, dis
               <span className="text-game-secondary"> or drag and drop</span>
             </div>
             <p className="text-xs text-game-secondary">
-              Audio files: MP3, WAV, M4A, OGG, AAC, FLAC
+              MP3, WAV, M4A, OGG, AAC, FLAC
             </p>
           </div>
         </div>

@@ -88,12 +88,12 @@ export function SimpleFileUpload({ onFileSelect, selectedFile, onFileRemove, dis
             disabled && "cursor-not-allowed opacity-50"
           )}
         >
-          <div className="flex items-center justify-center space-x-2">
+          <div className="flex items-center justify-start space-x-3">
             <Upload className={cn(
-              "h-4 w-4",
+              "h-6 w-6",
               isDragOver && !disabled ? "text-game-accent" : "text-game-secondary"
             )} />
-            <div className="text-sm">
+            <div className="text-sm text-left">
               <span className="font-medium text-game-primary">Click to upload</span>
               <span className="text-game-secondary"> or drag and drop</span>
             </div>

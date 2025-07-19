@@ -358,23 +358,37 @@ export function MultiSessionForm() {
   };
 
   const resetForm = () => {
-    setSessions([
-      {
-        id: '1',
-        name: '',
-        date: new Date().toISOString().split('T')[0],
-        uploadStatus: 'idle'
-      }
-    ]);
-    form.reset();
+    // Reset sessions to initial clean state with a new unique ID
+    const freshSession = {
+      id: Date.now().toString(),
+      name: '',
+      date: new Date().toISOString().split('T')[0],
+      uploadStatus: 'idle' as const,
+      file: undefined,
+      uploadProgress: undefined,
+      errorMessage: undefined
+    };
+    
+    setSessions([freshSession]);
+    
+    // Reset form with fresh default values
+    form.reset({
+      campaignId: effectiveCampaign?.id || '',
+      sessions: [{ name: '', date: freshSession.date }]
+    });
+    
+    // Reset all global state
     setGlobalUploadStatus('idle');
     setCurrentUploadingIndex(null);
     setCompletedUploads(0);
     setGlobalErrorMessage(null);
+    
+    console.log('🔄 Form reset completed - ready for new batch');
   };
 
   const dismissSuccessMessage = () => {
-    setGlobalUploadStatus('idle');
+    // When dismissing success message, reset the entire form for a fresh start
+    resetForm();
   };
 
   // Auto-select campaign if campaigns are loaded but none selected
@@ -392,6 +406,19 @@ export function MultiSessionForm() {
       autoSelectMostRecent(campaigns);
     }
   }, [campaigns, selectedCampaign, campaignsLoading, autoSelectMostRecent, isAuthenticated, user]);
+
+  // Check for stale uploaded sessions and reset if needed (helps with refresh/navigation issues)
+  useEffect(() => {
+    const hasUploadedSessions = sessions.some(s => s.uploadStatus === 'success');
+    const hasIdleSessions = sessions.some(s => s.uploadStatus === 'idle' && !s.file);
+    
+    // If we have both uploaded sessions and idle sessions without files, 
+    // it suggests a mixed state that can cause issues
+    if (hasUploadedSessions && hasIdleSessions && globalUploadStatus === 'idle') {
+      console.log('🔧 Detected mixed session states - auto-resetting form for clean state');
+      resetForm();
+    }
+  }, [sessions, globalUploadStatus]);
 
   // Fallback timeout for mobile - force show form after 5 seconds if stuck loading
   useEffect(() => {
@@ -534,6 +561,7 @@ export function MultiSessionForm() {
                         Audio Recording <span className="text-game-error">*</span>
                       </Label>
                       <SimpleFileUpload
+                        key={session.id}
                         onFileSelect={(file) => handleFileSelect(session.id, file)}
                         selectedFile={session.file}
                         onFileRemove={() => handleFileRemove(session.id)}

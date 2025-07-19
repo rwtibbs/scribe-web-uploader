@@ -1,7 +1,7 @@
 // Production (DEV) environment configuration only
 export const awsConfig = {
   region: process.env.VITE_AWS_REGION || 'us-east-2',
-  s3Bucket: process.env.VITE_S3_BUCKET || 'scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-dev', // Production bucket
+  s3Bucket: process.env.VITE_S3_BUCKET || 'scribe8a8fcf3f6cb14734bce4bd48352f8043195641-dev', // Production bucket
   lambdaEndpoint: 'https://642l8cabx1.execute-api.us-east-2.amazonaws.com/dev/start-summary',
   // Production GraphQL endpoint
   graphqlEndpoint: process.env.VITE_GRAPHQL_ENDPOINT || 'https://lm5nq7s75raxnd24y67v3civhm.appsync-api.us-east-2.amazonaws.com/graphql',

@@ -21,8 +21,16 @@ export class S3UploadService {
       window.gc();
     }
 
-    // Use direct presigned URL upload (bypasses server completely)
-    return S3UploadService.uploadFileWithPresignedUrl({ key, file, onProgress });
+    try {
+      // Try direct presigned URL upload first
+      console.log('🔄 Attempting direct S3 upload...');
+      return await S3UploadService.uploadFileWithPresignedUrl({ key, file, onProgress });
+    } catch (error) {
+      console.warn('⚠️ Direct upload failed, trying server-side upload fallback:', error);
+      
+      // If direct upload fails (likely CORS issue), fallback to server-side upload
+      return S3UploadService.uploadFileViaServer({ key, file, onProgress });
+    }
   }
 
   private static async uploadFileWithPresignedUrl({ key, file, onProgress }: S3UploadParams): Promise<string> {
@@ -142,12 +150,15 @@ export class S3UploadService {
           
           console.error('❌ Network error during upload:', event);
           console.error('❌ XHR status:', xhr.status, 'readyState:', xhr.readyState);
+          console.error('❌ Presigned URL used:', presignedUrl.substring(0, 100) + '...');
+          console.error('❌ Upload target bucket:', presignedUrl.includes('scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-dev') ? 'Production (DEV)' : 'Unknown');
           
           // More specific error handling
           if (document.hidden) {
             reject(new Error('Upload failed: App was moved to background. Please keep the app active during upload.'));
           } else if (xhr.status === 0) {
-            reject(new Error('Network connection lost. Please check your internet connection and try again.'));
+            // This is likely a CORS issue with the production S3 bucket
+            reject(new Error('Unable to connect to storage server. This appears to be a CORS configuration issue with the production bucket. Please contact support to resolve S3 bucket permissions.'));
           } else {
             reject(new Error(`Network error during upload (status: ${xhr.status}). Please check your connection and try again.`));
           }
@@ -199,6 +210,66 @@ export class S3UploadService {
         }
         
         reject(new Error(`Presigned URL upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`));
+      }
+    });
+  }
+
+  private static async uploadFileViaServer({ key, file, onProgress }: S3UploadParams): Promise<string> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        console.log('🌐 Starting server-side upload fallback...');
+        console.log(`📁 Uploading file via server: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)}MB)`);
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('fileName', key);
+
+        const xhr = new XMLHttpRequest();
+        xhr.timeout = 15 * 60 * 1000; // 15 minutes for server-side upload
+
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable && onProgress) {
+            const percentage = Math.round((event.loaded / event.total) * 100);
+            console.log(`📈 Server upload progress: ${percentage}%`);
+            onProgress({ loaded: event.loaded, total: event.total, percentage });
+          }
+        });
+
+        xhr.addEventListener('load', () => {
+          console.log(`📥 Server upload finished with status: ${xhr.status}`);
+          
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const response = JSON.parse(xhr.responseText);
+              if (response.success && response.location) {
+                console.log('✅ Server-side upload completed successfully');
+                resolve(response.location);
+              } else {
+                reject(new Error(response.message || 'Server upload failed'));
+              }
+            } catch (parseError) {
+              reject(new Error('Failed to parse server response'));
+            }
+          } else {
+            reject(new Error(`Server upload failed with status: ${xhr.status}`));
+          }
+        });
+
+        xhr.addEventListener('error', () => {
+          console.error('❌ Server upload network error');
+          reject(new Error('Server upload failed due to network error'));
+        });
+
+        xhr.addEventListener('timeout', () => {
+          console.error('⏰ Server upload timed out');
+          reject(new Error('Server upload timed out'));
+        });
+
+        xhr.open('POST', '/api/upload-server-side');
+        xhr.send(formData);
+
+      } catch (error) {
+        reject(new Error(`Server upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`));
       }
     });
   }

@@ -27,7 +27,15 @@ const maxTotalFileSize = 300 * 1024 * 1024; // 300MB total file size
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: chunkSize, // Individual chunk limit
+    fileSize: maxTotalFileSize, // Allow full 300MB for server-side uploads
+  },
+});
+
+// Separate upload configuration for chunked uploads
+const chunkUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: chunkSize, // Individual chunk limit for chunked uploads
   },
 });
 
@@ -53,7 +61,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Chunked upload endpoints for large files
-  app.post('/api/upload-chunk', upload.single('chunk'), handleMulterError, async (req: Request, res: Response) => {
+  app.post('/api/upload-chunk', chunkUpload.single('chunk'), handleMulterError, async (req: Request, res: Response) => {
     try {
       const file = req.file;
       const { uploadId, partNumber, fileName, bucket } = req.body;
@@ -196,6 +204,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error aborting multipart upload:', error);
       res.status(500).json({ 
         message: 'Failed to abort multipart upload',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Server-side S3 upload fallback (for CORS issues)
+  app.post('/api/upload-server-side', upload.single('file'), handleMulterError, async (req: Request, res: Response) => {
+    try {
+      const file = req.file;
+      const { fileName } = req.body;
+
+      if (!file || !fileName) {
+        return res.status(400).json({ 
+          message: 'Missing required fields: file, fileName' 
+        });
+      }
+
+      console.log(`📤 Server-side upload: ${fileName} (${Math.round(file.size / (1024 * 1024))}MB)`);
+      
+      const maxFileSize = 300 * 1024 * 1024; // 300MB
+      if (file.size > maxFileSize) {
+        return res.status(413).json({
+          message: `File too large: ${Math.round(file.size / (1024 * 1024))}MB. Maximum size is 300MB.`,
+          error: 'FILE_TOO_LARGE'
+        });
+      }
+
+      const key = `public/audioUploads/${fileName}`;
+      const bucketName = process.env.AWS_S3_BUCKET || awsConfig.s3Bucket;
+      
+      console.log(`⬆️ Uploading to S3: ${bucketName}/${key}`);
+
+      const uploadParams = {
+        Bucket: bucketName,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype || 'audio/mpeg'
+      };
+
+      const result = await s3.upload(uploadParams).promise();
+      
+      console.log('✅ Server-side upload completed:', result.Location);
+      
+      res.json({
+        success: true,
+        location: result.Location,
+        key: result.Key
+      });
+    } catch (error) {
+      console.error('Error in server-side upload:', error);
+      res.status(500).json({ 
+        message: 'Failed to upload file',
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }

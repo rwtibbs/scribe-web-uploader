@@ -12,31 +12,13 @@ const productionConfig = {
   lambdaEndpoint: 'https://642l8cabx1.execute-api.us-east-2.amazonaws.com/dev/start-summary',
 };
 
-// DEVSORT is development environment  
-const developmentConfig = {
-  region: 'us-east-2',
-  userPoolId: 'us-east-2_N5trdtp4e', // DEVSORT environment (development)
-  userPoolClientId: 'kpk9rjugfg5997ann3v40s7hs', // DEVSORT client ID
-  s3Bucket: 'scribe8a8fcf3f6cb14734bce4bd48352f8043acdd4-devsort',
-  appsyncApiKey: import.meta.env.VITE_APPSYNC_API_KEY || '',
-  graphqlEndpoint: 'https://bbypecanqjgyblz7ikrrk46rbe.appsync-api.us-east-2.amazonaws.com/graphql',
-  lambdaEndpoint: import.meta.env.VITE_LAMBDA_ENDPOINT || 'https://642l8cabx1.execute-api.us-east-2.amazonaws.com/dev/start-summary',
-};
-
-// Force production environment only - no user selection allowed
-export const getEnvironment = (): 'production' | 'development' => {
+// Only production environment is supported
+export const getEnvironment = (): 'production' => {
   return 'production';
 };
 
-export const setEnvironment = (env: 'production' | 'development') => {
-  localStorage.setItem('tabletopscribe-environment', env);
-  // Force page reload to apply new configuration
-  window.location.reload();
-};
-
 export const getAwsConfig = (): AWSConfig => {
-  const env = getEnvironment();
-  return env === 'development' ? developmentConfig : productionConfig;
+  return productionConfig;
 };
 
 export const awsConfig = getAwsConfig();

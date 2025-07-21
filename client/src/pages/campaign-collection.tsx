@@ -176,14 +176,7 @@ export default function CampaignCollectionPage() {
                         </div>
                       </div>
 
-                      {/* Duration Badge - only show if duration is meaningful */}
-                      {campaign.duration && campaign.duration > 60 && (
-                        <div>
-                          <Badge variant="secondary" className="bg-white/20 text-white">
-                            {Math.round(campaign.duration / 60)} hours total
-                          </Badge>
-                        </div>
-                      )}
+
 
                       {/* Upload Button */}
                       <div className="pt-2">

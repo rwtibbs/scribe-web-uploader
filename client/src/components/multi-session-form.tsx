@@ -505,7 +505,7 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
                         disabled={globalUploadStatus === 'uploading'}
                       />
                       {session.file && !session.name.trim() && (
-                        <p className="text-sm text-game-error">Session name is required when audio file is selected</p>
+                        <p className="text-sm text-game-error">Session name is required</p>
                       )}
                     </div>
 

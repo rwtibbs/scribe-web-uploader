@@ -87,7 +87,11 @@ export function LoginForm() {
             <div className="bg-game-error/10 border border-game-error/20 rounded-lg p-3">
               <div className="flex items-center">
                 <AlertCircle className="h-4 w-4 text-game-error mr-2" />
-                <span className="text-game-error text-sm">{error}</span>
+                <span className="text-game-error text-sm">
+                  {error === "Only production accounts are permitted. Please contact support if you need access." 
+                    ? "Only internal accounts are permitted at this time. Please contact support if you need access."
+                    : error}
+                </span>
               </div>
             </div>
           )}

@@ -39,8 +39,18 @@ export default function CampaignCollectionPage() {
     user: user?.username,
     campaignsLoading,
     campaignsCount: campaigns?.length,
+    campaignIds,
+    sessionCounts,
+    sessionCountsLoading,
     error: error?.message
   });
+  
+  // Additional debug for session counts
+  if (campaigns && campaigns.length > 0) {
+    campaigns.forEach(campaign => {
+      console.log(`📊 Campaign "${campaign.name}" (${campaign.id}): ${sessionCounts?.[campaign.id] || '?'} sessions`);
+    });
+  }
 
   // Show loading state while checking authentication
   if (authLoading) {
@@ -166,8 +176,8 @@ export default function CampaignCollectionPage() {
                         </div>
                       </div>
 
-                      {/* Duration Badge */}
-                      {campaign.duration && campaign.duration > 0 && (
+                      {/* Duration Badge - only show if duration is meaningful */}
+                      {campaign.duration && campaign.duration > 60 && (
                         <div>
                           <Badge variant="secondary" className="bg-white/20 text-white">
                             {Math.round(campaign.duration / 60)} hours total

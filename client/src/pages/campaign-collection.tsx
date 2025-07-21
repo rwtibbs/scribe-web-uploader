@@ -5,7 +5,7 @@ import { LoginForm } from "@/components/login-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { CalendarIcon, UsersIcon, FolderIcon, LogOutIcon, FileAudioIcon } from "lucide-react";
+import { CalendarIcon, FolderIcon, LogOutIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import scribeLogoPath from "@assets/Scribe-icon-1_1752518449942.png";
@@ -152,19 +152,12 @@ export default function CampaignCollectionPage() {
                       {/* Campaign Stats */}
                       <div className="flex items-center gap-4 text-sm text-white/60">
                         {/* Session count */}
-                        <div className="flex items-center gap-1">
-                          <FileAudioIcon className="h-4 w-4" />
+                        <div>
                           <span>
                             {sessionCountsLoading ? '...' : `${sessionCounts?.[campaign.id] || 0} sessions`}
                           </span>
                         </div>
                         
-                        {campaign.numPlayers && (
-                          <div className="flex items-center gap-1">
-                            <UsersIcon className="h-4 w-4" />
-                            <span>{campaign.numPlayers} players</span>
-                          </div>
-                        )}
                         <div className="flex items-center gap-1">
                           <CalendarIcon className="h-4 w-4" />
                           <span>

@@ -64,6 +64,7 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
   const [completedUploads, setCompletedUploads] = useState<number>(0);
   const [globalErrorMessage, setGlobalErrorMessage] = useState<string | null>(null);
   const [forceShowForm, setForceShowForm] = useState(false);
+  const [hasSubmissionAttempt, setHasSubmissionAttempt] = useState(false);
 
   const form = useForm<MultiSessionFormData>({
     resolver: zodResolver(multiSessionFormSchema),
@@ -252,6 +253,9 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
   };
 
   const handleSubmit = async (data: MultiSessionFormData) => {
+    // Mark that a submission attempt has been made
+    setHasSubmissionAttempt(true);
+    
     // Validate all sessions have files and names
     const sessionsWithFiles = sessions.filter(s => s.file);
     if (sessionsWithFiles.length === 0) {
@@ -384,6 +388,7 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
     setCurrentUploadingIndex(null);
     setCompletedUploads(0);
     setGlobalErrorMessage(null);
+    setHasSubmissionAttempt(false);
     
     console.log('🔄 Form reset completed - ready for new batch');
   };
@@ -499,13 +504,13 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
                         value={session.name}
                         onChange={(e) => updateSession(session.id, { name: e.target.value })}
                         className={`form-input bg-game-primary/5 border-game-primary/20 text-game-primary placeholder:text-game-secondary/50 ${
-                          session.file && !session.name.trim() ? 'border-game-error bg-game-error/5' : ''
+                          hasSubmissionAttempt && session.file && !session.name.trim() ? 'border-game-error bg-game-error/5' : ''
                         }`}
                         placeholder={`Session ${index + 1}: The Adventure Begins`}
                         disabled={globalUploadStatus === 'uploading'}
                       />
-                      {session.file && !session.name.trim() && (
-                        <p className="text-sm text-game-error">Session name is required</p>
+                      {hasSubmissionAttempt && session.file && !session.name.trim() && (
+                        <p className="text-sm text-game-error">Session name is required when audio file is selected</p>
                       )}
                     </div>
 

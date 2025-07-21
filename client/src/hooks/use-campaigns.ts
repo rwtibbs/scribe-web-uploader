@@ -22,7 +22,7 @@ export function useCampaigns(owner?: string) {
       
       return campaigns;
     },
-    enabled: !!owner && !!user, // Ensure user is available
+    enabled: !!owner && !!user && owner === user?.username, // Ensure user is available and owner matches current user
     retry: (failureCount, error) => {
       // Retry up to 3 times, but be more aggressive for network errors
       if (failureCount >= 3) return false;

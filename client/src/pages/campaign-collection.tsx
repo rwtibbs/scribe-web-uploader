@@ -9,7 +9,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CampaignCollectionPage() {
   const { isAuthenticated, user, isLoading: authLoading } = useAuth();
-  const { data: campaigns, isLoading: campaignsLoading, error } = useCampaigns();
+  const { data: campaigns, isLoading: campaignsLoading, error } = useCampaigns(user?.username);
+
+  // Debug logging
+  console.log('🎯 CampaignCollectionPage state:', {
+    authLoading,
+    isAuthenticated,
+    user: user?.username,
+    campaignsLoading,
+    campaignsCount: campaigns?.length,
+    error: error?.message
+  });
 
   // Show loading state while checking authentication
   if (authLoading) {

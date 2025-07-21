@@ -368,7 +368,7 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
     
     // Reset form with fresh default values
     form.reset({
-      campaignId: effectiveCampaign?.id || '',
+      campaignId: campaignId,
       sessions: [{ name: '', date: freshSession.date }]
     });
     

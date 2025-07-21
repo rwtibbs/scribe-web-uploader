@@ -222,7 +222,8 @@ class GraphQLClient {
     campaignSessionsId: string;
     date: string;
   }, accessToken?: string): Promise<{ id: string; _version: number }> {
-    const isDevelopment = getEnvironment() === 'development';
+    // Force production environment only
+    const isDevelopment = false;
     
     // DEVSORT (development) supports purchaseStatus, DEV (production) does not
     const mutation = isDevelopment ? `

@@ -14,7 +14,7 @@ const environmentConfigs: Record<Environment, AWSConfig> = {
     region: import.meta.env.VITE_AWS_REGION || 'us-east-2',
     userPoolId: import.meta.env.VITE_USER_POOL_ID_DEV || 'us-east-2_2sxvJnReu',
     userPoolClientId: import.meta.env.VITE_USER_POOL_CLIENT_ID_DEV || '',
-    s3Bucket: import.meta.env.VITE_S3_BUCKET_DEV || 'scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-dev',
+    s3Bucket: import.meta.env.VITE_S3_BUCKET_DEV || 'scribe8a8fcf3f6cb14734bce4bd48352f8043195641-dev',
     appsyncApiKey: import.meta.env.VITE_APPSYNC_API_KEY || '',
     graphqlEndpoint: import.meta.env.VITE_GRAPHQL_ENDPOINT_DEV || 'https://lm5nq7s75raxnd24y67v3civhm.appsync-api.us-east-2.amazonaws.com/graphql',
     lambdaEndpoint: import.meta.env.VITE_LAMBDA_ENDPOINT || 'https://642l8cabx1.execute-api.us-east-2.amazonaws.com/dev/start-summary',

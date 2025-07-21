@@ -18,7 +18,7 @@ The application now supports switching between Production (DEV) and Development 
 
 ### DEV (Production)
 - **Cognito User Pool**: `us-east-2_2sxvJnReu`
-- **S3 Bucket**: `scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-dev`
+- **S3 Bucket**: `scribe8a8fcf3f6cb14734bce4bd48352f8043195641-dev`
 - **GraphQL Endpoint**: `https://lm5nq7s75raxnd24y67v3civhm.appsync-api.us-east-2.amazonaws.com/graphql`
 
 ### DEVSORT (Development)
@@ -38,7 +38,7 @@ VITE_AWS_ENVIRONMENT=DEV  # Change to DEVSORT for development
 # DEV Environment (Production)
 VITE_USER_POOL_ID_DEV=us-east-2_2sxvJnReu
 VITE_USER_POOL_CLIENT_ID_DEV=your_production_client_id
-VITE_S3_BUCKET_DEV=scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-dev
+VITE_S3_BUCKET_DEV=scribe8a8fcf3f6cb14734bce4bd48352f8043195641-dev
 VITE_GRAPHQL_ENDPOINT_DEV=https://lm5nq7s75raxnd24y67v3civhm.appsync-api.us-east-2.amazonaws.com/graphql
 
 # DEVSORT Environment (Development)

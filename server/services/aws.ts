@@ -14,7 +14,7 @@ const getEnvironmentConfig = () => {
     };
   } else {
     return {
-      s3Bucket: process.env.VITE_S3_BUCKET_DEV || 'scribe8a8fcf3f6cb14734bce4bd48352f80433dbd8-dev',
+      s3Bucket: process.env.VITE_S3_BUCKET_DEV || 'scribe8a8fcf3f6cb14734bce4bd48352f8043195641-dev',
       graphqlEndpoint: process.env.VITE_GRAPHQL_ENDPOINT_DEV || 'https://lm5nq7s75raxnd24y67v3civhm.appsync-api.us-east-2.amazonaws.com/graphql',
     };
   }

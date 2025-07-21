@@ -11,10 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { CheckCircle, AlertTriangle, Upload, RotateCcw, X, Dice6, Plus, Trash2 } from 'lucide-react';
 import { SimpleFileUpload } from './simple-file-upload';
 import { UploadProgressComponent } from './upload-progress';
-import { useCampaigns } from '@/hooks/use-campaigns';
 import { useAuth } from '@/contexts/auth-context';
-import { useCampaign } from '@/contexts/campaign-context';
-import { CampaignSelector } from './campaign-selector';
 import { graphqlClient } from '@/lib/graphql';
 import { S3UploadService } from '@/lib/s3-upload';
 import { UploadProgress } from '@shared/schema';
@@ -45,10 +42,13 @@ type MultiSessionFormData = z.infer<typeof multiSessionFormSchema>;
 
 const MAX_SESSIONS = 5;
 
-export function MultiSessionForm() {
+interface MultiSessionFormProps {
+  campaignId: string;
+  campaignName: string;
+}
+
+export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormProps) {
   const { user, isAuthenticated } = useAuth();
-  const { selectedCampaign, autoSelectMostRecent } = useCampaign();
-  const { data: campaigns, isLoading: campaignsLoading, error: campaignsError } = useCampaigns(user?.username);
   
   const [sessions, setSessions] = useState<SingleSession[]>([
     {
@@ -68,20 +68,15 @@ export function MultiSessionForm() {
   const form = useForm<MultiSessionFormData>({
     resolver: zodResolver(multiSessionFormSchema),
     defaultValues: {
-      campaignId: '',
+      campaignId: campaignId,
       sessions: sessions.map(s => ({ name: s.name, date: s.date })),
     },
   });
 
-  // Get effective campaign (selected or fallback to first available)
-  const effectiveCampaign = selectedCampaign || (campaigns && campaigns.length > 0 ? campaigns[0] : null);
-
-  // Update campaignId when selectedCampaign or effectiveCampaign changes
+  // Update campaignId when prop changes
   useEffect(() => {
-    if (effectiveCampaign) {
-      form.setValue('campaignId', effectiveCampaign.id);
-    }
-  }, [effectiveCampaign, form]);
+    form.setValue('campaignId', campaignId);
+  }, [campaignId, form]);
 
   // Update form sessions when sessions state changes
   useEffect(() => {
@@ -234,7 +229,7 @@ export function MultiSessionForm() {
     });
     
     const fileExtension = sessionData.file.name.split('.').pop() || 'unknown';
-    const baseFile = `campaign${selectedCampaign.id}Session${session.id}`;
+    const baseFile = `campaign${campaignId}Session${session.id}`;
     const baseAudioFile = `${baseFile}.${fileExtension}`;
     const baseTranscriptionFile = `${baseFile}.json`;
     
@@ -391,21 +386,15 @@ export function MultiSessionForm() {
     resetForm();
   };
 
-  // Auto-select campaign if campaigns are loaded but none selected
+  // Log when component mounts with campaign info
   useEffect(() => {
-    console.log('MultiSessionForm useEffect:', {
-      campaignsLength: campaigns?.length || 0,
-      selectedCampaign: selectedCampaign?.name || 'none',
-      campaignsLoading,
+    console.log('🎯 MultiSessionForm mounted for campaign:', {
+      campaignId,
+      campaignName,
       isAuthenticated,
       user: user?.username
     });
-    
-    if (campaigns?.length && !selectedCampaign && !campaignsLoading && isAuthenticated && user) {
-      console.log('MultiSessionForm: Auto-selecting campaign from loaded campaigns');
-      autoSelectMostRecent(campaigns);
-    }
-  }, [campaigns, selectedCampaign, campaignsLoading, autoSelectMostRecent, isAuthenticated, user]);
+  }, [campaignId, campaignName, isAuthenticated, user]);
 
   // Check for stale uploaded sessions and reset if needed (helps with refresh/navigation issues)
   useEffect(() => {
@@ -420,77 +409,9 @@ export function MultiSessionForm() {
     }
   }, [sessions, globalUploadStatus]);
 
-  // Fallback timeout for mobile - force show form after 5 seconds if stuck loading
-  useEffect(() => {
-    if (isAuthenticated && user && !forceShowForm) {
-      const timeout = setTimeout(() => {
-        console.log('🚨 Mobile fallback: Forcing form display after 5 seconds');
-        setForceShowForm(true);
-      }, 5000);
-      
-      return () => clearTimeout(timeout);
-    }
-  }, [isAuthenticated, user, forceShowForm]);
-
-  // Additional mobile-specific campaign auto-selection trigger
-  useEffect(() => {
-    if (campaigns?.length && !selectedCampaign && isAuthenticated && user && !campaignsLoading) {
-      // Multiple attempts with different delays to ensure mobile reliability
-      const timeouts = [200, 500, 1000, 2000].map((delay, index) =>
-        setTimeout(() => {
-          if (!selectedCampaign && campaigns?.length) {
-            console.log(`🔄 Mobile retry ${index + 1}: Auto-selecting campaign`);
-            autoSelectMostRecent(campaigns);
-          }
-        }, delay)
-      );
-      
-      return () => timeouts.forEach(clearTimeout);
-    }
-  }, [campaigns, selectedCampaign, isAuthenticated, user, campaignsLoading, autoSelectMostRecent]);
-
   // If not authenticated, don't show anything
   if (!isAuthenticated || !user) {
     return null;
-  }
-
-  // Show loading state when campaigns are loading, when campaigns data is not yet available, or when there's an error
-  // But force show form after timeout (mobile fallback)
-  if ((campaignsLoading || !campaigns || campaignsError) && !forceShowForm) {
-    return (
-      <Card className="bg-black/20 backdrop-blur-sm border-game-primary/20">
-        <CardContent className="p-8 text-center">
-          <div className="animate-spin w-6 h-6 border-2 border-game-accent border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-game-secondary">
-            {campaignsError ? 'Retrying connection...' : 'Loading campaigns...'}
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // If campaigns loaded but none found, show error state
-  if (!campaignsLoading && campaigns && campaigns.length === 0) {
-    return (
-      <Card className="bg-black/20 backdrop-blur-sm border-game-primary/20">
-        <CardContent className="p-8 text-center">
-          <p className="text-game-error">No campaigns found — try refreshing. If the issue persists, please contact us.</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // If campaigns exist but none selected, show selection prompt
-  // Unless forced to show form (mobile fallback)
-  if (!selectedCampaign && campaigns?.length > 0 && !forceShowForm) {
-    return (
-      <Card className="bg-black/20 backdrop-blur-sm border-game-primary/20">
-        <CardContent className="p-8 text-center">
-          <p className="text-game-secondary mb-4">Please select a campaign to continue.</p>
-          <CampaignSelector />
-        </CardContent>
-      </Card>
-    );
   }
 
   return (
@@ -499,17 +420,10 @@ export function MultiSessionForm() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <CardTitle className="text-2xl font-semibold text-game-primary">Upload Sessions</CardTitle>
-            {effectiveCampaign ? (
-              <p className="text-game-secondary">
-                Uploading to campaign: <span className="text-game-accent font-medium">{effectiveCampaign.name}</span>
-              </p>
-            ) : (
-              <p className="text-game-secondary">
-                <span className="text-game-accent">Select a campaign to continue</span>
-              </p>
-            )}
+            <p className="text-game-secondary">
+              Uploading to campaign: <span className="text-game-accent font-medium">{campaignName}</span>
+            </p>
           </div>
-          <CampaignSelector />
         </div>
         {sessions.filter(s => s.file).length > 0 && (
           <p className="text-sm text-game-secondary">

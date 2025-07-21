@@ -222,11 +222,8 @@ class GraphQLClient {
     campaignSessionsId: string;
     date: string;
   }, accessToken?: string): Promise<{ id: string; _version: number }> {
-    // Force production environment only
-    const isDevelopment = false;
-    
-    // DEVSORT (development) supports purchaseStatus, DEV (production) does not
-    const mutation = isDevelopment ? `
+    // Production environment - always include purchaseStatus
+    const mutation = `
       mutation CreateSession($input: CreateSessionInput!) {
         createSession(input: $input) {
           id
@@ -241,29 +238,15 @@ class GraphQLClient {
           _version
         }
       }
-    ` : `
-      mutation CreateSession($input: CreateSessionInput!) {
-        createSession(input: $input) {
-          id
-          name
-          duration
-          audioFile
-          transcriptionFile
-          transcriptionStatus
-          campaignSessionsId
-          date
-          _version
-        }
-      }
     `;
 
-    const input = isDevelopment ? {
+    const input = {
       ...sessionData,
       purchaseStatus: 'NOTPURCHASED'
-    } : sessionData;
+    };
 
     console.log('🔄 Creating session with data:', input);
-    console.log('🌍 Environment:', isDevelopment ? 'DEVSORT (development)' : 'DEV (production)');
+    console.log('🌍 Environment: DEV (production) with purchaseStatus support');
 
     const result = await this.query<{ 
       createSession: { 

@@ -113,6 +113,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- July 21, 2025. Fixed purchaseStatus inclusion in production: Updated GraphQL createSession mutation to always include purchaseStatus field in production environment, ensuring proper session creation with NOTPURCHASED status for all new sessions
 - July 21, 2025. Added session counts to campaign tiles: Created useCampaignSessionCounts hook to fetch session counts for all campaigns in parallel, added session count display with audio file icon on campaign collection tiles, integrated GraphQL getSessionsByCampaign method for efficient session counting, enhanced campaign preview with real-time session statistics
 - July 21, 2025. Added Scribe logo and logout functionality: Positioned Scribe logo at top center of campaign collection and upload pages, added logout buttons to both authenticated screens, implemented proper logout functionality with cache clearing and page reload
 - July 21, 2025. Fixed campaign dropdown pagination issue: Added comprehensive pagination support to GraphQL campaign queries, ensuring all user campaigns appear in dropdown regardless of total count, added campaign sorting by creation date for consistent ordering, improved error handling for large campaign collections

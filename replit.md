@@ -113,6 +113,8 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- July 21, 2025. Fixed campaign dropdown pagination issue: Added comprehensive pagination support to GraphQL campaign queries, ensuring all user campaigns appear in dropdown regardless of total count, added campaign sorting by creation date for consistent ordering, improved error handling for large campaign collections
+- July 19, 2025. Fixed S3 bucket configuration and form reset issues: Corrected S3 bucket name to resolve upload failures, enhanced form reset functionality with proper state cleanup, added session detection and auto-reset capabilities, improved file upload component re-rendering
 - July 19, 2025. Cleaned up development environment references: Removed all DEVSORT (development) environment configurations, forced all uploads to production (DEV) S3 bucket only, removed development GraphQL endpoints, ensured consistent production-only environment across client and server
 - July 18, 2025. Fixed campaign data environment cross-contamination: Added GraphQL endpoint validation, cleared all localStorage caches on session changes, updated query cache keys to include environment context, ensured production-only campaign data
 - July 18, 2025. Implemented production-only authentication restriction: Forced production environment for all users, removed environment toggle completely, added specific error handling for development accounts attempting to log in, cleaned up login interface

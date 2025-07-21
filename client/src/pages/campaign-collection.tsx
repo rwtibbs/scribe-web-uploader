@@ -1,10 +1,11 @@
 import { useAuth } from "@/contexts/auth-context";
 import { useCampaigns } from "@/hooks/use-campaigns";
+import { useCampaignSessionCounts } from "@/hooks/use-campaign-sessions";
 import { LoginForm } from "@/components/login-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { CalendarIcon, UsersIcon, FolderIcon, LogOutIcon } from "lucide-react";
+import { CalendarIcon, UsersIcon, FolderIcon, LogOutIcon, FileAudioIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import scribeLogoPath from "@assets/Scribe-icon-1_1752518449942.png";
@@ -12,9 +13,23 @@ import scribeLogoPath from "@assets/Scribe-icon-1_1752518449942.png";
 export default function CampaignCollectionPage() {
   const { isAuthenticated, user, isLoading: authLoading, logout } = useAuth();
   const { data: campaigns, isLoading: campaignsLoading, error } = useCampaigns(user?.username);
+  
+  // Get session counts for all campaigns
+  const campaignIds = campaigns?.map(c => c.id) || [];
+  const { data: sessionCounts, isLoading: sessionCountsLoading } = useCampaignSessionCounts(campaignIds);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    try {
+      // Clear any cached data
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Redirect to login
+      window.location.reload();
+    } catch (error) {
+      console.error('Logout error:', error);
+      window.location.reload();
+    }
   };
 
   // Debug logging
@@ -136,6 +151,14 @@ export default function CampaignCollectionPage() {
                     <div className="space-y-3">
                       {/* Campaign Stats */}
                       <div className="flex items-center gap-4 text-sm text-white/60">
+                        {/* Session count */}
+                        <div className="flex items-center gap-1">
+                          <FileAudioIcon className="h-4 w-4" />
+                          <span>
+                            {sessionCountsLoading ? '...' : `${sessionCounts?.[campaign.id] || 0} sessions`}
+                          </span>
+                        </div>
+                        
                         {campaign.numPlayers && (
                           <div className="flex items-center gap-1">
                             <UsersIcon className="h-4 w-4" />

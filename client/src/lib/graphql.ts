@@ -311,6 +311,39 @@ class GraphQLClient {
     await this.query(mutation, { input }, accessToken);
   }
 
+  async getSessionsByCampaign(campaignId: string, accessToken?: string): Promise<any[]> {
+    console.log('🔄 Fetching sessions for campaign:', campaignId);
+    
+    const query = `
+      query GetSessionsByCampaign($campaignId: ID!) {
+        listSessions(
+          filter: { campaignSessionsId: { eq: $campaignId } }
+          limit: 1000
+        ) {
+          items {
+            id
+            name
+            campaignSessionsId
+            _deleted
+          }
+        }
+      }
+    `;
+
+    const variables = { campaignId };
+
+    const result = await this.query<{ listSessions: { items: any[] } }>(
+      query, 
+      variables, 
+      accessToken
+    );
+    
+    const sessions = result.listSessions.items.filter(session => !session._deleted);
+    console.log(`✅ Found ${sessions.length} sessions for campaign ${campaignId}`);
+    
+    return sessions;
+  }
+
   async getSessionsByOwner(owner: string, accessToken?: string): Promise<any[]> {
     // First get user's campaigns, then get sessions for those campaigns
     const campaigns = await this.getCampaignsByOwner(owner, accessToken);

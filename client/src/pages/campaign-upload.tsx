@@ -14,8 +14,18 @@ export default function CampaignUploadPage() {
   const { isAuthenticated, user, isLoading: authLoading, logout } = useAuth();
   const { data: campaigns, isLoading: campaignsLoading, error } = useCampaigns(user?.username);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    try {
+      // Clear any cached data
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Redirect to login
+      window.location.reload();
+    } catch (error) {
+      console.error('Logout error:', error);
+      window.location.reload();
+    }
   };
 
   // Find the specific campaign

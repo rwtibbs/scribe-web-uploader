@@ -6,17 +6,17 @@ class GraphQLClient {
   private apiKey: string;
 
   constructor() {
-    // Force production config to prevent any environment mixing
+    // Use environment-controlled configuration
     const config = getAwsConfig();
     this.endpoint = config.graphqlEndpoint;
     this.apiKey = config.appsyncApiKey;
     
-    // Validate we're using production endpoints
-    if (!this.endpoint.includes('lm5nq7s75raxnd24y67v3civhm')) {
-      console.error('❌ GraphQL Client misconfigured - not using production endpoint');
-      console.log('Expected: https://lm5nq7s75raxnd24y67v3civhm.appsync-api.us-east-2.amazonaws.com/graphql');
-      console.log('Actual:', this.endpoint);
-    }
+    // Log current environment configuration
+    const environment = getEnvironment();
+    console.log(`🔧 GraphQL Client configured for ${environment} environment:`, {
+      endpoint: this.endpoint,
+      hasApiKey: !!this.apiKey
+    });
   }
 
   async query<T = any>(query: string, variables?: Record<string, any>, accessToken?: string): Promise<T> {

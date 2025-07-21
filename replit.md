@@ -113,6 +113,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- July 21, 2025. Eliminated environment cross-contamination in legacy code: Removed hardcoded production endpoint validation from GraphQL client, replaced forced production environment context in campaign localStorage with environment-specific storage keys, centralized all environment control through VITE_AWS_ENVIRONMENT secret only
 - July 21, 2025. Implemented environment variable control system: Added VITE_AWS_ENVIRONMENT variable to switch between DEV (production) and DEVSORT (development) environments, centralized all AWS configurations with automatic environment detection, created comprehensive environment control documentation for easy switching during debugging
 - July 21, 2025. Fixed purchaseStatus inclusion in production: Updated GraphQL createSession mutation to always include purchaseStatus field in production environment, ensuring proper session creation with NOTPURCHASED status for all new sessions
 - July 21, 2025. Added session counts to campaign tiles: Created useCampaignSessionCounts hook to fetch session counts for all campaigns in parallel, added session count display with audio file icon on campaign collection tiles, integrated GraphQL getSessionsByCampaign method for efficient session counting, enhanced campaign preview with real-time session statistics

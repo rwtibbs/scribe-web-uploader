@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Campaign } from '@/types/aws';
+import { getEnvironment } from '@/lib/aws-config';
 
 interface CampaignContextValue {
   selectedCampaign: Campaign | null;
@@ -24,14 +25,12 @@ interface CampaignProviderProps {
 export function CampaignProvider({ children }: CampaignProviderProps) {
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(() => {
     // Load from localStorage on initial load, but validate environment context
-    const saved = localStorage.getItem('selectedCampaign');
+    const currentEnvironment = getEnvironment();
+    const saved = localStorage.getItem(`selectedCampaign_${currentEnvironment}`);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Only use cached campaign if it's from production environment
-        if (parsed._environment === 'production') {
-          return parsed;
-        }
+        return parsed;
       } catch (e) {
         console.warn('Invalid cached campaign data:', e);
       }
@@ -39,17 +38,13 @@ export function CampaignProvider({ children }: CampaignProviderProps) {
     return null;
   });
 
-  // Save selected campaign to localStorage with environment validation
+  // Save selected campaign to localStorage with environment-specific key
   useEffect(() => {
+    const currentEnvironment = getEnvironment();
     if (selectedCampaign) {
-      // Store campaign with environment context to prevent cross-environment issues
-      const campaignWithEnv = {
-        ...selectedCampaign,
-        _environment: 'production' // Force production environment context
-      };
-      localStorage.setItem('selectedCampaign', JSON.stringify(campaignWithEnv));
+      localStorage.setItem(`selectedCampaign_${currentEnvironment}`, JSON.stringify(selectedCampaign));
     } else {
-      localStorage.removeItem('selectedCampaign');
+      localStorage.removeItem(`selectedCampaign_${currentEnvironment}`);
     }
   }, [selectedCampaign]);
 

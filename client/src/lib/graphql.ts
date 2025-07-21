@@ -222,7 +222,8 @@ class GraphQLClient {
     campaignSessionsId: string;
     date: string;
   }, accessToken?: string): Promise<{ id: string; _version: number }> {
-    // Production environment - always include purchaseStatus
+    // Environment-aware session creation with purchaseStatus support
+    const currentEnv = getEnvironment();
     const mutation = `
       mutation CreateSession($input: CreateSessionInput!) {
         createSession(input: $input) {
@@ -246,7 +247,7 @@ class GraphQLClient {
     };
 
     console.log('🔄 Creating session with data:', input);
-    console.log('🌍 Environment: DEV (production) with purchaseStatus support');
+    console.log(`🌍 Environment: ${currentEnv} with purchaseStatus support`);
 
     const result = await this.query<{ 
       createSession: { 

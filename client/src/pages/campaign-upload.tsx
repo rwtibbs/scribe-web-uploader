@@ -4,14 +4,19 @@ import { LoginForm } from "@/components/login-form";
 import { MultiSessionForm } from "@/components/multi-session-form";
 import { Button } from "@/components/ui/button";
 import { Link, useParams } from "wouter";
-import { ArrowLeftIcon, FolderIcon } from "lucide-react";
+import { ArrowLeftIcon, FolderIcon, LogOutIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useMemo } from "react";
+import scribeLogoPath from "@assets/Scribe-icon-1_1752518449942.png";
 
 export default function CampaignUploadPage() {
   const { campaignId } = useParams<{ campaignId: string }>();
-  const { isAuthenticated, user, isLoading: authLoading } = useAuth();
-  const { data: campaigns, isLoading: campaignsLoading, error } = useCampaigns();
+  const { isAuthenticated, user, isLoading: authLoading, logout } = useAuth();
+  const { data: campaigns, isLoading: campaignsLoading, error } = useCampaigns(user?.username);
+
+  const handleLogout = () => {
+    logout();
+  };
 
   // Find the specific campaign
   const campaign = useMemo(() => {
@@ -115,17 +120,39 @@ export default function CampaignUploadPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="flex items-center gap-4 mb-8">
-            <Link href="/">
-              <Button variant="outline" size="sm">
-                <ArrowLeftIcon className="h-4 w-4 mr-2" />
-                All Campaigns
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-2xl font-bold text-white">{campaign?.name}</h1>
-              <p className="text-white/60 text-sm">Upload session audio files</p>
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <Link href="/">
+                <Button variant="outline" size="sm">
+                  <ArrowLeftIcon className="h-4 w-4 mr-2" />
+                  All Campaigns
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-2xl font-bold text-white">{campaign?.name}</h1>
+                <p className="text-white/60 text-sm">Upload session audio files</p>
+              </div>
             </div>
+            
+            {/* Center Logo */}
+            <div className="flex items-center gap-2">
+              <img 
+                src={scribeLogoPath} 
+                alt="Scribe" 
+                className="h-8 w-8"
+              />
+            </div>
+            
+            {/* Right Logout Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              className="text-white border-white/30 hover:bg-white/10"
+            >
+              <LogOutIcon className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
           </div>
 
           {/* Upload Form */}

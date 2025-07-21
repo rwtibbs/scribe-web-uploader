@@ -2,14 +2,20 @@ import { useAuth } from "@/contexts/auth-context";
 import { useCampaigns } from "@/hooks/use-campaigns";
 import { LoginForm } from "@/components/login-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { CalendarIcon, UsersIcon, FolderIcon } from "lucide-react";
+import { CalendarIcon, UsersIcon, FolderIcon, LogOutIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import scribeLogoPath from "@assets/Scribe-icon-1_1752518449942.png";
 
 export default function CampaignCollectionPage() {
-  const { isAuthenticated, user, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading, logout } = useAuth();
   const { data: campaigns, isLoading: campaignsLoading, error } = useCampaigns(user?.username);
+
+  const handleLogout = () => {
+    logout();
+  };
 
   // Debug logging
   console.log('🎯 CampaignCollectionPage state:', {
@@ -38,13 +44,39 @@ export default function CampaignCollectionPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#01032d] to-[#010101]">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Your Campaigns</h1>
-          <p className="text-white/70">Select a campaign to upload session audio</p>
-          {user && (
-            <p className="text-white/50 text-sm mt-2">Welcome back, {user.username}</p>
-          )}
+        {/* Header with Logo and Logout */}
+        <div className="flex items-center justify-between mb-8">
+          {/* Left spacer */}
+          <div className="w-24"></div>
+          
+          {/* Center Logo and Title */}
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <img 
+                src={scribeLogoPath} 
+                alt="Scribe" 
+                className="h-12 w-12"
+              />
+              <h1 className="text-4xl font-bold text-white">Your Campaigns</h1>
+            </div>
+            <p className="text-white/70">Select a campaign to upload session audio</p>
+            {user && (
+              <p className="text-white/50 text-sm mt-2">Welcome back, {user.username}</p>
+            )}
+          </div>
+          
+          {/* Right Logout Button */}
+          <div className="w-24 flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              className="text-white border-white/30 hover:bg-white/10"
+            >
+              <LogOutIcon className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
 
         {/* Loading State */}

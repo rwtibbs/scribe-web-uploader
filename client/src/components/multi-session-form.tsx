@@ -252,10 +252,17 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
   };
 
   const handleSubmit = async (data: MultiSessionFormData) => {
-    // Validate all sessions have files
+    // Validate all sessions have files and names
     const sessionsWithFiles = sessions.filter(s => s.file);
     if (sessionsWithFiles.length === 0) {
       setGlobalErrorMessage('Please select at least one audio file');
+      return;
+    }
+
+    // Check for missing session names
+    const sessionsWithMissingNames = sessionsWithFiles.filter(s => !s.name.trim());
+    if (sessionsWithMissingNames.length > 0) {
+      setGlobalErrorMessage('Please provide names for all sessions with audio files');
       return;
     }
 
@@ -491,10 +498,15 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
                       <Input
                         value={session.name}
                         onChange={(e) => updateSession(session.id, { name: e.target.value })}
-                        className="form-input bg-game-primary/5 border-game-primary/20 text-game-primary placeholder:text-game-secondary/50"
+                        className={`form-input bg-game-primary/5 border-game-primary/20 text-game-primary placeholder:text-game-secondary/50 ${
+                          session.file && !session.name.trim() ? 'border-game-error bg-game-error/5' : ''
+                        }`}
                         placeholder={`Session ${index + 1}: The Adventure Begins`}
                         disabled={globalUploadStatus === 'uploading'}
                       />
+                      {session.file && !session.name.trim() && (
+                        <p className="text-sm text-game-error">Session name is required when audio file is selected</p>
+                      )}
                     </div>
 
                     {/* Session Date */}

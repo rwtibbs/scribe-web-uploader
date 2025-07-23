@@ -47,19 +47,19 @@ export function useCampaigns(owner?: string) {
     staleTime: 2 * 60 * 1000, // Consider data fresh for 2 minutes (more aggressive refresh for mobile)
     gcTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
     refetchOnWindowFocus: false, // Don't refetch on window focus
-    refetchOnMount: 'always', // CRITICAL: Always refetch when component mounts, regardless of cache
+    refetchOnMount: true, // Refetch on mount but respect cache
     // Add networkMode to handle offline scenarios better
     networkMode: 'online',
   });
 
-  // CRITICAL FIX: Force refetch when user becomes available
+  // CRITICAL FIX: Force refetch when user becomes available for the first time only
   // This handles the race condition where the query was disabled initially
   useEffect(() => {
-    if (user?.accessToken && isAuthenticated && owner && owner === user.username) {
-      console.log('🔄 User became available, triggering campaigns refetch for mobile compatibility');
+    if (user?.accessToken && isAuthenticated && owner && owner === user.username && !query.data) {
+      console.log('🔄 User became available, triggering initial campaigns fetch for mobile compatibility');
       query.refetch();
     }
-  }, [user?.accessToken, isAuthenticated, owner, query]);
+  }, [user?.accessToken, isAuthenticated, owner, query.data]);
 
   return query;
 }

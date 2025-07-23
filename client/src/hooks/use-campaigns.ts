@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { graphqlClient } from '@/lib/graphql';
 import { Campaign } from '@/types/aws';
 import { useAuth } from '@/contexts/auth-context';
@@ -6,7 +7,7 @@ import { useAuth } from '@/contexts/auth-context';
 export function useCampaigns(owner?: string) {
   const { user, isAuthenticated } = useAuth();
   
-  return useQuery<Campaign[]>({
+  const query = useQuery<Campaign[]>({
     queryKey: ['campaigns', owner, 'production'], // Add environment to cache key
     queryFn: async () => {
       if (!owner) throw new Error('Owner is required to fetch campaigns');
@@ -46,8 +47,19 @@ export function useCampaigns(owner?: string) {
     staleTime: 2 * 60 * 1000, // Consider data fresh for 2 minutes (more aggressive refresh for mobile)
     gcTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
     refetchOnWindowFocus: false, // Don't refetch on window focus
-    refetchOnMount: true, // Always refetch on component mount
+    refetchOnMount: 'always', // CRITICAL: Always refetch when component mounts, regardless of cache
     // Add networkMode to handle offline scenarios better
     networkMode: 'online',
   });
+
+  // CRITICAL FIX: Force refetch when user becomes available
+  // This handles the race condition where the query was disabled initially
+  useEffect(() => {
+    if (user?.accessToken && isAuthenticated && owner && owner === user.username) {
+      console.log('🔄 User became available, triggering campaigns refetch for mobile compatibility');
+      query.refetch();
+    }
+  }, [user?.accessToken, isAuthenticated, owner, query]);
+
+  return query;
 }

@@ -18,11 +18,8 @@ export default function CampaignCollectionPage() {
   const campaignIds = campaigns?.map(c => c.id) || [];
   const { data: sessionCounts, isLoading: sessionCountsLoading } = useCampaignSessionCounts(campaignIds);
 
-  // More comprehensive loading state for mobile with better logic
-  const isLoadingCampaigns = authLoading || (campaignsLoading && !campaigns) || (isAuthenticated && !user?.accessToken);
-  
-  // Special case: if we have campaigns but still fetching, don't show loading state
-  const shouldShowLoading = isLoadingCampaigns && (!campaigns || campaigns.length === 0);
+  // More comprehensive loading state for mobile
+  const isLoadingCampaigns = authLoading || campaignsLoading || (isAuthenticated && !user?.accessToken) || isFetching;
 
   const handleLogout = async () => {
     try {
@@ -43,7 +40,6 @@ export default function CampaignCollectionPage() {
     campaignsLoading,
     isFetching,
     isLoadingCampaigns,
-    shouldShowLoading,
     campaignsCount: campaigns?.length,
     campaignIds,
     sessionCounts,
@@ -59,7 +55,7 @@ export default function CampaignCollectionPage() {
   }
 
   // Show loading state while checking authentication or loading campaigns
-  if (shouldShowLoading) {
+  if (isLoadingCampaigns) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#01032d] to-[#010101] flex items-center justify-center">
         <div className="text-white">Loading...</div>
@@ -120,8 +116,8 @@ export default function CampaignCollectionPage() {
           </div>
         )}
 
-        {/* No Campaigns - improved condition to avoid mobile race condition */}
-        {!shouldShowLoading && !campaignsLoading && !error && (!campaigns || campaigns.length === 0) && isAuthenticated && user?.accessToken && (
+        {/* No Campaigns */}
+        {!isLoadingCampaigns && !error && (!campaigns || campaigns.length === 0) && (
           <div className="text-center py-12">
             <FolderIcon className="mx-auto h-16 w-16 text-white/30 mb-4" />
             <h2 className="text-xl font-semibold text-white mb-2">No campaigns found</h2>
@@ -130,7 +126,7 @@ export default function CampaignCollectionPage() {
         )}
 
         {/* Campaign Grid */}
-        {!shouldShowLoading && !error && campaigns && campaigns.length > 0 && (
+        {!isLoadingCampaigns && !error && campaigns && campaigns.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {campaigns.map((campaign) => (
               <Link key={campaign.id} href={`/campaign/${campaign.id}/upload`}>

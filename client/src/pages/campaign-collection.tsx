@@ -71,39 +71,36 @@ export default function CampaignCollectionPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#01032d] to-[#010101]">
       <div className="container mx-auto px-4 py-8">
-        {/* Header with Logo and Logout */}
+        {/* Header Navigation Bar */}
         <div className="flex items-center justify-between mb-8">
-          {/* Left spacer */}
-          <div className="w-24"></div>
-          
-          {/* Center Logo and Title */}
-          <div className="text-center">
-            <div className="mb-4">
-              <img 
-                src={scribeLogoPath} 
-                alt="Scribe" 
-                className="h-16 mx-auto"
-              />
-            </div>
-            <h1 className="text-2xl font-semibold text-white mb-4">Audio Uploader</h1>
-            <p className="text-white/70">Select a campaign to upload session audio</p>
-            {user && (
-              <p className="text-white/50 text-sm mt-2">Welcome back, {user.username}</p>
-            )}
+          {/* Left: Scribe Logo */}
+          <div>
+            <img 
+              src={scribeLogoPath} 
+              alt="Scribe" 
+              className="h-8"
+            />
           </div>
           
-          {/* Right Logout Button */}
-          <div className="w-24 flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              className="text-white border-white/30 hover:bg-white/10"
-            >
-              <LogOutIcon className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
-          </div>
+          {/* Right: Logout Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogout}
+            className="text-white border-white/30 hover:bg-white/10"
+          >
+            <LogOutIcon className="h-4 w-4 mr-2" />
+            Logout
+          </Button>
+        </div>
+
+        {/* Page Title Section */}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-semibold text-white mb-4">Audio Uploader</h1>
+          <p className="text-white/70">Select a campaign to upload session audio</p>
+          {user && (
+            <p className="text-white/50 text-sm mt-2">Welcome back, {user.username}</p>
+          )}
         </div>
 
         {/* Loading State - removed as we now handle it at the top level */}

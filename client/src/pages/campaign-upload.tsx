@@ -7,15 +7,18 @@ import { Link, useParams } from "wouter";
 import { ArrowLeftIcon, FolderIcon, LogOutIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useMemo } from "react";
-import scribeLogoPath from "@assets/Scribe-icon-1_1752518449942.png";
+import scribeLogoPath from "@assets/scribeLogo_1753313610468.png";
 
 export default function CampaignUploadPage() {
   const { campaignId } = useParams<{ campaignId: string }>();
-  const { isAuthenticated, user, isLoading: authLoading, logout } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading, signOut } = useAuth();
   const { data: campaigns, isLoading: campaignsLoading, error } = useCampaigns(user?.username);
 
   const handleLogout = async () => {
     try {
+      // Use the signOut method from auth context
+      signOut();
+      
       // Clear any cached data
       localStorage.clear();
       sessionStorage.clear();
@@ -129,24 +132,18 @@ export default function CampaignUploadPage() {
     <div className="min-h-screen bg-gradient-to-b from-[#01032d] to-[#010101]">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
+          {/* Header Navigation Bar */}
           <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <Link href="/">
-                <Button variant="outline" size="sm">
-                  <ArrowLeftIcon className="h-4 w-4 mr-2" />
-                  All Campaigns
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-white">{campaign?.name}</h1>
-                <p className="text-white/60 text-sm">Upload session audio files</p>
-              </div>
-            </div>
+            {/* Left: Scribe Logo */}
+            <Link href="/">
+              <img 
+                src={scribeLogoPath} 
+                alt="Scribe" 
+                className="h-8 cursor-pointer"
+              />
+            </Link>
             
-            
-            
-            {/* Right Logout Button */}
+            {/* Right: Logout Button */}
             <Button
               variant="outline"
               size="sm"
@@ -156,6 +153,20 @@ export default function CampaignUploadPage() {
               <LogOutIcon className="h-4 w-4 mr-2" />
               Logout
             </Button>
+          </div>
+
+          {/* Campaign Header */}
+          <div className="flex items-center gap-4 mb-8">
+            <Link href="/">
+              <Button variant="outline" size="sm">
+                <ArrowLeftIcon className="h-4 w-4 mr-2" />
+                All Campaigns
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-2xl font-bold text-white">{campaign?.name}</h1>
+              <p className="text-white/60 text-sm">Upload session audio files</p>
+            </div>
           </div>
 
           {/* Upload Form */}

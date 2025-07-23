@@ -493,9 +493,6 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
                         onFileRemove={() => handleFileRemove(session.id)}
                         disabled={globalUploadStatus === 'uploading'}
                       />
-                      {hasSubmissionAttempt && !session.file && sessions.filter(s => s.file).length === 0 && index === 0 && (
-                        <p className="text-sm text-game-error">Please select at least one audio file to upload</p>
-                      )}
                     </div>
 
                     {/* Session Name */}
@@ -507,12 +504,12 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
                         value={session.name}
                         onChange={(e) => updateSession(session.id, { name: e.target.value })}
                         className={`form-input bg-game-primary/5 border-game-primary/20 text-game-primary placeholder:text-game-secondary/50 ${
-                          session.file && !session.name.trim() ? 'border-game-error bg-game-error/5' : ''
+                          hasSubmissionAttempt && session.file && !session.name.trim() ? 'border-game-error bg-game-error/5' : ''
                         }`}
                         placeholder={`Session ${index + 1}: The Adventure Begins`}
                         disabled={globalUploadStatus === 'uploading'}
                       />
-                      {session.file && !session.name.trim() && (
+                      {hasSubmissionAttempt && session.file && !session.name.trim() && (
                         <p className="text-sm text-game-error">Session name is required when audio file is selected</p>
                       )}
                     </div>
@@ -527,14 +524,9 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
                         max={new Date().toISOString().split('T')[0]}
                         value={session.date}
                         onChange={(e) => updateSession(session.id, { date: e.target.value })}
-                        className={`form-input bg-game-primary/5 border-game-primary/20 text-game-primary ${
-                          session.file && !session.date ? 'border-game-error bg-game-error/5' : ''
-                        }`}
+                        className="form-input bg-game-primary/5 border-game-primary/20 text-game-primary"
                         disabled={globalUploadStatus === 'uploading'}
                       />
-                      {session.file && !session.date && (
-                        <p className="text-sm text-game-error">Session date is required when audio file is selected</p>
-                      )}
                     </div>
                   </div>
 

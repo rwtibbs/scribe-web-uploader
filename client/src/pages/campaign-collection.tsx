@@ -12,8 +12,7 @@ import scribeLogoPath from "@assets/Scribe-icon-1_1752518449942.png";
 
 export default function CampaignCollectionPage() {
   const { isAuthenticated, user, isLoading: authLoading, signOut } = useAuth();
-  const campaignsQuery = useCampaigns(user?.username);
-  const { data: campaigns, isLoading: campaignsLoading, error, isFetching } = campaignsQuery || {};
+  const { data: campaigns, isLoading: campaignsLoading, error, isFetching } = useCampaigns(user?.username);
   
   // Get session counts for all campaigns
   const campaignIds = campaigns?.map(c => c.id) || [];

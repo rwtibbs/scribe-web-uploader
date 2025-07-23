@@ -11,14 +11,17 @@ import scribeLogoPath from "@assets/Scribe-icon-1_1752518449942.png";
 
 export default function CampaignUploadPage() {
   const { campaignId } = useParams<{ campaignId: string }>();
-  const { isAuthenticated, user, isLoading: authLoading, signOut } = useAuth();
-  const campaignsQuery = useCampaigns(user?.username);
-  const { data: campaigns, isLoading: campaignsLoading, error } = campaignsQuery || {};
+  const { isAuthenticated, user, isLoading: authLoading, logout } = useAuth();
+  const { data: campaigns, isLoading: campaignsLoading, error } = useCampaigns(user?.username);
 
   const handleLogout = async () => {
     try {
-      // Use the signOut method from auth context
-      signOut();
+      // Clear any cached data
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Redirect to login
+      window.location.reload();
     } catch (error) {
       console.error('Logout error:', error);
       window.location.reload();

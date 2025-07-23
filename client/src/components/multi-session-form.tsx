@@ -507,12 +507,12 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
                         value={session.name}
                         onChange={(e) => updateSession(session.id, { name: e.target.value })}
                         className={`form-input bg-game-primary/5 border-game-primary/20 text-game-primary placeholder:text-game-secondary/50 ${
-                          hasSubmissionAttempt && session.file && !session.name.trim() ? 'border-game-error bg-game-error/5' : ''
+                          session.file && !session.name.trim() ? 'border-game-error bg-game-error/5' : ''
                         }`}
                         placeholder={`Session ${index + 1}: The Adventure Begins`}
                         disabled={globalUploadStatus === 'uploading'}
                       />
-                      {hasSubmissionAttempt && session.file && !session.name.trim() && (
+                      {session.file && !session.name.trim() && (
                         <p className="text-sm text-game-error">Session name is required when audio file is selected</p>
                       )}
                     </div>
@@ -528,11 +528,11 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
                         value={session.date}
                         onChange={(e) => updateSession(session.id, { date: e.target.value })}
                         className={`form-input bg-game-primary/5 border-game-primary/20 text-game-primary ${
-                          hasSubmissionAttempt && session.file && !session.date ? 'border-game-error bg-game-error/5' : ''
+                          session.file && !session.date ? 'border-game-error bg-game-error/5' : ''
                         }`}
                         disabled={globalUploadStatus === 'uploading'}
                       />
-                      {hasSubmissionAttempt && session.file && !session.date && (
+                      {session.file && !session.date && (
                         <p className="text-sm text-game-error">Session date is required when audio file is selected</p>
                       )}
                     </div>

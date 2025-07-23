@@ -156,7 +156,7 @@ export default function CampaignUploadPage() {
           </div>
 
           {/* Campaign Header */}
-          <div className="flex items-center gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8">
             <Link href="/">
               <Button variant="outline" size="sm">
                 <ArrowLeftIcon className="h-4 w-4 mr-2" />

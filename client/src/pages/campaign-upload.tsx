@@ -144,14 +144,7 @@ export default function CampaignUploadPage() {
               </div>
             </div>
             
-            {/* Center Logo */}
-            <div className="flex items-center gap-2">
-              <img 
-                src={scribeLogoPath} 
-                alt="Scribe" 
-                className="h-8 w-8"
-              />
-            </div>
+            
             
             {/* Right Logout Button */}
             <Button

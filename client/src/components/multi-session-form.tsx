@@ -493,6 +493,9 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
                         onFileRemove={() => handleFileRemove(session.id)}
                         disabled={globalUploadStatus === 'uploading'}
                       />
+                      {hasSubmissionAttempt && !session.file && sessions.filter(s => s.file).length === 0 && index === 0 && (
+                        <p className="text-sm text-game-error">Please select at least one audio file to upload</p>
+                      )}
                     </div>
 
                     {/* Session Name */}
@@ -524,9 +527,14 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
                         max={new Date().toISOString().split('T')[0]}
                         value={session.date}
                         onChange={(e) => updateSession(session.id, { date: e.target.value })}
-                        className="form-input bg-game-primary/5 border-game-primary/20 text-game-primary"
+                        className={`form-input bg-game-primary/5 border-game-primary/20 text-game-primary ${
+                          hasSubmissionAttempt && session.file && !session.date ? 'border-game-error bg-game-error/5' : ''
+                        }`}
                         disabled={globalUploadStatus === 'uploading'}
                       />
+                      {hasSubmissionAttempt && session.file && !session.date && (
+                        <p className="text-sm text-game-error">Session date is required when audio file is selected</p>
+                      )}
                     </div>
                   </div>
 

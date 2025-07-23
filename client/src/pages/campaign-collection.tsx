@@ -78,14 +78,15 @@ export default function CampaignCollectionPage() {
           
           {/* Center Logo and Title */}
           <div className="text-center">
-            <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="flex items-center justify-center gap-3 mb-2">
               <img 
                 src={scribeLogoPath} 
                 alt="Scribe" 
                 className="h-12 w-12"
               />
-              <h1 className="text-4xl font-bold text-white">Your Campaigns</h1>
+              <span className="text-3xl font-bold text-white">Scribe</span>
             </div>
+            <h1 className="text-2xl font-semibold text-white mb-4">Audio Uploader</h1>
             <p className="text-white/70">Select a campaign to upload session audio</p>
             {user && (
               <p className="text-white/50 text-sm mt-2">Welcome back, {user.username}</p>

@@ -8,7 +8,7 @@ import { Link } from "wouter";
 import { CalendarIcon, FolderIcon, LogOutIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import scribeLogoPath from "@assets/Scribe-icon-1_1752518449942.png";
+import scribeLogoPath from "@assets/scribeLogo_1753313610468.png";
 
 export default function CampaignCollectionPage() {
   const { isAuthenticated, user, isLoading: authLoading, signOut } = useAuth();
@@ -78,13 +78,12 @@ export default function CampaignCollectionPage() {
           
           {/* Center Logo and Title */}
           <div className="text-center">
-            <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="mb-4">
               <img 
                 src={scribeLogoPath} 
                 alt="Scribe" 
-                className="h-12 w-12"
+                className="h-16 mx-auto"
               />
-              <span className="text-3xl font-bold text-white">Scribe</span>
             </div>
             <h1 className="text-2xl font-semibold text-white mb-4">Audio Uploader</h1>
             <p className="text-white/70">Select a campaign to upload session audio</p>

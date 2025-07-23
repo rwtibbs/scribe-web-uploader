@@ -47,8 +47,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.log('🔄 Checking current session...');
       
       const currentUser = await AuthService.getCurrentSession();
-      setUser(currentUser);
-      console.log('✅ Session check complete:', currentUser ? 'User found' : 'No active session');
+      
+      // Add a small delay to ensure user state is fully set before queries can run
+      if (currentUser) {
+        console.log('✅ User found, setting user data with access token');
+        setUser(currentUser);
+        
+        // Wait a brief moment to ensure user state is fully propagated
+        await new Promise(resolve => setTimeout(resolve, 50));
+      } else {
+        setUser(null);
+        console.log('✅ No active session found');
+      }
+      
+      console.log('✅ Session check complete:', currentUser ? 'User authenticated' : 'No active session');
     } catch (err) {
       console.error('❌ Error checking current session:', err);
       setUser(null);

@@ -110,6 +110,10 @@ TabletopScribe is a web application for uploading and processing tabletop gaming
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+- July 23, 2025. Fixed mobile campaign loading race condition: Improved authentication timing by adding access token validation to campaigns query, reduced auto-selection timeouts from 1000ms to 200ms, enhanced loading state detection to prevent "no campaigns found" error on mobile, added comprehensive loading state that waits for full auth context before displaying content
+
 ## Changelog
 
 Changelog:

@@ -71,11 +71,9 @@ export function CampaignProvider({ children }: CampaignProviderProps) {
       if (!selectedCampaign || !activeCampaigns.find(c => c.id === selectedCampaign.id)) {
         console.log('🎯 Setting selected campaign to:', mostRecentCampaign.name);
         
-        // Use setTimeout to ensure this runs after other state updates
-        setTimeout(() => {
-          setSelectedCampaign(mostRecentCampaign);
-          console.log('🎯 Auto-selected most recent campaign:', mostRecentCampaign.name, mostRecentCampaign.id);
-        }, 50);
+        // Immediate selection for better mobile experience
+        setSelectedCampaign(mostRecentCampaign);
+        console.log('🎯 Auto-selected most recent campaign:', mostRecentCampaign.name, mostRecentCampaign.id);
       } else {
         console.log('🎯 Campaign already selected, not changing');
       }

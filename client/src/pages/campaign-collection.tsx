@@ -11,21 +11,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import scribeLogoPath from "@assets/Scribe-icon-1_1752518449942.png";
 
 export default function CampaignCollectionPage() {
-  const { isAuthenticated, user, isLoading: authLoading, logout } = useAuth();
-  const { data: campaigns, isLoading: campaignsLoading, error } = useCampaigns(user?.username);
+  const { isAuthenticated, user, isLoading: authLoading, signOut } = useAuth();
+  const { data: campaigns, isLoading: campaignsLoading, error, isFetching } = useCampaigns(user?.username);
   
   // Get session counts for all campaigns
   const campaignIds = campaigns?.map(c => c.id) || [];
   const { data: sessionCounts, isLoading: sessionCountsLoading } = useCampaignSessionCounts(campaignIds);
 
+  // More comprehensive loading state for mobile
+  const isLoadingCampaigns = authLoading || campaignsLoading || (isAuthenticated && !user?.accessToken) || isFetching;
+
   const handleLogout = async () => {
     try {
-      // Clear any cached data
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      // Redirect to login
-      window.location.reload();
+      // Use the signOut method from auth context
+      signOut();
     } catch (error) {
       console.error('Logout error:', error);
       window.location.reload();
@@ -37,7 +36,10 @@ export default function CampaignCollectionPage() {
     authLoading,
     isAuthenticated,
     user: user?.username,
+    hasAccessToken: !!user?.accessToken,
     campaignsLoading,
+    isFetching,
+    isLoadingCampaigns,
     campaignsCount: campaigns?.length,
     campaignIds,
     sessionCounts,
@@ -52,8 +54,8 @@ export default function CampaignCollectionPage() {
     });
   }
 
-  // Show loading state while checking authentication
-  if (authLoading) {
+  // Show loading state while checking authentication or loading campaigns
+  if (isLoadingCampaigns) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#01032d] to-[#010101] flex items-center justify-center">
         <div className="text-white">Loading...</div>
@@ -104,25 +106,7 @@ export default function CampaignCollectionPage() {
           </div>
         </div>
 
-        {/* Loading State */}
-        {campaignsLoading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="bg-white/10 border-white/20">
-                <CardHeader>
-                  <Skeleton className="h-6 w-3/4 bg-white/20" />
-                  <Skeleton className="h-4 w-full bg-white/10" />
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-1/2 bg-white/10" />
-                    <Skeleton className="h-4 w-1/3 bg-white/10" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+        {/* Loading State - removed as we now handle it at the top level */}
 
         {/* Error State */}
         {error && (
@@ -133,7 +117,7 @@ export default function CampaignCollectionPage() {
         )}
 
         {/* No Campaigns */}
-        {!campaignsLoading && !error && (!campaigns || campaigns.length === 0) && (
+        {!isLoadingCampaigns && !error && (!campaigns || campaigns.length === 0) && (
           <div className="text-center py-12">
             <FolderIcon className="mx-auto h-16 w-16 text-white/30 mb-4" />
             <h2 className="text-xl font-semibold text-white mb-2">No campaigns found</h2>
@@ -142,7 +126,7 @@ export default function CampaignCollectionPage() {
         )}
 
         {/* Campaign Grid */}
-        {!campaignsLoading && !error && campaigns && campaigns.length > 0 && (
+        {!isLoadingCampaigns && !error && campaigns && campaigns.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {campaigns.map((campaign) => (
               <Link key={campaign.id} href={`/campaign/${campaign.id}/upload`}>

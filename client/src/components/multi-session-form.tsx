@@ -252,21 +252,30 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
 
   };
 
+  // Function to check if all sessions are complete
+  const areAllSessionsComplete = () => {
+    return sessions.every(session => 
+      session.file && 
+      session.name.trim() && 
+      session.date.trim()
+    );
+  };
+
+  // Function to get incomplete sessions count
+  const getIncompleteSessionsCount = () => {
+    return sessions.filter(session => 
+      !session.file || !session.name.trim() || !session.date.trim()
+    ).length;
+  };
+
   const handleSubmit = async (data: MultiSessionFormData) => {
     // Mark that a submission attempt has been made
     setHasSubmissionAttempt(true);
     
-    // Validate all sessions have files and names
-    const sessionsWithFiles = sessions.filter(s => s.file);
-    if (sessionsWithFiles.length === 0) {
-      setGlobalErrorMessage('Please select at least one audio file');
-      return;
-    }
-
-    // Check for missing session names
-    const sessionsWithMissingNames = sessionsWithFiles.filter(s => !s.name.trim());
-    if (sessionsWithMissingNames.length > 0) {
-      setGlobalErrorMessage('Please provide names for all sessions with audio files');
+    // Validate ALL sessions are complete (not just sessions with files)
+    if (!areAllSessionsComplete()) {
+      const incompleteCount = getIncompleteSessionsCount();
+      setGlobalErrorMessage(`Please complete all ${sessions.length} session${sessions.length !== 1 ? 's' : ''}. ${incompleteCount} session${incompleteCount !== 1 ? 's are' : ' is'} missing required fields (audio file, name, or date).`);
       return;
     }
 
@@ -280,12 +289,12 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
       setGlobalErrorMessage(null);
       setCompletedUploads(0);
 
-      // Process each session sequentially
-      for (let i = 0; i < sessionsWithFiles.length; i++) {
-        const sessionData = sessionsWithFiles[i];
+      // Process each session sequentially (all sessions are now guaranteed to be complete)
+      for (let i = 0; i < sessions.length; i++) {
+        const sessionData = sessions[i];
         setCurrentUploadingIndex(i);
         
-        console.log(`🚀 Starting upload for session ${i + 1}/${sessionsWithFiles.length}: ${sessionData.name}`);
+        console.log(`🚀 Starting upload for session ${i + 1}/${sessions.length}: ${sessionData.name}`);
         
         // Mark session as uploading before starting
         updateSession(sessionData.id, {
@@ -321,7 +330,7 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
             });
             
             setCompletedUploads(i + 1);
-            console.log(`✅ Completed upload for session ${i + 1}/${sessionsWithFiles.length}`);
+            console.log(`✅ Completed upload for session ${i + 1}/${sessions.length}`);
             
             // Force memory cleanup after successful upload
             if (window.gc) {
@@ -354,7 +363,7 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
 
       setGlobalUploadStatus('success');
       setCurrentUploadingIndex(null);
-      console.log(`🎉 All ${sessionsWithFiles.length} sessions uploaded successfully!`);
+      console.log(`🎉 All ${sessions.length} sessions uploaded successfully!`);
 
     } catch (error) {
       setGlobalUploadStatus('error');
@@ -652,7 +661,7 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
             <Alert className="bg-game-accent/10 border-game-accent/20">
               <AlertTriangle className="h-4 w-4 text-game-accent" />
               <AlertDescription className="text-game-accent">
-                <div className="font-medium mb-1">Processing Sessions ({completedUploads}/{sessions.filter(s => s.file).length})</div>
+                <div className="font-medium mb-1">Processing Sessions ({completedUploads}/{sessions.length})</div>
                 {currentUploadingIndex !== null && (
                   <div>Currently uploading: Session {currentUploadingIndex + 1}</div>
                 )}
@@ -705,13 +714,13 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
             {globalUploadStatus !== 'success' && (
               <Button
                 type="submit"
-                disabled={globalUploadStatus === 'uploading' || sessions.filter(s => s.file).length === 0}
-                className="btn-primary flex-1 py-3 bg-game-accent hover:bg-game-hover text-white font-medium"
+                disabled={globalUploadStatus === 'uploading' || !areAllSessionsComplete()}
+                className="btn-primary flex-1 py-3 bg-game-accent hover:bg-game-hover text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Upload className="h-4 w-4 mr-2" />
                 {globalUploadStatus === 'uploading' 
-                  ? `Uploading ${currentUploadingIndex !== null ? currentUploadingIndex + 1 : ''}/${sessions.filter(s => s.file).length}...` 
-                  : `Upload ${sessions.filter(s => s.file).length} Session${sessions.filter(s => s.file).length !== 1 ? 's' : ''}`
+                  ? `Uploading ${currentUploadingIndex !== null ? currentUploadingIndex + 1 : ''}/${sessions.length}...` 
+                  : `Upload ${sessions.length} Session${sessions.length !== 1 ? 's' : ''}`
                 }
               </Button>
             )}

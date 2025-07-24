@@ -124,19 +124,7 @@ export function SimpleFileUpload({ onFileSelect, selectedFile, onFileRemove, dis
             </Button>
           </div>
           
-          {/* Replace File Option */}
-          <div className="text-center">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => !disabled && fileInputRef.current?.click()}
-              disabled={disabled}
-              className="bg-slate-700/50 border-slate-600/50 text-slate-200 hover:bg-slate-600 hover:border-slate-500 disabled:opacity-50 text-xs"
-            >
-              Replace File
-            </Button>
-          </div>
+          
         </div>
       )}
       

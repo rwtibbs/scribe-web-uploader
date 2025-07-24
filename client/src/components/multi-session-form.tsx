@@ -442,6 +442,9 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
             Sessions with files: {sessions.filter(s => s.file).length} / {sessions.length}
           </p>
         )}
+        <div className="text-xs text-game-secondary/80 mt-2">
+          <span className="text-game-error">*</span> required fields
+        </div>
       </CardHeader>
       <CardContent>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">

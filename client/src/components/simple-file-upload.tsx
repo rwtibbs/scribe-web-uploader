@@ -14,6 +14,17 @@ export function SimpleFileUpload({ onFileSelect, selectedFile, onFileRemove, dis
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
 
+  const resetFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveFile = () => {
+    resetFileInput();
+    onFileRemove();
+  };
+
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (disabled) return;
     
@@ -21,6 +32,9 @@ export function SimpleFileUpload({ onFileSelect, selectedFile, onFileRemove, dis
     if (files && files.length > 0) {
       onFileSelect(files[0]);
     }
+    
+    // Reset the input value to allow selecting the same file again
+    e.target.value = '';
   };
 
   const handleFile = (file: File) => {
@@ -116,7 +130,7 @@ export function SimpleFileUpload({ onFileSelect, selectedFile, onFileRemove, dis
               type="button"
               variant="ghost"
               size="sm"
-              onClick={onFileRemove}
+              onClick={handleRemoveFile}
               disabled={disabled}
               className="text-game-error hover:text-red-400 disabled:opacity-50 h-8 w-8 p-0 flex-shrink-0"
             >

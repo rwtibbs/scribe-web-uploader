@@ -270,13 +270,6 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
       return;
     }
 
-    // Check for missing session dates
-    const sessionsWithMissingDates = sessionsWithFiles.filter(s => !s.date.trim());
-    if (sessionsWithMissingDates.length > 0) {
-      setGlobalErrorMessage('Please provide dates for all sessions with audio files');
-      return;
-    }
-
     if (!user) {
       setGlobalErrorMessage('User not authenticated');
       return;
@@ -500,9 +493,6 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
                         onFileRemove={() => handleFileRemove(session.id)}
                         disabled={globalUploadStatus === 'uploading'}
                       />
-                      {hasSubmissionAttempt && !session.file && sessions.filter(s => s.file).length === 0 && (
-                        <p className="text-sm text-game-error">At least one audio file is required</p>
-                      )}
                     </div>
 
                     {/* Session Name */}
@@ -534,14 +524,9 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
                         max={new Date().toISOString().split('T')[0]}
                         value={session.date}
                         onChange={(e) => updateSession(session.id, { date: e.target.value })}
-                        className={`form-input bg-game-primary/5 border-game-primary/20 text-game-primary ${
-                          hasSubmissionAttempt && session.file && !session.date.trim() ? 'border-game-error bg-game-error/5' : ''
-                        }`}
+                        className="form-input bg-game-primary/5 border-game-primary/20 text-game-primary"
                         disabled={globalUploadStatus === 'uploading'}
                       />
-                      {hasSubmissionAttempt && session.file && !session.date.trim() && (
-                        <p className="text-sm text-game-error">Session date is required when audio file is selected</p>
-                      )}
                     </div>
                   </div>
 

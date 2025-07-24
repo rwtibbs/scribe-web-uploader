@@ -256,20 +256,17 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
     // Mark that a submission attempt has been made
     setHasSubmissionAttempt(true);
     
-    // Check if there are any sessions without required fields
-    const sessionsWithMissingData = sessions.filter(s => 
-      !s.name.trim() || !s.date || !s.file
-    );
-    
-    if (sessionsWithMissingData.length > 0) {
-      setGlobalErrorMessage('Please complete all required fields (name, date, and audio file) for each session before uploading');
+    // Validate all sessions have files and names
+    const sessionsWithFiles = sessions.filter(s => s.file);
+    if (sessionsWithFiles.length === 0) {
+      setGlobalErrorMessage('Please select at least one audio file');
       return;
     }
 
-    // Validate at least one session exists
-    const validSessions = sessions.filter(s => s.file && s.name.trim() && s.date);
-    if (validSessions.length === 0) {
-      setGlobalErrorMessage('Please add at least one complete session with all required fields');
+    // Check for missing session names
+    const sessionsWithMissingNames = sessionsWithFiles.filter(s => !s.name.trim());
+    if (sessionsWithMissingNames.length > 0) {
+      setGlobalErrorMessage('Please provide names for all sessions with audio files');
       return;
     }
 
@@ -284,11 +281,11 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
       setCompletedUploads(0);
 
       // Process each session sequentially
-      for (let i = 0; i < validSessions.length; i++) {
-        const sessionData = validSessions[i];
+      for (let i = 0; i < sessionsWithFiles.length; i++) {
+        const sessionData = sessionsWithFiles[i];
         setCurrentUploadingIndex(i);
         
-        console.log(`🚀 Starting upload for session ${i + 1}/${validSessions.length}: ${sessionData.name}`);
+        console.log(`🚀 Starting upload for session ${i + 1}/${sessionsWithFiles.length}: ${sessionData.name}`);
         
         // Mark session as uploading before starting
         updateSession(sessionData.id, {
@@ -324,7 +321,7 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
             });
             
             setCompletedUploads(i + 1);
-            console.log(`✅ Completed upload for session ${i + 1}/${validSessions.length}`);
+            console.log(`✅ Completed upload for session ${i + 1}/${sessionsWithFiles.length}`);
             
             // Force memory cleanup after successful upload
             if (window.gc) {
@@ -357,7 +354,7 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
 
       setGlobalUploadStatus('success');
       setCurrentUploadingIndex(null);
-      console.log(`🎉 All ${validSessions.length} sessions uploaded successfully!`);
+      console.log(`🎉 All ${sessionsWithFiles.length} sessions uploaded successfully!`);
 
     } catch (error) {
       setGlobalUploadStatus('error');
@@ -440,9 +437,9 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
             </p>
           </div>
         </div>
-        {sessions.filter(s => s.file && s.name.trim() && s.date).length > 0 && (
+        {sessions.filter(s => s.file).length > 0 && (
           <p className="text-sm text-game-secondary">
-            Complete sessions: {sessions.filter(s => s.file && s.name.trim() && s.date).length} / {sessions.length}
+            Sessions with files: {sessions.filter(s => s.file).length} / {sessions.length}
           </p>
         )}
       </CardHeader>
@@ -496,9 +493,6 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
                         onFileRemove={() => handleFileRemove(session.id)}
                         disabled={globalUploadStatus === 'uploading'}
                       />
-                      {hasSubmissionAttempt && !session.file && (
-                        <p className="text-sm text-game-error">Audio file is required</p>
-                      )}
                     </div>
 
                     {/* Session Name */}
@@ -510,13 +504,13 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
                         value={session.name}
                         onChange={(e) => updateSession(session.id, { name: e.target.value })}
                         className={`form-input bg-game-primary/5 border-game-primary/20 text-game-primary placeholder:text-game-secondary/50 ${
-                          hasSubmissionAttempt && !session.name.trim() ? 'border-game-error bg-game-error/5' : ''
+                          hasSubmissionAttempt && session.file && !session.name.trim() ? 'border-game-error bg-game-error/5' : ''
                         }`}
                         placeholder={`Session ${index + 1}: The Adventure Begins`}
                         disabled={globalUploadStatus === 'uploading'}
                       />
-                      {hasSubmissionAttempt && !session.name.trim() && (
-                        <p className="text-sm text-game-error">Session name is required</p>
+                      {hasSubmissionAttempt && session.file && !session.name.trim() && (
+                        <p className="text-sm text-game-error">Session name is required when audio file is selected</p>
                       )}
                     </div>
 
@@ -530,14 +524,9 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
                         max={new Date().toISOString().split('T')[0]}
                         value={session.date}
                         onChange={(e) => updateSession(session.id, { date: e.target.value })}
-                        className={`form-input bg-game-primary/5 border-game-primary/20 text-game-primary ${
-                          hasSubmissionAttempt && !session.date ? 'border-game-error bg-game-error/5' : ''
-                        }`}
+                        className="form-input bg-game-primary/5 border-game-primary/20 text-game-primary"
                         disabled={globalUploadStatus === 'uploading'}
                       />
-                      {hasSubmissionAttempt && !session.date && (
-                        <p className="text-sm text-game-error">Session date is required</p>
-                      )}
                     </div>
                   </div>
 
@@ -660,7 +649,7 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
             <Alert className="bg-game-accent/10 border-game-accent/20">
               <AlertTriangle className="h-4 w-4 text-game-accent" />
               <AlertDescription className="text-game-accent">
-                <div className="font-medium mb-1">Processing Sessions ({completedUploads}/{sessions.filter(s => s.file && s.name.trim() && s.date).length})</div>
+                <div className="font-medium mb-1">Processing Sessions ({completedUploads}/{sessions.filter(s => s.file).length})</div>
                 {currentUploadingIndex !== null && (
                   <div>Currently uploading: Session {currentUploadingIndex + 1}</div>
                 )}
@@ -713,13 +702,13 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
             {globalUploadStatus !== 'success' && (
               <Button
                 type="submit"
-                disabled={globalUploadStatus === 'uploading' || sessions.filter(s => s.file && s.name.trim() && s.date).length === 0}
+                disabled={globalUploadStatus === 'uploading' || sessions.filter(s => s.file).length === 0}
                 className="btn-primary flex-1 py-3 bg-game-accent hover:bg-game-hover text-white font-medium"
               >
                 <Upload className="h-4 w-4 mr-2" />
                 {globalUploadStatus === 'uploading' 
-                  ? `Uploading ${currentUploadingIndex !== null ? currentUploadingIndex + 1 : ''}/${sessions.filter(s => s.file && s.name.trim() && s.date).length}...` 
-                  : `Upload ${sessions.filter(s => s.file && s.name.trim() && s.date).length} Session${sessions.filter(s => s.file && s.name.trim() && s.date).length !== 1 ? 's' : ''}`
+                  ? `Uploading ${currentUploadingIndex !== null ? currentUploadingIndex + 1 : ''}/${sessions.filter(s => s.file).length}...` 
+                  : `Upload ${sessions.filter(s => s.file).length} Session${sessions.filter(s => s.file).length !== 1 ? 's' : ''}`
                 }
               </Button>
             )}

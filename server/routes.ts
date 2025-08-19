@@ -687,8 +687,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Query GraphQL for all segments with images
       const graphqlQuery = `
-        query ListSegments($filter: ModelSegmentFilterInput) {
-          listSegments(filter: $filter, limit: 1000) {
+        query ListSegments($filter: ModelSegmentFilterInput, $nextToken: String) {
+          listSegments(filter: $filter, limit: 100, nextToken: $nextToken) {
             items {
               id
               title
@@ -717,8 +717,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let allSegments: any[] = [];
       let nextToken: string | undefined = undefined;
+      let pageCount = 0;
+      const maxPages = 10; // Limit to prevent infinite loops
       
       do {
+        pageCount++;
+        if (pageCount > maxPages) {
+          console.log(`⚠️ Reached maximum page limit (${maxPages}) for internal images query`);
+          break;
+        }
+
+        console.log(`📄 Fetching page ${pageCount} for internal images...`);
+        
         const response = await fetch(awsConfig.graphqlEndpoint, {
           method: 'POST',
           headers: {
@@ -732,10 +742,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 image: { 
                   ne: null 
                 }
-              }
+              },
+              nextToken: nextToken
             }
           })
         });
+
+        if (!response.ok) {
+          console.error(`HTTP error: ${response.status} ${response.statusText}`);
+          return res.status(500).json({ error: 'Failed to fetch segments from GraphQL' });
+        }
 
         const data = await response.json();
         
@@ -746,10 +762,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         const segments = data.data?.listSegments?.items || [];
         allSegments = allSegments.concat(segments);
+        
+        const previousToken = nextToken;
         nextToken = data.data?.listSegments?.nextToken;
         
-        console.log(`📋 Found ${segments.length} segments with images in this batch`);
-      } while (nextToken);
+        console.log(`📋 Page ${pageCount}: Found ${segments.length} segments with images. NextToken: ${nextToken ? 'exists' : 'none'}`);
+        
+        // Prevent infinite loops if nextToken doesn't change
+        if (nextToken && nextToken === previousToken) {
+          console.log('⚠️ NextToken unchanged, breaking to prevent infinite loop');
+          break;
+        }
+        
+      } while (nextToken && pageCount < maxPages);
       
       // Filter segments that have images and valid session/campaign data
       const validSegments = allSegments.filter(segment => 

@@ -7,7 +7,6 @@ import { Route, Switch } from "wouter";
 import PublicSessionPage from "@/pages/public-session";
 import CampaignCollectionPage from "@/pages/campaign-collection";
 import CampaignUploadPage from "@/pages/campaign-upload";
-import InternalImagesPage from "@/pages/internal-images";
 
 function App() {
   return (
@@ -18,7 +17,6 @@ function App() {
           <Switch>
             <Route path="/share/:sessionId" component={PublicSessionPage} />
             <Route path="/campaign/:campaignId/upload" component={CampaignUploadPage} />
-            <Route path="/internal/images" component={InternalImagesPage} />
             <Route path="/" component={CampaignCollectionPage} />
           </Switch>
         </TooltipProvider>

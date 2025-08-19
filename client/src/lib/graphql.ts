@@ -444,64 +444,6 @@ class GraphQLClient {
     
     return result.getSession;
   }
-
-  async getAllSegmentsWithImages(accessToken?: string): Promise<any[]> {
-    const query = `
-      query ListSegments($filter: ModelSegmentFilterInput) {
-        listSegments(filter: $filter, limit: 1000) {
-          items {
-            id
-            title
-            description
-            image
-            createdAt
-            updatedAt
-            sessionSegmentsId
-            session {
-              id
-              name
-              campaign {
-                id
-                name
-                owner
-              }
-            }
-          }
-          nextToken
-        }
-      }
-    `;
-
-    console.log('🖼️ Fetching all segments with images');
-    
-    let allSegments: any[] = [];
-    let nextToken: string | undefined = undefined;
-    
-    do {
-      const result = await this.query<{ 
-        listSegments: { 
-          items: any[];
-          nextToken?: string;
-        } 
-      }>(query, {
-        filter: {
-          image: { 
-            ne: null 
-          }
-        }
-      }, accessToken);
-
-      const segments = result.listSegments?.items || [];
-      allSegments = allSegments.concat(segments);
-      nextToken = result.listSegments?.nextToken;
-      
-      console.log(`📋 Found ${segments.length} segments with images in this batch`);
-    } while (nextToken);
-    
-    console.log(`📋 Total segments with images found: ${allSegments.length}`);
-    
-    return allSegments;
-  }
 }
 
 export const graphqlClient = new GraphQLClient();

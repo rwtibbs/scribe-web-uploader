@@ -52,8 +52,24 @@ function InternalImagesContent() {
   const { data: imagesData, isLoading, error } = useQuery({
     queryKey: ['/api/internal/all-images'],
     queryFn: async () => {
-      const response = await apiRequest('/api/internal/all-images');
-      return response as AllImagesResponse;
+      if (!user?.accessToken) {
+        throw new Error('No access token available');
+      }
+
+      const response = await fetch('/api/internal/all-images', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${user.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return response.json() as Promise<AllImagesResponse>;
     },
     enabled: !!user?.accessToken,
   });

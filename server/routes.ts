@@ -685,10 +685,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: 'Invalid authentication token' });
       }
       
-      // Query GraphQL for all segments with images
+      // Query GraphQL for limited segments with images (to avoid pagination issues)
       const graphqlQuery = `
-        query ListSegments($filter: ModelSegmentFilterInput, $nextToken: String) {
-          listSegments(filter: $filter, limit: 100, nextToken: $nextToken) {
+        query ListSegments($filter: ModelSegmentFilterInput) {
+          listSegments(filter: $filter, limit: 50) {
             items {
               id
               title
@@ -708,73 +708,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
               }
             }
-            nextToken
           }
         }
       `;
 
-      console.log('🖼️ Fetching all segments with images for internal tool');
+      console.log('🖼️ Fetching recent segments with images for internal tool (limit 50)');
       
-      let allSegments: any[] = [];
-      let nextToken: string | undefined = undefined;
-      let pageCount = 0;
-      const maxPages = 10; // Limit to prevent infinite loops
-      
-      do {
-        pageCount++;
-        if (pageCount > maxPages) {
-          console.log(`⚠️ Reached maximum page limit (${maxPages}) for internal images query`);
-          break;
-        }
-
-        console.log(`📄 Fetching page ${pageCount} for internal images...`);
-        
-        const response = await fetch(awsConfig.graphqlEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({
-            query: graphqlQuery,
-            variables: {
-              filter: {
-                image: { 
-                  ne: null 
-                }
-              },
-              nextToken: nextToken
+      const response = await fetch(awsConfig.graphqlEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          query: graphqlQuery,
+          variables: {
+            filter: {
+              image: { 
+                ne: null 
+              }
             }
-          })
+          }
+        })
+      });
+
+      if (!response.ok) {
+        console.error(`HTTP error: ${response.status} ${response.statusText}`);
+        return res.status(500).json({ error: 'Failed to fetch segments from GraphQL' });
+      }
+
+      const data = await response.json();
+      
+      if (data.errors) {
+        console.error('GraphQL errors:', data.errors);
+        return res.status(500).json({ error: 'Failed to fetch segments' });
+      }
+
+      const allSegments = data.data?.listSegments?.items || [];
+      console.log(`📋 Found ${allSegments.length} segments with images (single query)`);
+      
+      if (allSegments.length === 0) {
+        console.log('ℹ️ No segments with images found');
+        return res.json({
+          success: true,
+          total: 0,
+          images: []
         });
-
-        if (!response.ok) {
-          console.error(`HTTP error: ${response.status} ${response.statusText}`);
-          return res.status(500).json({ error: 'Failed to fetch segments from GraphQL' });
-        }
-
-        const data = await response.json();
-        
-        if (data.errors) {
-          console.error('GraphQL errors:', data.errors);
-          return res.status(500).json({ error: 'Failed to fetch segments' });
-        }
-
-        const segments = data.data?.listSegments?.items || [];
-        allSegments = allSegments.concat(segments);
-        
-        const previousToken = nextToken;
-        nextToken = data.data?.listSegments?.nextToken;
-        
-        console.log(`📋 Page ${pageCount}: Found ${segments.length} segments with images. NextToken: ${nextToken ? 'exists' : 'none'}`);
-        
-        // Prevent infinite loops if nextToken doesn't change
-        if (nextToken && nextToken === previousToken) {
-          console.log('⚠️ NextToken unchanged, breaking to prevent infinite loop');
-          break;
-        }
-        
-      } while (nextToken && pageCount < maxPages);
+      }
       
       // Filter segments that have images and valid session/campaign data
       const validSegments = allSegments.filter(segment => 

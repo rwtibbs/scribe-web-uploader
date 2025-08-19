@@ -5,7 +5,7 @@ import { LoginForm } from "@/components/login-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { CalendarIcon, FolderIcon, LogOutIcon, FileImage } from "lucide-react";
+import { CalendarIcon, FolderIcon, LogOutIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import scribeLogoPath from "@assets/scribeLogo_1753313610468.png";
@@ -82,29 +82,16 @@ export default function CampaignCollectionPage() {
             />
           </div>
           
-          {/* Right: Internal Tools and Logout */}
-          <div className="flex items-center space-x-3">
-            <Link href="/internal/images">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/10"
-              >
-                <FileImage className="h-4 w-4 mr-2" />
-                Internal Images
-              </Button>
-            </Link>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              className="text-white border-white/30 hover:bg-white/10"
-            >
-              <LogOutIcon className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
-          </div>
+          {/* Right: Logout Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogout}
+            className="text-white border-white/30 hover:bg-white/10"
+          >
+            <LogOutIcon className="h-4 w-4 mr-2" />
+            Logout
+          </Button>
         </div>
 
         {/* Page Title Section */}

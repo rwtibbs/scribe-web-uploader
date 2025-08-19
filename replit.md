@@ -51,6 +51,12 @@ TabletopScribe is a web application for uploading and processing tabletop gaming
 - **Processing**: AWS Lambda function invocation for audio transcription
 - **Status Tracking**: Session status tracking through transcription pipeline
 
+### Internal Tools System
+- **Admin Access Control**: AdminGuard component with user whitelist
+- **Image Viewer**: `/api/internal/all-images` endpoint for viewing all generated images
+- **Security**: Multi-layer authentication (frontend + backend validation)
+- **Access**: Direct URL only `/internal/images` - hidden from main navigation
+
 ## Data Flow
 
 1. **User Authentication**: User signs in via AWS Cognito, receives JWT tokens
@@ -112,6 +118,7 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- August 19, 2025. Implemented secure internal image viewer tool: Created admin-only access tool for viewing all generated images from all users with user information, implemented multi-layer security with frontend AdminGuard component and backend API authentication, removed from main app navigation for complete separation, accessible only via direct URL `/internal/images` for authorized administrators
 - July 23, 2025. Implemented consistent Scribe branding across all pages: Added full Scribe logo with wordmark to login page header, created unified navigation bar pattern with logo on left and logout on right across campaign collection and upload pages, constrained login form width to max-w-md for better mobile experience and consistency with other app containers
 - July 23, 2025. Fixed mobile campaign loading race condition: Improved authentication timing by adding access token validation to campaigns query, reduced auto-selection timeouts from 1000ms to 200ms, enhanced loading state detection to prevent "no campaigns found" error on mobile, added comprehensive loading state that waits for full auth context before displaying content
 

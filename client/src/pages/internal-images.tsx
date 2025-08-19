@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
 import { AuthenticatedImage } from '@/components/authenticated-image';
+import { AdminGuard } from '@/components/admin-guard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,14 @@ interface AllImagesResponse {
 }
 
 export default function InternalImagesPage() {
+  return (
+    <AdminGuard fallbackMessage="This internal image viewer is restricted to authorized administrators only.">
+      <InternalImagesContent />
+    </AdminGuard>
+  );
+}
+
+function InternalImagesContent() {
   const { user } = useAuth();
 
   const { data: imagesData, isLoading, error } = useQuery({

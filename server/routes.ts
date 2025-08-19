@@ -636,7 +636,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Internal tool: Get all images with user information
+  // Internal tool: Get all images with user information (Admin access only)
   app.get('/api/internal/all-images', async (req: Request, res: Response) => {
     try {
       const authHeader = req.headers.authorization;
@@ -645,6 +645,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const accessToken = authHeader.split(' ')[1];
+      
+      // Admin access control - only specific users can access this endpoint
+      const ADMIN_USERS = ['rwtibbitts']; // Add your admin usernames here
+      
+      // Verify the user is authenticated and get user info
+      try {
+        const userResponse = await fetch(awsConfig.graphqlEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            query: `
+              query GetMe {
+                me {
+                  username
+                }
+              }
+            `
+          })
+        });
+        
+        const userData = await userResponse.json();
+        const username = userData.data?.me?.username;
+        
+        if (!username || !ADMIN_USERS.includes(username)) {
+          console.log(`🚫 Access denied for user: ${username || 'unknown'}`);
+          return res.status(403).json({ 
+            error: 'Access denied', 
+            message: 'This endpoint is restricted to authorized administrators only.'
+          });
+        }
+        
+        console.log(`✅ Admin access granted for user: ${username}`);
+      } catch (authError) {
+        console.error('❌ Authentication verification failed:', authError);
+        return res.status(401).json({ error: 'Invalid authentication token' });
+      }
       
       // Query GraphQL for all segments with images
       const graphqlQuery = `

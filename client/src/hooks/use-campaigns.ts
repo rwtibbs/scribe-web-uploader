@@ -38,25 +38,28 @@ export function useCampaigns(owner?: string) {
     // More robust enablement condition - wait for full auth state including access token
     enabled: !!owner && !!user && !!user.accessToken && isAuthenticated && owner === user?.username && !!user.username,
     retry: (failureCount, error) => {
-      // Reasonable retries without causing infinite loading
-      if (failureCount >= 3) {
-        console.error('❌ Campaign query failed after 3 retries:', error);
+      // More aggressive retries for mobile auth timing issues
+      if (failureCount >= 8) {
+        console.error('❌ Campaign query failed after maximum retries:', error);
         return false;
       }
       
-      // Only retry for specific network/auth errors
+      // If it's a network error or auth error, retry more aggressively
       if (error?.message?.includes('Network connection failed') || 
-          error?.message?.includes('User access token is required')) {
-        console.log(`🔄 Retrying campaign query (attempt ${failureCount + 1}/3) due to:`, error?.message);
-        return true;
+          error?.message?.includes('access token') ||
+          error?.message?.includes('User access token is required') ||
+          error?.message?.includes('authentication failed')) {
+        console.log(`🔄 Retrying campaign query (attempt ${failureCount + 1}/8) due to:`, error?.message);
+        return failureCount < 8;
       }
       
-      // Don't retry for other errors to prevent infinite loading
-      return false;
+      return true;
     },
     retryDelay: (attemptIndex) => {
-      // Reasonable delays: 500ms, 1s, 2s
-      return Math.min(500 * Math.pow(2, attemptIndex), 2000);
+      // Faster initial retries for mobile timing issues: 200ms, 400ms, 800ms, 1.6s...
+      const delay = Math.min(200 * Math.pow(2, attemptIndex), 5000);
+      console.log(`⏳ Waiting ${delay}ms before retry ${attemptIndex + 1}`);
+      return delay;
     },
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds (shorter for mobile reliability)
     gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes

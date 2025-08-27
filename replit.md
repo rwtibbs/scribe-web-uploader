@@ -112,7 +112,7 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-- January 27, 2025. Fixed mobile campaign loading race condition and infinite loading: Enhanced authentication timing with managed state propagation, improved campaign query enablement to wait for complete auth state, added timeout protection (8s max) to prevent infinite loading, implemented early exit when campaigns successfully load, reduced retry attempts to 3 to prevent loading loops, added progressive loading messages with spinner, fixed loading logic to only show when actually needed (auth loading OR authenticated users loading campaigns)
+- January 27, 2025. Fixed mobile campaign loading race condition: Enhanced authentication timing with longer state propagation delays (150ms), improved campaign query enablement to wait for complete auth state including access token and username, added comprehensive loading state detection to prevent "no campaigns found" error on mobile, enhanced error logging for campaign query debugging, added better visual feedback during loading process
 - July 23, 2025. Implemented consistent Scribe branding across all pages: Added full Scribe logo with wordmark to login page header, created unified navigation bar pattern with logo on left and logout on right across campaign collection and upload pages, constrained login form width to max-w-md for better mobile experience and consistency with other app containers
 
 ## Changelog

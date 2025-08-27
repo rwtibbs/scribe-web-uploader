@@ -17,79 +17,31 @@ export default function CampaignCollectionPage() {
   
   // State to track if we should show loading (prevents premature "no campaigns" display)
   const [showLoadingMinimum, setShowLoadingMinimum] = useState(true);
-  const [loadingTimeout, setLoadingTimeout] = useState(false);
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
   
   // Get session counts for all campaigns
   const campaignIds = campaigns?.map(c => c.id) || [];
   const { data: sessionCounts, isLoading: sessionCountsLoading } = useCampaignSessionCounts(campaignIds);
 
-  // Ensure minimum loading time to prevent flashing, but allow early exit if campaigns load
+  // Ensure minimum loading time to prevent flashing
   useEffect(() => {
     if (isAuthenticated && user?.accessToken) {
       // Once authenticated with access token, wait minimum time before allowing "no campaigns" display
-      const minTimer = setTimeout(() => {
+      const timer = setTimeout(() => {
         setShowLoadingMinimum(false);
-      }, 1000); // Reduced to 1 second for better UX
+      }, 2000); // 2 second minimum loading time for mobile stability
 
-      // Add timeout to prevent infinite loading - increased for deployed environment
-      const maxTimer = setTimeout(() => {
-        // Only trigger timeout if campaigns haven't loaded yet
-        if (!campaigns || campaigns.length === 0) {
-          setShowLoadingMinimum(false);
-          setLoadingTimeout(true);
-          console.log('⚠️ Loading timeout reached - allowing content display');
-        } else {
-          console.log('⚠️ Timeout reached but campaigns already loaded - ignoring timeout');
-        }
-      }, 12000); // Increased to 12 seconds for deployed environment
-
-      setTimeoutId(maxTimer);
-
-      return () => {
-        clearTimeout(minTimer);
-        clearTimeout(maxTimer);
-        setTimeoutId(null);
-      };
-    } else if (!isAuthenticated) {
-      // Reset loading state when not authenticated
-      setShowLoadingMinimum(true);
-      setLoadingTimeout(false);
+      return () => clearTimeout(timer);
     }
   }, [isAuthenticated, user?.accessToken]);
 
-  // Immediately exit loading state when campaigns are successfully loaded
-  useEffect(() => {
-    if (campaigns && campaigns.length > 0) {
-      setShowLoadingMinimum(false);
-      setLoadingTimeout(false);
-      // Clear any existing timeout
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        setTimeoutId(null);
-        console.log('✅ Campaigns loaded - clearing timeout and showing content');
-      }
-    }
-  }, [campaigns, timeoutId]);
-
-  // Handle timeout reset for errors
-  useEffect(() => {
-    if (error) {
-      setLoadingTimeout(false);
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        setTimeoutId(null);
-      }
-    }
-  }, [error, timeoutId]);
-
-  // Show loading state only when auth is loading OR when authenticated and loading campaigns
-  const isLoadingCampaigns = authLoading || (!loadingTimeout && isAuthenticated && (
+  // Robust loading state - only show content when campaigns are definitively loaded or failed
+  const isLoadingCampaigns = authLoading || 
     campaignsLoading || 
-    (!user?.accessToken || !user?.username) || 
-    (showLoadingMinimum && !campaigns) ||
-    isFetching
-  ));
+    (isAuthenticated && (!user?.accessToken || !user?.username)) || 
+    isFetching ||
+    showLoadingMinimum ||
+    // Critical: Wait for definitive campaign result (either data or confirmed error)
+    (isAuthenticated && user?.accessToken && user?.username && !campaigns && !error);
 
   const handleLogout = async () => {
     try {
@@ -111,7 +63,6 @@ export default function CampaignCollectionPage() {
     isFetching,
     isLoadingCampaigns,
     showLoadingMinimum,
-    loadingTimeout,
     campaignsCount: campaigns?.length,
     campaignIds,
     sessionCounts,
@@ -128,23 +79,6 @@ export default function CampaignCollectionPage() {
       console.log(`📊 Campaign "${campaign.name}" (${campaign.id}): ${sessionCounts?.[campaign.id] || '?'} sessions`);
     });
   }
-
-  // Debug campaign display conditions
-  const showCampaignGrid = !isLoadingCampaigns && !error && campaigns && campaigns.length > 0;
-  const showNoCampaigns = !isLoadingCampaigns && !error && !loadingTimeout && campaigns && campaigns.length === 0;
-  const showTimeoutMessage = !isLoadingCampaigns && loadingTimeout && !error && (!campaigns || campaigns.length === 0);
-  
-  console.log('🎯 Campaign Display Logic:', {
-    showCampaignGrid,
-    showNoCampaigns, 
-    showTimeoutMessage,
-    hasError: !!error,
-    campaignsLength: campaigns?.length || 0,
-    isLoadingCampaigns,
-    loadingTimeout,
-    campaignsUndefined: campaigns === undefined,
-    campaignsNull: campaigns === null
-  });
 
   // Show loading state while checking authentication or loading campaigns
   if (isLoadingCampaigns) {
@@ -217,10 +151,8 @@ export default function CampaignCollectionPage() {
           </div>
         )}
 
-
-
-        {/* No Campaigns - only show after definitive loading completion and no timeout reached */}
-        {!isLoadingCampaigns && !error && !loadingTimeout && campaigns && campaigns.length === 0 && (
+        {/* No Campaigns */}
+        {!isLoadingCampaigns && !error && (!campaigns || campaigns.length === 0) && (
           <div className="text-center py-12">
             <FolderIcon className="mx-auto h-16 w-16 text-white/30 mb-4" />
             <h2 className="text-xl font-semibold text-white mb-2">No campaigns found</h2>
@@ -236,28 +168,12 @@ export default function CampaignCollectionPage() {
           </div>
         )}
 
-        {/* Fallback message ONLY when timeout reached AND definitively no campaigns loaded */}
-        {!isLoadingCampaigns && loadingTimeout && !error && (!campaigns || campaigns.length === 0) && !campaignsLoading && (
-          <div className="text-center py-12">
-            <FolderIcon className="mx-auto h-16 w-16 text-white/30 mb-4" />
-            <h2 className="text-xl font-semibold text-white mb-2">Having trouble loading campaigns</h2>
-            <p className="text-white/60 mb-4">The loading process timed out. Please try refreshing the page.</p>
-            <Button
-              onClick={() => window.location.reload()}
-              variant="outline"
-              className="mb-4 text-white border-white/30 hover:bg-white/10"
-            >
-              Refresh Page
-            </Button>
-          </div>
-        )}
-
         {/* Campaign Grid */}
-        {campaigns && campaigns.length > 0 && (
+        {!isLoadingCampaigns && !error && campaigns && campaigns.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {campaigns.map((campaign) => (
-                <Link key={campaign.id} href={`/campaign/${campaign.id}/upload`}>
-                  <Card className="bg-white/10 border-white/20 hover:bg-white/15 transition-colors cursor-pointer group">
+            {campaigns.map((campaign) => (
+              <Link key={campaign.id} href={`/campaign/${campaign.id}/upload`}>
+                <Card className="bg-white/10 border-white/20 hover:bg-white/15 transition-colors cursor-pointer group">
                   <CardHeader>
                     <CardTitle className="text-white group-hover:text-white/90">
                       {campaign.name}

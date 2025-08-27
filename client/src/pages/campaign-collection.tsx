@@ -18,6 +18,7 @@ export default function CampaignCollectionPage() {
   // State to track if we should show loading (prevents premature "no campaigns" display)
   const [showLoadingMinimum, setShowLoadingMinimum] = useState(true);
   const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
   
   // Get session counts for all campaigns
   const campaignIds = campaigns?.map(c => c.id) || [];
@@ -38,9 +39,12 @@ export default function CampaignCollectionPage() {
         console.log('⚠️ Loading timeout reached - allowing content display');
       }, 8000); // 8 second maximum loading time
 
+      setTimeoutId(maxTimer);
+
       return () => {
         clearTimeout(minTimer);
         clearTimeout(maxTimer);
+        setTimeoutId(null);
       };
     } else if (!isAuthenticated) {
       // Reset loading state when not authenticated
@@ -56,6 +60,17 @@ export default function CampaignCollectionPage() {
       setLoadingTimeout(false);
     }
   }, [campaigns]);
+
+  // Reset timeout when campaigns are successfully loaded or when there's an error
+  useEffect(() => {
+    if ((campaigns && campaigns.length > 0) || error) {
+      setLoadingTimeout(false);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        setTimeoutId(null);
+      }
+    }
+  }, [campaigns, error, timeoutId]);
 
   // Show loading state only when auth is loading OR when authenticated and loading campaigns
   const isLoadingCampaigns = authLoading || (!loadingTimeout && isAuthenticated && (
@@ -102,6 +117,19 @@ export default function CampaignCollectionPage() {
       console.log(`📊 Campaign "${campaign.name}" (${campaign.id}): ${sessionCounts?.[campaign.id] || '?'} sessions`);
     });
   }
+
+  // Debug campaign display conditions
+  const showCampaignGrid = !isLoadingCampaigns && !error && campaigns && campaigns.length > 0;
+  const showNoCampaigns = !isLoadingCampaigns && !error && !loadingTimeout && campaigns && campaigns.length === 0;
+  const showTimeoutMessage = !isLoadingCampaigns && loadingTimeout && !error && (!campaigns || campaigns.length === 0);
+  
+  console.log('🎯 Campaign Display Logic:', {
+    showCampaignGrid,
+    showNoCampaigns, 
+    showTimeoutMessage,
+    hasError: !!error,
+    campaignsLength: campaigns?.length || 0
+  });
 
   // Show loading state while checking authentication or loading campaigns
   if (isLoadingCampaigns) {
@@ -174,8 +202,8 @@ export default function CampaignCollectionPage() {
           </div>
         )}
 
-        {/* No Campaigns */}
-        {!isLoadingCampaigns && !error && (!campaigns || campaigns.length === 0) && (
+        {/* No Campaigns - only show after definitive loading completion and no timeout reached */}
+        {!isLoadingCampaigns && !error && !loadingTimeout && campaigns && campaigns.length === 0 && (
           <div className="text-center py-12">
             <FolderIcon className="mx-auto h-16 w-16 text-white/30 mb-4" />
             <h2 className="text-xl font-semibold text-white mb-2">No campaigns found</h2>
@@ -188,6 +216,22 @@ export default function CampaignCollectionPage() {
               Refresh Page
             </Button>
             <p className="text-white/60">Otherwise, create a campaign in the Scribe app to get started.</p>
+          </div>
+        )}
+
+        {/* Fallback message when timeout reached AND no campaigns actually loaded */}
+        {!isLoadingCampaigns && loadingTimeout && !error && (!campaigns || campaigns.length === 0) && (
+          <div className="text-center py-12">
+            <FolderIcon className="mx-auto h-16 w-16 text-white/30 mb-4" />
+            <h2 className="text-xl font-semibold text-white mb-2">Having trouble loading campaigns</h2>
+            <p className="text-white/60 mb-4">The loading process timed out. Please try refreshing the page.</p>
+            <Button
+              onClick={() => window.location.reload()}
+              variant="outline"
+              className="mb-4 text-white border-white/30 hover:bg-white/10"
+            >
+              Refresh Page
+            </Button>
           </div>
         )}
 

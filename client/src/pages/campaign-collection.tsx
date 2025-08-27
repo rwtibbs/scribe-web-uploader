@@ -17,31 +17,53 @@ export default function CampaignCollectionPage() {
   
   // State to track if we should show loading (prevents premature "no campaigns" display)
   const [showLoadingMinimum, setShowLoadingMinimum] = useState(true);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
   
   // Get session counts for all campaigns
   const campaignIds = campaigns?.map(c => c.id) || [];
   const { data: sessionCounts, isLoading: sessionCountsLoading } = useCampaignSessionCounts(campaignIds);
 
-  // Ensure minimum loading time to prevent flashing
+  // Ensure minimum loading time to prevent flashing, but allow early exit if campaigns load
   useEffect(() => {
     if (isAuthenticated && user?.accessToken) {
       // Once authenticated with access token, wait minimum time before allowing "no campaigns" display
-      const timer = setTimeout(() => {
+      const minTimer = setTimeout(() => {
         setShowLoadingMinimum(false);
-      }, 2000); // 2 second minimum loading time for mobile stability
+      }, 1000); // Reduced to 1 second for better UX
 
-      return () => clearTimeout(timer);
+      // Add timeout to prevent infinite loading
+      const maxTimer = setTimeout(() => {
+        setShowLoadingMinimum(false);
+        setLoadingTimeout(true);
+        console.log('⚠️ Loading timeout reached - allowing content display');
+      }, 8000); // 8 second maximum loading time
+
+      return () => {
+        clearTimeout(minTimer);
+        clearTimeout(maxTimer);
+      };
+    } else if (!isAuthenticated) {
+      // Reset loading state when not authenticated
+      setShowLoadingMinimum(true);
+      setLoadingTimeout(false);
     }
   }, [isAuthenticated, user?.accessToken]);
 
-  // Robust loading state - only show content when campaigns are definitively loaded or failed
-  const isLoadingCampaigns = authLoading || 
+  // Allow early exit from loading if campaigns are successfully loaded
+  useEffect(() => {
+    if (campaigns && campaigns.length > 0) {
+      setShowLoadingMinimum(false);
+      setLoadingTimeout(false);
+    }
+  }, [campaigns]);
+
+  // Show loading state only when auth is loading OR when authenticated and loading campaigns
+  const isLoadingCampaigns = authLoading || (!loadingTimeout && isAuthenticated && (
     campaignsLoading || 
-    (isAuthenticated && (!user?.accessToken || !user?.username)) || 
-    isFetching ||
-    showLoadingMinimum ||
-    // Critical: Wait for definitive campaign result (either data or confirmed error)
-    (isAuthenticated && user?.accessToken && user?.username && !campaigns && !error);
+    (!user?.accessToken || !user?.username) || 
+    (showLoadingMinimum && !campaigns) ||
+    isFetching
+  ));
 
   const handleLogout = async () => {
     try {
@@ -63,6 +85,7 @@ export default function CampaignCollectionPage() {
     isFetching,
     isLoadingCampaigns,
     showLoadingMinimum,
+    loadingTimeout,
     campaignsCount: campaigns?.length,
     campaignIds,
     sessionCounts,

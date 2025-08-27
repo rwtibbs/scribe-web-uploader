@@ -170,7 +170,7 @@ export default function CampaignUploadPage() {
           </div>
 
           {/* Upload Form */}
-          <div className="rounded-lg border border-white/10 p-6 bg-[#2a2c3700] pl-[0px] pr-[0px] pt-[0px] pb-[0px]">
+          <div className="bg-transparent border-none p-0">
             <MultiSessionForm 
               campaignId={campaignId!}
               campaignName={campaign?.name || 'Unknown Campaign'}

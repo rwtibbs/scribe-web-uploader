@@ -437,7 +437,7 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
 
   return (
     <Card className="bg-black/20 backdrop-blur-sm border-game-primary/20">
-      <CardHeader>
+      <CardHeader className="flex flex-col space-y-1.5 p-6 pl-[0px] pr-[0px]">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <CardTitle className="text-2xl font-semibold text-game-primary">Upload Sessions</CardTitle>

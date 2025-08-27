@@ -163,9 +163,7 @@ export default function CampaignUploadPage() {
                 All Campaigns
               </Button>
             </Link>
-            <div>
-              <h1 className="text-2xl font-bold text-white">{campaign?.name}</h1>
-            </div>
+            
           </div>
 
           {/* Upload Form */}

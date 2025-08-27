@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, AlertTriangle, Upload, RotateCcw, X, Dice6, Plus, Trash2 } from 'lucide-react';
@@ -436,11 +436,11 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
   }
 
   return (
-    <Card className="bg-black/20 backdrop-blur-sm border-game-primary/20">
-      <CardHeader className="flex flex-col space-y-1.5 p-6 pl-[0px] pr-[0px]">
+    <div>
+      <div className="flex flex-col space-y-1.5 p-6 pl-[0px] pr-[0px]">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <CardTitle className="text-2xl font-semibold text-game-primary">Upload Sessions</CardTitle>
+            <h2 className="text-2xl font-semibold text-game-primary">Upload Sessions</h2>
             <p className="text-game-secondary">
               Uploading to campaign: <span className="text-game-accent font-medium">{campaignName}</span>
             </p>
@@ -454,8 +454,8 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
         <div className="text-xs text-game-secondary/80 mt-2">
           <span className="text-game-error">*</span> required fields
         </div>
-      </CardHeader>
-      <CardContent>
+      </div>
+      <div className="p-6 pt-0 pl-[0px] pr-[0px]">
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
 
           {/* Session List */}
@@ -742,7 +742,7 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
             </Button>
           </div>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

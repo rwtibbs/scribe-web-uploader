@@ -29,7 +29,8 @@ export default function CampaignCollectionPage() {
     user?.username && 
     user?.accessToken && 
     !authLoading && 
-    (campaignLoadState === 'initial' || campaignLoadState === 'retry');
+    (campaignLoadState === 'initial' || campaignLoadState === 'retry') &&
+    (!campaignData || campaignData.length === 0);
 
   // Robust campaign loading function
   const loadCampaignsRobustly = async () => {
@@ -79,6 +80,22 @@ export default function CampaignCollectionPage() {
     }
   };
 
+  // Reset campaign state when user changes (login/logout)
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      // Clear campaign data on logout
+      console.log('🔄 Clearing campaign data - user logged out');
+      setCampaignData([]);
+      setCampaignLoadState('initial');
+      setCampaignError(null);
+      setRetryAttempts(0);
+    } else if (isAuthenticated && user?.username && user?.accessToken && campaignLoadState === 'ready' && (!campaignData || campaignData.length === 0)) {
+      // Reset state to trigger loading when user logs in but we have no campaigns
+      console.log('🔄 Resetting campaign state to trigger load for authenticated user');
+      setCampaignLoadState('initial');
+    }
+  }, [isAuthenticated, user?.username, user?.accessToken]);
+
   // Load campaigns when authentication is complete
   useEffect(() => {
     if (shouldLoadCampaigns) {
@@ -88,6 +105,12 @@ export default function CampaignCollectionPage() {
 
   const handleLogout = async () => {
     try {
+      console.log('🚪 Starting logout process');
+      // Clear campaign data immediately
+      setCampaignData([]);
+      setCampaignLoadState('initial');
+      setCampaignError(null);
+      setRetryAttempts(0);
       // Use the signOut method from auth context
       signOut();
     } catch (error) {
@@ -109,7 +132,12 @@ export default function CampaignCollectionPage() {
     sessionCountsLoading,
     retryAttempts,
     shouldLoadCampaigns,
-    error: campaignError
+    error: campaignError,
+    // Debug display conditions
+    showEmpty: campaignLoadState === 'ready' && (!campaignData || campaignData.length === 0) && !campaignError,
+    showCampaigns: campaignData && campaignData.length > 0,
+    campaignDataExists: !!campaignData,
+    campaignDataLength: campaignData?.length || 0
   });
   
   // Additional debug for session counts

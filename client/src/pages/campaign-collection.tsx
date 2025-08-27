@@ -9,73 +9,22 @@ import { CalendarIcon, FolderIcon, LogOutIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import scribeLogoPath from "@assets/scribeLogo_1753313610468.png";
-import { useState, useEffect } from "react";
 
 export default function CampaignCollectionPage() {
-  const { isAuthenticated, user, isLoading: authLoading, authReady, signOut } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading, signOut } = useAuth();
   const { data: campaigns, isLoading: campaignsLoading, error, isFetching } = useCampaigns(user?.username);
-  
-  // State to track if we should show loading (prevents premature "no campaigns" display)
-  const [showLoadingMinimum, setShowLoadingMinimum] = useState(true);
-  const [reloadAttempted, setReloadAttempted] = useState(false);
   
   // Get session counts for all campaigns
   const campaignIds = campaigns?.map(c => c.id) || [];
   const { data: sessionCounts, isLoading: sessionCountsLoading } = useCampaignSessionCounts(campaignIds);
 
-  // Ensure minimum loading time to prevent flashing
-  useEffect(() => {
-    if (isAuthenticated && user?.accessToken) {
-      // Once authenticated with access token, wait minimum time before allowing "no campaigns" display
-      const timer = setTimeout(() => {
-        setShowLoadingMinimum(false);
-      }, 4000); // 4 second minimum loading time - longer than auto-reload
-
-      return () => clearTimeout(timer);
-    }
-  }, [isAuthenticated, user?.accessToken]);
-
-  // Mobile deployment workaround: Auto-reload if campaigns fail to load after auth
-  useEffect(() => {
-    if (isAuthenticated && authReady && user?.accessToken && user?.username && !reloadAttempted) {
-      // Wait for auth stabilization, then check if we have campaign data issues
-      const checkTimer = setTimeout(() => {
-        const shouldReload = (
-          // No campaigns loaded despite being authenticated and ready
-          (!campaigns || campaigns.length === 0) &&
-          // Not currently loading
-          !campaignsLoading && !isFetching &&
-          // No error state (which would be legitimate)
-          !error &&
-          // Auth is fully ready
-          authReady && isAuthenticated && user?.accessToken
-        );
-
-        if (shouldReload) {
-          console.log('🔄 Mobile deployment workaround: Auto-reloading to fix campaign loading race condition');
-          setReloadAttempted(true);
-          // Small delay to show the user we're handling it
-          setTimeout(() => {
-            window.location.reload();
-          }, 300);
-        }
-      }, 1500); // Wait 1.5 seconds after auth is ready - faster than minimum loading
-
-      return () => clearTimeout(checkTimer);
-    }
-  }, [isAuthenticated, authReady, user?.accessToken, user?.username, campaigns, campaignsLoading, isFetching, error, reloadAttempted]);
-
-  // Robust loading state - only apply when authenticated, not during login flow
-  const isLoadingCampaigns = isAuthenticated && (
-    authLoading || 
-    !authReady ||
+  // More comprehensive loading state for mobile - wait for complete auth state
+  const isLoadingCampaigns = authLoading || 
     campaignsLoading || 
-    (!user?.accessToken || !user?.username) || 
+    (isAuthenticated && (!user?.accessToken || !user?.username)) || 
     isFetching ||
-    showLoadingMinimum ||
-    // Critical: Wait for definitive campaign result (either data or confirmed error)
-    (authReady && user?.accessToken && user?.username && !campaigns && !error)
-  );
+    // Wait for auth to stabilize on mobile
+    (isAuthenticated && user && !campaigns && !error);
 
   const handleLogout = async () => {
     try {
@@ -87,29 +36,20 @@ export default function CampaignCollectionPage() {
     }
   };
 
-  // Debug logging for mobile troubleshooting - enhanced with authReady tracking
+  // Debug logging
   console.log('🎯 CampaignCollectionPage state:', {
     authLoading,
     isAuthenticated,
-    authReady,
     user: user?.username,
     hasAccessToken: !!user?.accessToken,
     campaignsLoading,
     isFetching,
     isLoadingCampaigns,
-    showLoadingMinimum,
-    reloadAttempted,
     campaignsCount: campaigns?.length,
     campaignIds,
     sessionCounts,
     sessionCountsLoading,
-    error: error?.message,
-    // Timing states for mobile debugging
-    authAndTokenReady: isAuthenticated && !!user?.accessToken && !!user?.username,
-    authFullyReady: authReady && isAuthenticated && !!user?.accessToken && !!user?.username,
-    queryShouldBeEnabled: !!user?.username && !!user && !!user.accessToken && isAuthenticated && authReady && user?.username === user?.username,
-    // Auto-reload debugging
-    shouldTriggerReload: authReady && isAuthenticated && user?.accessToken && (!campaigns || campaigns.length === 0) && !campaignsLoading && !isFetching && !error && !reloadAttempted,
+    error: error?.message
   });
   
   // Additional debug for session counts
@@ -121,29 +61,11 @@ export default function CampaignCollectionPage() {
 
   // Show loading state while checking authentication or loading campaigns
   if (isLoadingCampaigns) {
-    const loadingMessage = authLoading || !isAuthenticated 
-      ? "Authenticating..." 
-      : !authReady
-      ? "Initializing secure connection..."
-      : reloadAttempted
-      ? "Refreshing connection..."
-      : !user?.accessToken 
-      ? "Loading account details..." 
-      : "Loading campaigns...";
-
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#01032d] to-[#010101] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-          <div className="text-white mb-2">{loadingMessage}</div>
-          <div className="text-white/50 text-sm">
-            {reloadAttempted 
-              ? "Optimizing connection for mobile..." 
-              : !authReady 
-              ? "Establishing secure session..." 
-              : "Please wait while we load your data"
-            }
-          </div>
+          <div className="text-white mb-2">Loading campaigns...</div>
+          <div className="text-white/50 text-sm">Connecting to your account</div>
         </div>
       </div>
     );

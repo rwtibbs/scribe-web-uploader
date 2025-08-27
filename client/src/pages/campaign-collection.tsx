@@ -89,6 +89,17 @@ export default function CampaignCollectionPage() {
       setCampaignLoadState('initial');
       setCampaignError(null);
       setRetryAttempts(0);
+      
+      // On page refresh after logout, ensure we start completely fresh
+      if (typeof window !== 'undefined') {
+        console.log('🔄 Page refresh after logout - clearing any persistent campaign storage');
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('selectedCampaign') || key.includes('campaign')) {
+            console.log(`🧹 Removing stale localStorage key: ${key}`);
+            localStorage.removeItem(key);
+          }
+        });
+      }
     }
   }, [isAuthenticated, user?.username]);
 

@@ -5,24 +5,18 @@ import { LoginForm } from "@/components/login-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { CalendarIcon, FolderIcon, LogOutIcon, RefreshCw } from "lucide-react";
+import { CalendarIcon, FolderIcon, LogOutIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import scribeLogoPath from "@assets/scribeLogo_1753313610468.png";
-import { useEffect, useState } from "react";
 
 export default function CampaignCollectionPage() {
   const { isAuthenticated, user, isLoading: authLoading, signOut } = useAuth();
-  const { data: campaigns, isLoading: campaignsLoading, error, isFetching, refetch } = useCampaigns(user?.username);
+  const { data: campaigns, isLoading: campaignsLoading, error, isFetching } = useCampaigns(user?.username);
   
   // Get session counts for all campaigns
   const campaignIds = campaigns?.map(c => c.id) || [];
   const { data: sessionCounts, isLoading: sessionCountsLoading } = useCampaignSessionCounts(campaignIds);
-
-  // Mobile loading state management
-  const [loadingStartTime, setLoadingStartTime] = useState<number | null>(null);
-  const [hasTriedRefresh, setHasTriedRefresh] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("Connecting to your account...");
 
   // More comprehensive loading state for mobile - wait for complete auth state
   const isLoadingCampaigns = authLoading || 
@@ -31,55 +25,6 @@ export default function CampaignCollectionPage() {
     isFetching ||
     // Wait for auth to stabilize on mobile
     (isAuthenticated && user && !campaigns && !error);
-
-  // Track loading duration and auto-refresh
-  useEffect(() => {
-    if (isLoadingCampaigns && !loadingStartTime) {
-      setLoadingStartTime(Date.now());
-      setLoadingMessage("Connecting to your account...");
-    } else if (!isLoadingCampaigns) {
-      setLoadingStartTime(null);
-      setHasTriedRefresh(false);
-    }
-  }, [isLoadingCampaigns, loadingStartTime]);
-
-  // Auto-refresh logic for mobile
-  useEffect(() => {
-    if (loadingStartTime && isAuthenticated && user?.accessToken) {
-      const timer = setTimeout(() => {
-        const elapsed = Date.now() - loadingStartTime;
-        
-        if (elapsed > 3000 && !hasTriedRefresh) {
-          // After 3 seconds, try refreshing campaigns
-          console.log('📱 Mobile auto-refresh: Attempting to refresh campaigns after 3s delay');
-          setLoadingMessage("Refreshing campaigns...");
-          setHasTriedRefresh(true);
-          refetch();
-        } else if (elapsed > 2000) {
-          setLoadingMessage("Loading your campaigns...");
-        } else if (elapsed > 1000) {
-          setLoadingMessage("Authenticating...");
-        }
-      }, 1000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [loadingStartTime, isAuthenticated, user?.accessToken, hasTriedRefresh, refetch]);
-
-  // Force refresh after 6 seconds if still loading
-  useEffect(() => {
-    if (loadingStartTime && isAuthenticated && user?.accessToken) {
-      const forceRefreshTimer = setTimeout(() => {
-        const elapsed = Date.now() - loadingStartTime;
-        if (elapsed > 6000 && !campaigns) {
-          console.log('📱 Mobile force refresh: Reloading page after 6s');
-          window.location.reload();
-        }
-      }, 6000);
-
-      return () => clearTimeout(forceRefreshTimer);
-    }
-  }, [loadingStartTime, isAuthenticated, user?.accessToken, campaigns]);
 
   const handleLogout = async () => {
     try {
@@ -119,25 +64,8 @@ export default function CampaignCollectionPage() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#01032d] to-[#010101] flex items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="h-8 w-8 text-white mx-auto mb-4 animate-spin" />
-          <div className="text-white mb-2 font-medium">{loadingMessage}</div>
-          <div className="text-white/50 text-sm">Please wait while we load your data</div>
-          {loadingStartTime && (
-            <div className="text-white/30 text-xs mt-2">
-              {Math.round((Date.now() - loadingStartTime) / 1000)}s elapsed
-            </div>
-          )}
-          {loadingStartTime && (Date.now() - loadingStartTime) > 4000 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.location.reload()}
-              className="mt-4 text-white border-white/30 hover:bg-white/10"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh Page
-            </Button>
-          )}
+          <div className="text-white mb-2">Loading campaigns...</div>
+          <div className="text-white/50 text-sm">Connecting to your account</div>
         </div>
       </div>
     );

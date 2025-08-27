@@ -38,27 +38,37 @@ export function useCampaigns(owner?: string) {
     // More robust enablement condition - wait for full auth state including access token
     enabled: !!owner && !!user && !!user.accessToken && isAuthenticated && owner === user?.username && !!user.username,
     retry: (failureCount, error) => {
-      // Retry up to 5 times for mobile networks
-      if (failureCount >= 5) return false;
+      // More aggressive retries for mobile auth timing issues
+      if (failureCount >= 8) {
+        console.error('❌ Campaign query failed after maximum retries:', error);
+        return false;
+      }
       
       // If it's a network error or auth error, retry more aggressively
       if (error?.message?.includes('Network connection failed') || 
           error?.message?.includes('access token') ||
-          error?.message?.includes('User access token is required')) {
-        return failureCount < 7;
+          error?.message?.includes('User access token is required') ||
+          error?.message?.includes('authentication failed')) {
+        console.log(`🔄 Retrying campaign query (attempt ${failureCount + 1}/8) due to:`, error?.message);
+        return failureCount < 8;
       }
       
       return true;
     },
     retryDelay: (attemptIndex) => {
-      // Faster initial retries for mobile: 500ms, 1s, 2s, 4s...
-      return Math.min(500 * Math.pow(2, attemptIndex), 8000);
+      // Faster initial retries for mobile timing issues: 200ms, 400ms, 800ms, 1.6s...
+      const delay = Math.min(200 * Math.pow(2, attemptIndex), 5000);
+      console.log(`⏳ Waiting ${delay}ms before retry ${attemptIndex + 1}`);
+      return delay;
     },
-    staleTime: 2 * 60 * 1000, // Consider data fresh for 2 minutes (more aggressive refresh for mobile)
-    gcTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
+    staleTime: 30 * 1000, // Consider data fresh for 30 seconds (shorter for mobile reliability)
+    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
     refetchOnWindowFocus: false, // Don't refetch on window focus
     refetchOnMount: true, // Always refetch on component mount
+    refetchOnReconnect: true, // Refetch when network reconnects
     // Add networkMode to handle offline scenarios better
     networkMode: 'online',
+    // Add initial data fetch behavior
+    notifyOnChangeProps: ['data', 'error', 'isLoading', 'isFetching'],
   });
 }

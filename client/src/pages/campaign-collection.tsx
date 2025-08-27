@@ -9,22 +9,39 @@ import { CalendarIcon, FolderIcon, LogOutIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import scribeLogoPath from "@assets/scribeLogo_1753313610468.png";
+import { useState, useEffect } from "react";
 
 export default function CampaignCollectionPage() {
   const { isAuthenticated, user, isLoading: authLoading, signOut } = useAuth();
   const { data: campaigns, isLoading: campaignsLoading, error, isFetching } = useCampaigns(user?.username);
   
+  // State to track if we should show loading (prevents premature "no campaigns" display)
+  const [showLoadingMinimum, setShowLoadingMinimum] = useState(true);
+  
   // Get session counts for all campaigns
   const campaignIds = campaigns?.map(c => c.id) || [];
   const { data: sessionCounts, isLoading: sessionCountsLoading } = useCampaignSessionCounts(campaignIds);
 
-  // More comprehensive loading state for mobile - wait for complete auth state
+  // Ensure minimum loading time to prevent flashing
+  useEffect(() => {
+    if (isAuthenticated && user?.accessToken) {
+      // Once authenticated with access token, wait minimum time before allowing "no campaigns" display
+      const timer = setTimeout(() => {
+        setShowLoadingMinimum(false);
+      }, 2000); // 2 second minimum loading time for mobile stability
+
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, user?.accessToken]);
+
+  // Robust loading state - only show content when campaigns are definitively loaded or failed
   const isLoadingCampaigns = authLoading || 
     campaignsLoading || 
     (isAuthenticated && (!user?.accessToken || !user?.username)) || 
     isFetching ||
-    // Wait for auth to stabilize on mobile
-    (isAuthenticated && user && !campaigns && !error);
+    showLoadingMinimum ||
+    // Critical: Wait for definitive campaign result (either data or confirmed error)
+    (isAuthenticated && user?.accessToken && user?.username && !campaigns && !error);
 
   const handleLogout = async () => {
     try {
@@ -36,7 +53,7 @@ export default function CampaignCollectionPage() {
     }
   };
 
-  // Debug logging
+  // Debug logging for mobile troubleshooting
   console.log('🎯 CampaignCollectionPage state:', {
     authLoading,
     isAuthenticated,
@@ -45,11 +62,15 @@ export default function CampaignCollectionPage() {
     campaignsLoading,
     isFetching,
     isLoadingCampaigns,
+    showLoadingMinimum,
     campaignsCount: campaigns?.length,
     campaignIds,
     sessionCounts,
     sessionCountsLoading,
-    error: error?.message
+    error: error?.message,
+    // Timing states for mobile debugging
+    authAndTokenReady: isAuthenticated && !!user?.accessToken && !!user?.username,
+    queryShouldBeEnabled: !!user?.username && !!user && !!user.accessToken && isAuthenticated && user?.username === user?.username,
   });
   
   // Additional debug for session counts
@@ -61,11 +82,20 @@ export default function CampaignCollectionPage() {
 
   // Show loading state while checking authentication or loading campaigns
   if (isLoadingCampaigns) {
+    const loadingMessage = authLoading || !isAuthenticated 
+      ? "Authenticating..." 
+      : !user?.accessToken 
+      ? "Loading account details..." 
+      : showLoadingMinimum 
+      ? "Loading campaigns..." 
+      : "Fetching campaign data...";
+
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#01032d] to-[#010101] flex items-center justify-center">
         <div className="text-center">
-          <div className="text-white mb-2">Loading campaigns...</div>
-          <div className="text-white/50 text-sm">Connecting to your account</div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+          <div className="text-white mb-2">{loadingMessage}</div>
+          <div className="text-white/50 text-sm">Please wait while we load your data</div>
         </div>
       </div>
     );

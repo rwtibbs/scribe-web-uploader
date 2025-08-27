@@ -32,12 +32,17 @@ export default function CampaignCollectionPage() {
         setShowLoadingMinimum(false);
       }, 1000); // Reduced to 1 second for better UX
 
-      // Add timeout to prevent infinite loading
+      // Add timeout to prevent infinite loading - increased for deployed environment
       const maxTimer = setTimeout(() => {
-        setShowLoadingMinimum(false);
-        setLoadingTimeout(true);
-        console.log('⚠️ Loading timeout reached - allowing content display');
-      }, 8000); // 8 second maximum loading time
+        // Only trigger timeout if campaigns haven't loaded yet
+        if (!campaigns || campaigns.length === 0) {
+          setShowLoadingMinimum(false);
+          setLoadingTimeout(true);
+          console.log('⚠️ Loading timeout reached - allowing content display');
+        } else {
+          console.log('⚠️ Timeout reached but campaigns already loaded - ignoring timeout');
+        }
+      }, 12000); // Increased to 12 seconds for deployed environment
 
       setTimeoutId(maxTimer);
 
@@ -53,24 +58,30 @@ export default function CampaignCollectionPage() {
     }
   }, [isAuthenticated, user?.accessToken]);
 
-  // Allow early exit from loading if campaigns are successfully loaded
+  // Immediately exit loading state when campaigns are successfully loaded
   useEffect(() => {
     if (campaigns && campaigns.length > 0) {
       setShowLoadingMinimum(false);
       setLoadingTimeout(false);
+      // Clear any existing timeout
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        setTimeoutId(null);
+        console.log('✅ Campaigns loaded - clearing timeout and showing content');
+      }
     }
-  }, [campaigns]);
+  }, [campaigns, timeoutId]);
 
-  // Reset timeout when campaigns are successfully loaded or when there's an error
+  // Handle timeout reset for errors
   useEffect(() => {
-    if ((campaigns && campaigns.length > 0) || error) {
+    if (error) {
       setLoadingTimeout(false);
       if (timeoutId) {
         clearTimeout(timeoutId);
         setTimeoutId(null);
       }
     }
-  }, [campaigns, error, timeoutId]);
+  }, [error, timeoutId]);
 
   // Show loading state only when auth is loading OR when authenticated and loading campaigns
   const isLoadingCampaigns = authLoading || (!loadingTimeout && isAuthenticated && (
@@ -206,14 +217,7 @@ export default function CampaignCollectionPage() {
           </div>
         )}
 
-        {/* Debug info - remove in production */}
-        <div className="text-center mb-4 p-4 bg-blue-900/20 rounded border border-blue-500/30">
-          <div className="text-white text-sm">
-            <div>Debug: isLoading={isLoadingCampaigns.toString()}, error={!!error ? 'yes' : 'no'}, timeout={loadingTimeout.toString()}</div>
-            <div>Campaigns: {campaigns ? campaigns.length : 'undefined'} items</div>
-            <div>Show Grid: {String(showCampaignGrid)}, Show No Campaigns: {String(showNoCampaigns)}</div>
-          </div>
-        </div>
+
 
         {/* No Campaigns - only show after definitive loading completion and no timeout reached */}
         {!isLoadingCampaigns && !error && !loadingTimeout && campaigns && campaigns.length === 0 && (
@@ -232,8 +236,8 @@ export default function CampaignCollectionPage() {
           </div>
         )}
 
-        {/* Fallback message when timeout reached AND no campaigns actually loaded */}
-        {!isLoadingCampaigns && loadingTimeout && !error && (!campaigns || campaigns.length === 0) && (
+        {/* Fallback message ONLY when timeout reached AND definitively no campaigns loaded */}
+        {!isLoadingCampaigns && loadingTimeout && !error && (!campaigns || campaigns.length === 0) && !campaignsLoading && (
           <div className="text-center py-12">
             <FolderIcon className="mx-auto h-16 w-16 text-white/30 mb-4" />
             <h2 className="text-xl font-semibold text-white mb-2">Having trouble loading campaigns</h2>
@@ -248,11 +252,9 @@ export default function CampaignCollectionPage() {
           </div>
         )}
 
-        {/* Campaign Grid - simplified condition */}
+        {/* Campaign Grid */}
         {campaigns && campaigns.length > 0 && (
-          <div>
-            <div className="text-green-400 text-center mb-4 text-sm">✅ Rendering {campaigns.length} campaigns</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {campaigns.map((campaign) => (
                 <Link key={campaign.id} href={`/campaign/${campaign.id}/upload`}>
                   <Card className="bg-white/10 border-white/20 hover:bg-white/15 transition-colors cursor-pointer group">
@@ -298,7 +300,6 @@ export default function CampaignCollectionPage() {
                 </Card>
               </Link>
             ))}
-            </div>
           </div>
         )}
       </div>

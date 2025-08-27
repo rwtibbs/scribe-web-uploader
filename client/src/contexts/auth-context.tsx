@@ -53,8 +53,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.log('✅ User found, setting user data with access token');
         setUser(currentUser);
         
-        // Wait a brief moment to ensure user state is fully propagated
-        await new Promise(resolve => setTimeout(resolve, 50));
+        // Wait longer for mobile to ensure user state is fully propagated
+        await new Promise(resolve => setTimeout(resolve, 150));
       } else {
         setUser(null);
         console.log('✅ No active session found');
@@ -79,6 +79,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Production environment is forced in aws-config.ts
       const authUser = await AuthService.signIn(username, password);
       setUser(authUser);
+      
+      // Add small delay to ensure state stabilizes on mobile
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       console.log('✅ Authentication successful');
       return authUser;
     } catch (err) {

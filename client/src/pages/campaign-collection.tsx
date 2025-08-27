@@ -18,8 +18,13 @@ export default function CampaignCollectionPage() {
   const campaignIds = campaigns?.map(c => c.id) || [];
   const { data: sessionCounts, isLoading: sessionCountsLoading } = useCampaignSessionCounts(campaignIds);
 
-  // More comprehensive loading state for mobile
-  const isLoadingCampaigns = authLoading || campaignsLoading || (isAuthenticated && !user?.accessToken) || isFetching;
+  // More comprehensive loading state for mobile - wait for complete auth state
+  const isLoadingCampaigns = authLoading || 
+    campaignsLoading || 
+    (isAuthenticated && (!user?.accessToken || !user?.username)) || 
+    isFetching ||
+    // Wait for auth to stabilize on mobile
+    (isAuthenticated && user && !campaigns && !error);
 
   const handleLogout = async () => {
     try {
@@ -58,7 +63,10 @@ export default function CampaignCollectionPage() {
   if (isLoadingCampaigns) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#01032d] to-[#010101] flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+        <div className="text-center">
+          <div className="text-white mb-2">Loading campaigns...</div>
+          <div className="text-white/50 text-sm">Connecting to your account</div>
+        </div>
       </div>
     );
   }

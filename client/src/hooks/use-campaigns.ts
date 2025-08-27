@@ -9,8 +9,19 @@ export function useCampaigns(owner?: string) {
   return useQuery<Campaign[]>({
     queryKey: ['campaigns', owner, 'production'], // Add environment to cache key
     queryFn: async () => {
+      console.log('🚀 Campaign query starting with:', {
+        owner,
+        hasUser: !!user,
+        hasAccessToken: !!user?.accessToken,
+        userUsername: user?.username,
+        isAuthenticated
+      });
+      
       if (!owner) throw new Error('Owner is required to fetch campaigns');
-      if (!user?.accessToken) throw new Error('User access token is required');
+      if (!user?.accessToken) {
+        console.error('❌ Campaign query failed: Missing access token');
+        throw new Error('User access token is required');
+      }
       
       console.log('🔄 Fetching campaigns for owner:', owner, '(production environment only)');
       
@@ -24,8 +35,8 @@ export function useCampaigns(owner?: string) {
       
       return campaigns;
     },
-    // More robust enablement condition - wait for full auth state
-    enabled: !!owner && !!user && !!user.accessToken && isAuthenticated && owner === user?.username,
+    // More robust enablement condition - wait for full auth state including access token
+    enabled: !!owner && !!user && !!user.accessToken && isAuthenticated && owner === user?.username && !!user.username,
     retry: (failureCount, error) => {
       // Retry up to 5 times for mobile networks
       if (failureCount >= 5) return false;

@@ -29,8 +29,7 @@ export default function CampaignCollectionPage() {
     user?.username && 
     user?.accessToken && 
     !authLoading && 
-    (campaignLoadState === 'initial' || campaignLoadState === 'retry') &&
-    (!campaignData || campaignData.length === 0);
+    (campaignLoadState === 'initial' || campaignLoadState === 'retry');
 
   // Robust campaign loading function
   const loadCampaignsRobustly = async () => {
@@ -80,57 +79,6 @@ export default function CampaignCollectionPage() {
     }
   };
 
-  // Reset campaign state when user changes (login/logout)
-  useEffect(() => {
-    if (!isAuthenticated || !user) {
-      // Clear campaign data on logout
-      console.log('🔄 Clearing campaign data - user logged out');
-      setCampaignData([]);
-      setCampaignLoadState('initial');
-      setCampaignError(null);
-      setRetryAttempts(0);
-      
-      // On page refresh after logout, ensure we start completely fresh
-      if (typeof window !== 'undefined') {
-        console.log('🔄 Page refresh after logout - clearing any persistent campaign storage');
-        Object.keys(localStorage).forEach(key => {
-          if (key.startsWith('selectedCampaign') || key.includes('campaign')) {
-            console.log(`🧹 Removing stale localStorage key: ${key}`);
-            localStorage.removeItem(key);
-          }
-        });
-      }
-    }
-  }, [isAuthenticated, user?.username]);
-
-  // Force reload campaigns when user becomes fully authenticated (for mobile deployment)
-  useEffect(() => {
-    if (isAuthenticated && user?.username && user?.accessToken && !authLoading) {
-      // Check if we need to reload campaigns - especially important for mobile deployment
-      if (campaignLoadState === 'ready' && (!campaignData || campaignData.length === 0)) {
-        console.log('🔄 Mobile deployment fix: Forcing campaign reload for authenticated user');
-        setCampaignLoadState('initial');
-        setRetryAttempts(0);
-      }
-    }
-  }, [isAuthenticated, user?.username, user?.accessToken, authLoading]);
-
-  // Additional mobile deployment fix: Force re-render after successful auth
-  useEffect(() => {
-    if (isAuthenticated && user?.accessToken && !authLoading && campaignLoadState === 'ready') {
-      // Add a small delay to ensure mobile DOM is ready, then force state refresh
-      const mobileRenderFix = setTimeout(() => {
-        if (campaignData && campaignData.length > 0) {
-          console.log('📱 Mobile deployment fix: Triggering component re-render');
-          // Force a tiny state change to trigger re-render on mobile
-          setCampaignLoadState('ready');
-        }
-      }, 100);
-
-      return () => clearTimeout(mobileRenderFix);
-    }
-  }, [isAuthenticated, user?.accessToken, authLoading, campaignLoadState, campaignData?.length]);
-
   // Load campaigns when authentication is complete
   useEffect(() => {
     if (shouldLoadCampaigns) {
@@ -140,12 +88,6 @@ export default function CampaignCollectionPage() {
 
   const handleLogout = async () => {
     try {
-      console.log('🚪 Starting logout process');
-      // Clear campaign data immediately
-      setCampaignData([]);
-      setCampaignLoadState('initial');
-      setCampaignError(null);
-      setRetryAttempts(0);
       // Use the signOut method from auth context
       signOut();
     } catch (error) {
@@ -154,9 +96,28 @@ export default function CampaignCollectionPage() {
     }
   };
 
-  // Mobile deployment: Extra safety check for campaign rendering
-  const shouldShowCampaigns = campaignData && campaignData.length > 0;
-  const shouldShowEmpty = isAuthenticated && campaignLoadState === 'ready' && !shouldShowCampaigns && !campaignError;
+  // Debug logging for new system
+  console.log('🎯 CampaignCollectionPage state:', {
+    authLoading,
+    isAuthenticated,
+    user: user?.username,
+    hasAccessToken: !!user?.accessToken,
+    campaignLoadState,
+    campaignsCount: campaignData?.length,
+    campaignIds,
+    sessionCounts,
+    sessionCountsLoading,
+    retryAttempts,
+    shouldLoadCampaigns,
+    error: campaignError
+  });
+  
+  // Additional debug for session counts
+  if (campaignData && campaignData.length > 0) {
+    campaignData.forEach(campaign => {
+      console.log(`📊 Campaign "${campaign.name}" (${campaign.id}): ${sessionCounts?.[campaign.id] || '?'} sessions`);
+    });
+  }
 
   // New loading state logic
   const isShowingLoadingScreen = authLoading || 
@@ -237,8 +198,17 @@ export default function CampaignCollectionPage() {
           </div>
         )}
 
-        {/* Campaign Grid - Show campaigns if we have any, prioritize this over empty state */}
-        {shouldShowCampaigns ? (
+        {/* Empty State - Only show when we're sure there are no campaigns and not loading */}
+        {campaignLoadState === 'ready' && (!campaignData || campaignData.length === 0) && !campaignError && (
+          <div className="text-center py-12">
+            <FolderIcon className="mx-auto h-16 w-16 text-white/30 mb-4" />
+            <h2 className="text-xl font-semibold text-white mb-2">Ready to Start</h2>
+            <p className="text-white/60">Create a campaign in the Scribe app to get started with audio uploads.</p>
+          </div>
+        )}
+
+        {/* Campaign Grid - Always show when we have campaigns, regardless of loading state */}
+        {campaignData && campaignData.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {campaignData.map((campaign) => (
               <Link key={campaign.id} href={`/campaign/${campaign.id}/upload`}>
@@ -272,6 +242,8 @@ export default function CampaignCollectionPage() {
                         </div>
                       </div>
 
+
+
                       {/* Upload Button */}
                       <div className="pt-2">
                         <div className="text-sm text-blue-300 group-hover:text-blue-200">
@@ -284,14 +256,7 @@ export default function CampaignCollectionPage() {
               </Link>
             ))}
           </div>
-        ) : shouldShowEmpty ? (
-          /* Empty State - Only show when authenticated but no campaigns */
-          <div className="text-center py-12">
-            <FolderIcon className="mx-auto h-16 w-16 text-white/30 mb-4" />
-            <h2 className="text-xl font-semibold text-white mb-2">Ready to Start</h2>
-            <p className="text-white/60">Create a campaign in the Scribe app to get started with audio uploads.</p>
-          </div>
-        ) : null}
+        )}
       </div>
     </div>
   );

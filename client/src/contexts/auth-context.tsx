@@ -106,18 +106,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     console.log('🚪 Signing out user');
     
     // Clear all cached data on signout to prevent cross-environment contamination
-    // Need to clear environment-specific keys to match how they're stored
-    const currentEnvironment = 'DEV'; // Always DEV in production-only mode
-    localStorage.removeItem(`selectedCampaign_${currentEnvironment}`);
-    localStorage.removeItem('selectedCampaign'); // Legacy key cleanup
+    localStorage.removeItem('selectedCampaign');
     localStorage.removeItem('tabletopscribe-environment');
-    
-    // Clear any other potential campaign-related storage
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('selectedCampaign') || key.includes('campaign')) {
-        localStorage.removeItem(key);
-      }
-    });
     
     AuthService.signOut();
     setUser(null);

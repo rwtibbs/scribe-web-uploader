@@ -165,7 +165,6 @@ export default function CampaignUploadPage() {
             </Link>
             <div>
               <h1 className="text-2xl font-bold text-white">{campaign?.name}</h1>
-              <p className="text-white/60 text-sm">Upload session audio files</p>
             </div>
           </div>
 

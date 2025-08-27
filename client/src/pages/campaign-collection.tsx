@@ -1,6 +1,7 @@
 import { useAuth } from "@/contexts/auth-context";
-import { useCampaigns } from "@/hooks/use-campaigns";
+import { useState, useEffect } from "react";
 import { useCampaignSessionCounts } from "@/hooks/use-campaign-sessions";
+import { graphqlClient } from "@/lib/graphql";
 import { LoginForm } from "@/components/login-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,19 +13,78 @@ import scribeLogoPath from "@assets/scribeLogo_1753313610468.png";
 
 export default function CampaignCollectionPage() {
   const { isAuthenticated, user, isLoading: authLoading, signOut } = useAuth();
-  const { data: campaigns, isLoading: campaignsLoading, error, isFetching } = useCampaigns(user?.username);
   
-  // Get session counts for all campaigns
-  const campaignIds = campaigns?.map(c => c.id) || [];
+  // New robust campaign loading logic
+  const [campaignLoadState, setCampaignLoadState] = useState<'initial' | 'loading' | 'ready' | 'retry'>('initial');
+  const [campaignData, setCampaignData] = useState<any[]>([]);
+  const [campaignError, setCampaignError] = useState<string | null>(null);
+  const [retryAttempts, setRetryAttempts] = useState(0);
+  
+  // Get session counts for loaded campaigns
+  const campaignIds = campaignData?.map(c => c.id) || [];
   const { data: sessionCounts, isLoading: sessionCountsLoading } = useCampaignSessionCounts(campaignIds);
 
-  // More comprehensive loading state for mobile - wait for complete auth state
-  const isLoadingCampaigns = authLoading || 
-    campaignsLoading || 
-    (isAuthenticated && (!user?.accessToken || !user?.username)) || 
-    isFetching ||
-    // Wait for auth to stabilize on mobile
-    (isAuthenticated && user && !campaigns && !error);
+  // Determine if we should attempt to load campaigns
+  const shouldLoadCampaigns = isAuthenticated && 
+    user?.username && 
+    user?.accessToken && 
+    !authLoading && 
+    (campaignLoadState === 'initial' || campaignLoadState === 'retry');
+
+  // Robust campaign loading function
+  const loadCampaignsRobustly = async () => {
+    if (!user?.username || !user?.accessToken) {
+      console.log('⏸️ Campaign loading skipped: Missing auth data');
+      return;
+    }
+
+    console.log('🚀 Starting robust campaign loading for user:', user.username);
+    setCampaignLoadState('loading');
+    setCampaignError(null);
+
+    try {
+      // Add a small delay for mobile stability
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      const campaigns = await graphqlClient.getCampaignsByOwner(user.username, user.accessToken);
+      
+      console.log('✅ Campaigns loaded successfully:', campaigns.length);
+      setCampaignData(campaigns);
+      setCampaignLoadState('ready');
+      setCampaignError(null);
+      setRetryAttempts(0);
+      
+    } catch (error) {
+      console.error('❌ Campaign loading failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load campaigns';
+      setCampaignError(errorMessage);
+      
+      // Retry logic for mobile
+      if (retryAttempts < 3) {
+        console.log(`🔄 Retrying campaign load (attempt ${retryAttempts + 1}/3)`);
+        setRetryAttempts(prev => prev + 1);
+        setCampaignLoadState('retry');
+        
+        // Progressive retry delays
+        const delay = 1000 * Math.pow(2, retryAttempts);
+        setTimeout(() => {
+          if (shouldLoadCampaigns) {
+            loadCampaignsRobustly();
+          }
+        }, delay);
+      } else {
+        console.error('💥 Campaign loading failed after all retries');
+        setCampaignLoadState('ready'); // Stop loading state
+      }
+    }
+  };
+
+  // Load campaigns when authentication is complete
+  useEffect(() => {
+    if (shouldLoadCampaigns) {
+      loadCampaignsRobustly();
+    }
+  }, [shouldLoadCampaigns]);
 
   const handleLogout = async () => {
     try {
@@ -36,36 +96,43 @@ export default function CampaignCollectionPage() {
     }
   };
 
-  // Debug logging
+  // Debug logging for new system
   console.log('🎯 CampaignCollectionPage state:', {
     authLoading,
     isAuthenticated,
     user: user?.username,
     hasAccessToken: !!user?.accessToken,
-    campaignsLoading,
-    isFetching,
-    isLoadingCampaigns,
-    campaignsCount: campaigns?.length,
+    campaignLoadState,
+    campaignsCount: campaignData?.length,
     campaignIds,
     sessionCounts,
     sessionCountsLoading,
-    error: error?.message
+    retryAttempts,
+    shouldLoadCampaigns,
+    error: campaignError
   });
   
   // Additional debug for session counts
-  if (campaigns && campaigns.length > 0) {
-    campaigns.forEach(campaign => {
+  if (campaignData && campaignData.length > 0) {
+    campaignData.forEach(campaign => {
       console.log(`📊 Campaign "${campaign.name}" (${campaign.id}): ${sessionCounts?.[campaign.id] || '?'} sessions`);
     });
   }
 
-  // Show loading state while checking authentication or loading campaigns
-  if (isLoadingCampaigns) {
+  // New loading state logic
+  const isShowingLoadingScreen = authLoading || 
+    (isAuthenticated && user?.accessToken && campaignLoadState === 'loading') ||
+    (isAuthenticated && user?.accessToken && campaignLoadState === 'initial');
+
+  // Show loading state while checking authentication or loading campaigns  
+  if (isShowingLoadingScreen) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#01032d] to-[#010101] flex items-center justify-center">
         <div className="text-center">
           <div className="text-white mb-2">Loading campaigns...</div>
-          <div className="text-white/50 text-sm">Connecting to your account</div>
+          <div className="text-white/50 text-sm">
+            {authLoading ? 'Authenticating...' : 'Fetching your campaigns'}
+          </div>
         </div>
       </div>
     );
@@ -114,34 +181,36 @@ export default function CampaignCollectionPage() {
         {/* Loading State - removed as we now handle it at the top level */}
 
         {/* Error State */}
-        {error && (
+        {campaignError && campaignLoadState === 'ready' && (
           <div className="text-center py-12">
             <div className="text-red-400 mb-4">Failed to load campaigns</div>
-            <p className="text-white/60 text-sm">{error.message}</p>
+            <p className="text-white/60 text-sm mb-4">{campaignError}</p>
+            <Button
+              onClick={() => {
+                setCampaignLoadState('retry');
+                setRetryAttempts(0);
+              }}
+              variant="outline"
+              className="text-white border-white/30 hover:bg-white/10"
+            >
+              Try Again
+            </Button>
           </div>
         )}
 
-        {/* No Campaigns */}
-        {!isLoadingCampaigns && !error && (!campaigns || campaigns.length === 0) && (
+        {/* Empty State - Only show when we're sure there are no campaigns and not loading */}
+        {campaignLoadState === 'ready' && (!campaignData || campaignData.length === 0) && !campaignError && (
           <div className="text-center py-12">
             <FolderIcon className="mx-auto h-16 w-16 text-white/30 mb-4" />
-            <h2 className="text-xl font-semibold text-white mb-2">No campaigns found</h2>
-            <p className="text-white/60 mb-4">If you believe this is an error, please try refreshing the page</p>
-            <Button
-              onClick={() => window.location.reload()}
-              variant="outline"
-              className="mb-4 text-white border-white/30 hover:bg-white/10"
-            >
-              Refresh Page
-            </Button>
-            <p className="text-white/60">Otherwise, create a campaign in the Scribe app to get started.</p>
+            <h2 className="text-xl font-semibold text-white mb-2">Ready to Start</h2>
+            <p className="text-white/60">Create a campaign in the Scribe app to get started with audio uploads.</p>
           </div>
         )}
 
-        {/* Campaign Grid */}
-        {!isLoadingCampaigns && !error && campaigns && campaigns.length > 0 && (
+        {/* Campaign Grid - Always show when we have campaigns, regardless of loading state */}
+        {campaignData && campaignData.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {campaigns.map((campaign) => (
+            {campaignData.map((campaign) => (
               <Link key={campaign.id} href={`/campaign/${campaign.id}/upload`}>
                 <Card className="bg-white/10 border-white/20 hover:bg-white/15 transition-colors cursor-pointer group">
                   <CardHeader>

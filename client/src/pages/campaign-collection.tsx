@@ -204,10 +204,7 @@ export default function CampaignCollectionPage() {
             <FolderIcon className="mx-auto h-16 w-16 text-white/30 mb-4" />
             <h2 className="text-xl font-semibold text-white mb-2">No campaigns found!</h2>
             <Button
-              onClick={() => {
-                setCampaignLoadState('retry');
-                setRetryAttempts(0);
-              }}
+              onClick={() => window.location.reload()}
               variant="outline"
               className="mb-4 text-white border-white/30 hover:bg-white/10"
             >

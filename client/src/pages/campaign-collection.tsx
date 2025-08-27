@@ -12,7 +12,7 @@ import scribeLogoPath from "@assets/scribeLogo_1753313610468.png";
 import { useState, useEffect } from "react";
 
 export default function CampaignCollectionPage() {
-  const { isAuthenticated, user, isLoading: authLoading, signOut } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading, authReady, signOut } = useAuth();
   const { data: campaigns, isLoading: campaignsLoading, error, isFetching } = useCampaigns(user?.username);
   
   // State to track if we should show loading (prevents premature "no campaigns" display)
@@ -34,14 +34,15 @@ export default function CampaignCollectionPage() {
     }
   }, [isAuthenticated, user?.accessToken]);
 
-  // Robust loading state - only show content when campaigns are definitively loaded or failed
+  // Robust loading state - only show content when auth is ready AND campaigns are loaded
   const isLoadingCampaigns = authLoading || 
+    !authReady ||
     campaignsLoading || 
     (isAuthenticated && (!user?.accessToken || !user?.username)) || 
     isFetching ||
     showLoadingMinimum ||
     // Critical: Wait for definitive campaign result (either data or confirmed error)
-    (isAuthenticated && user?.accessToken && user?.username && !campaigns && !error);
+    (isAuthenticated && authReady && user?.accessToken && user?.username && !campaigns && !error);
 
   const handleLogout = async () => {
     try {
@@ -53,10 +54,11 @@ export default function CampaignCollectionPage() {
     }
   };
 
-  // Debug logging for mobile troubleshooting
+  // Debug logging for mobile troubleshooting - enhanced with authReady tracking
   console.log('🎯 CampaignCollectionPage state:', {
     authLoading,
     isAuthenticated,
+    authReady,
     user: user?.username,
     hasAccessToken: !!user?.accessToken,
     campaignsLoading,
@@ -70,7 +72,8 @@ export default function CampaignCollectionPage() {
     error: error?.message,
     // Timing states for mobile debugging
     authAndTokenReady: isAuthenticated && !!user?.accessToken && !!user?.username,
-    queryShouldBeEnabled: !!user?.username && !!user && !!user.accessToken && isAuthenticated && user?.username === user?.username,
+    authFullyReady: authReady && isAuthenticated && !!user?.accessToken && !!user?.username,
+    queryShouldBeEnabled: !!user?.username && !!user && !!user.accessToken && isAuthenticated && authReady && user?.username === user?.username,
   });
   
   // Additional debug for session counts
@@ -84,6 +87,8 @@ export default function CampaignCollectionPage() {
   if (isLoadingCampaigns) {
     const loadingMessage = authLoading || !isAuthenticated 
       ? "Authenticating..." 
+      : !authReady
+      ? "Initializing secure connection..."
       : !user?.accessToken 
       ? "Loading account details..." 
       : showLoadingMinimum 
@@ -95,7 +100,9 @@ export default function CampaignCollectionPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
           <div className="text-white mb-2">{loadingMessage}</div>
-          <div className="text-white/50 text-sm">Please wait while we load your data</div>
+          <div className="text-white/50 text-sm">
+            {!authReady ? "Establishing secure session..." : "Please wait while we load your data"}
+          </div>
         </div>
       </div>
     );

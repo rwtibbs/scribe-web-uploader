@@ -4,7 +4,7 @@ import { Campaign } from '@/types/aws';
 import { useAuth } from '@/contexts/auth-context';
 
 export function useCampaigns(owner?: string) {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, authReady } = useAuth();
   
   return useQuery<Campaign[]>({
     queryKey: ['campaigns', owner, 'production'], // Add environment to cache key
@@ -35,8 +35,8 @@ export function useCampaigns(owner?: string) {
       
       return campaigns;
     },
-    // More robust enablement condition - wait for full auth state including access token
-    enabled: !!owner && !!user && !!user.accessToken && isAuthenticated && owner === user?.username && !!user.username,
+    // Critical: Only enable after authReady is true to prevent mobile cold-start race condition
+    enabled: !!owner && !!user && !!user.accessToken && isAuthenticated && authReady && owner === user?.username && !!user.username,
     retry: (failureCount, error) => {
       // More aggressive retries for mobile auth timing issues
       if (failureCount >= 8) {

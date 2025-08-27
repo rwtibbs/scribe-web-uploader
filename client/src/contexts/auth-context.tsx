@@ -6,6 +6,7 @@ interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  authReady: boolean;
   error: string | null;
   signIn: (username: string, password: string) => Promise<AuthUser>;
   signOut: () => void;
@@ -29,6 +30,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
     checkCurrentSession();
@@ -44,19 +46,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const checkCurrentSession = async () => {
     try {
       setIsLoading(true);
+      setAuthReady(false);
       console.log('🔄 Checking current session...');
       
       const currentUser = await AuthService.getCurrentSession();
       
-      // Add a small delay to ensure user state is fully set before queries can run
       if (currentUser) {
         console.log('✅ User found, setting user data with access token');
         setUser(currentUser);
         
-        // Wait longer for mobile to ensure user state is fully propagated
-        await new Promise(resolve => setTimeout(resolve, 150));
+        // Enhanced mobile authentication stability - longer delay and verification
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Additional verification that the token is valid and accessible
+        if (currentUser.accessToken && currentUser.username) {
+          console.log('🔐 Auth context fully ready with valid token');
+          setAuthReady(true);
+        } else {
+          console.warn('⚠️ Auth context has user but missing token data');
+          setAuthReady(false);
+        }
       } else {
         setUser(null);
+        setAuthReady(true); // Ready to show login form
         console.log('✅ No active session found');
       }
       
@@ -64,6 +76,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (err) {
       console.error('❌ Error checking current session:', err);
       setUser(null);
+      setAuthReady(true); // Ready to show login form even after error
       // Only clear cache when session check fails (user not authenticated)
       localStorage.removeItem('selectedCampaign');
     } finally {
@@ -75,15 +88,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setError(null);
       setIsLoading(true);
+      setAuthReady(false);
       
       // Production environment is forced in aws-config.ts
       const authUser = await AuthService.signIn(username, password);
       setUser(authUser);
       
-      // Add small delay to ensure state stabilizes on mobile
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Enhanced mobile stability with verification
+      await new Promise(resolve => setTimeout(resolve, 300));
       
-      console.log('✅ Authentication successful');
+      // Verify auth state is fully ready before allowing queries
+      if (authUser.accessToken && authUser.username) {
+        setAuthReady(true);
+        console.log('✅ Authentication successful and auth context ready');
+      } else {
+        console.warn('⚠️ Authentication succeeded but context not ready');
+        setAuthReady(false);
+      }
+      
       return authUser;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
@@ -120,6 +142,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user,
     isAuthenticated: !!user,
     isLoading,
+    authReady,
     error,
     signIn,
     signOut,

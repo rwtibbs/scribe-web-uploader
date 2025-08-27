@@ -17,6 +17,7 @@ export default function CampaignCollectionPage() {
   
   // State to track if we should show loading (prevents premature "no campaigns" display)
   const [showLoadingMinimum, setShowLoadingMinimum] = useState(true);
+  const [reloadAttempted, setReloadAttempted] = useState(false);
   
   // Get session counts for all campaigns
   const campaignIds = campaigns?.map(c => c.id) || [];
@@ -33,6 +34,36 @@ export default function CampaignCollectionPage() {
       return () => clearTimeout(timer);
     }
   }, [isAuthenticated, user?.accessToken]);
+
+  // Mobile deployment workaround: Auto-reload if campaigns fail to load after auth
+  useEffect(() => {
+    if (isAuthenticated && authReady && user?.accessToken && user?.username && !reloadAttempted) {
+      // Wait for auth stabilization, then check if we have campaign data issues
+      const checkTimer = setTimeout(() => {
+        const shouldReload = (
+          // No campaigns loaded despite being authenticated and ready
+          (!campaigns || campaigns.length === 0) &&
+          // Not currently loading
+          !campaignsLoading && !isFetching &&
+          // No error state (which would be legitimate)
+          !error &&
+          // Auth is fully ready
+          authReady && isAuthenticated && user?.accessToken
+        );
+
+        if (shouldReload) {
+          console.log('🔄 Mobile deployment workaround: Auto-reloading to fix campaign loading race condition');
+          setReloadAttempted(true);
+          // Small delay to show the user we're handling it
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+        }
+      }, 3000); // Wait 3 seconds after auth is ready
+
+      return () => clearTimeout(checkTimer);
+    }
+  }, [isAuthenticated, authReady, user?.accessToken, user?.username, campaigns, campaignsLoading, isFetching, error, reloadAttempted]);
 
   // Robust loading state - only apply when authenticated, not during login flow
   const isLoadingCampaigns = isAuthenticated && (
@@ -67,6 +98,7 @@ export default function CampaignCollectionPage() {
     isFetching,
     isLoadingCampaigns,
     showLoadingMinimum,
+    reloadAttempted,
     campaignsCount: campaigns?.length,
     campaignIds,
     sessionCounts,
@@ -76,6 +108,8 @@ export default function CampaignCollectionPage() {
     authAndTokenReady: isAuthenticated && !!user?.accessToken && !!user?.username,
     authFullyReady: authReady && isAuthenticated && !!user?.accessToken && !!user?.username,
     queryShouldBeEnabled: !!user?.username && !!user && !!user.accessToken && isAuthenticated && authReady && user?.username === user?.username,
+    // Auto-reload debugging
+    shouldTriggerReload: authReady && isAuthenticated && user?.accessToken && (!campaigns || campaigns.length === 0) && !campaignsLoading && !isFetching && !error && !reloadAttempted,
   });
   
   // Additional debug for session counts
@@ -91,6 +125,8 @@ export default function CampaignCollectionPage() {
       ? "Authenticating..." 
       : !authReady
       ? "Initializing secure connection..."
+      : reloadAttempted
+      ? "Refreshing connection..."
       : !user?.accessToken 
       ? "Loading account details..." 
       : showLoadingMinimum 
@@ -103,7 +139,12 @@ export default function CampaignCollectionPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
           <div className="text-white mb-2">{loadingMessage}</div>
           <div className="text-white/50 text-sm">
-            {!authReady ? "Establishing secure session..." : "Please wait while we load your data"}
+            {reloadAttempted 
+              ? "Optimizing connection for mobile..." 
+              : !authReady 
+              ? "Establishing secure session..." 
+              : "Please wait while we load your data"
+            }
           </div>
         </div>
       </div>

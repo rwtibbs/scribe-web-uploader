@@ -112,7 +112,7 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-- January 27, 2025. Fixed mobile deployment cold-start race condition: Implemented authReady state management to prevent campaign queries from executing before authentication context is fully stabilized, added 300ms authentication verification delays for mobile stability, created robust query enablement conditions that wait for authReady flag, enhanced loading states with "Initializing secure connection" feedback, added comprehensive debugging for mobile deployment environments
+- January 27, 2025. Fixed mobile deployment cold-start race condition with auto-reload workaround: Implemented authReady state management to prevent campaign queries from executing before authentication context is fully stabilized, added 300ms authentication verification delays for mobile stability, created automatic page reload mechanism that triggers after 3 seconds if campaigns fail to load despite successful authentication, enhanced loading states with "Refreshing connection" feedback during auto-reload, added comprehensive debugging for mobile deployment troubleshooting
 - July 23, 2025. Implemented consistent Scribe branding across all pages: Added full Scribe logo with wordmark to login page header, created unified navigation bar pattern with logo on left and logout on right across campaign collection and upload pages, constrained login form width to max-w-md for better mobile experience and consistency with other app containers
 
 ## Changelog

@@ -29,7 +29,7 @@ export default function CampaignCollectionPage() {
       // Once authenticated with access token, wait minimum time before allowing "no campaigns" display
       const timer = setTimeout(() => {
         setShowLoadingMinimum(false);
-      }, 2000); // 2 second minimum loading time for mobile stability
+      }, 4000); // 4 second minimum loading time - longer than auto-reload
 
       return () => clearTimeout(timer);
     }
@@ -57,9 +57,9 @@ export default function CampaignCollectionPage() {
           // Small delay to show the user we're handling it
           setTimeout(() => {
             window.location.reload();
-          }, 500);
+          }, 300);
         }
-      }, 3000); // Wait 3 seconds after auth is ready
+      }, 1500); // Wait 1.5 seconds after auth is ready - faster than minimum loading
 
       return () => clearTimeout(checkTimer);
     }
@@ -129,9 +129,7 @@ export default function CampaignCollectionPage() {
       ? "Refreshing connection..."
       : !user?.accessToken 
       ? "Loading account details..." 
-      : showLoadingMinimum 
-      ? "Loading campaigns..." 
-      : "Fetching campaign data...";
+      : "Loading campaigns...";
 
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#01032d] to-[#010101] flex items-center justify-center">

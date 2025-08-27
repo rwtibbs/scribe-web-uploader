@@ -202,8 +202,18 @@ export default function CampaignCollectionPage() {
         {campaignLoadState === 'ready' && (!campaignData || campaignData.length === 0) && !campaignError && (
           <div className="text-center py-12">
             <FolderIcon className="mx-auto h-16 w-16 text-white/30 mb-4" />
-            <h2 className="text-xl font-semibold text-white mb-2">Ready to Start</h2>
-            <p className="text-white/60">Create a campaign in the Scribe app to get started with audio uploads.</p>
+            <h2 className="text-xl font-semibold text-white mb-2">No campaigns found!</h2>
+            <Button
+              onClick={() => {
+                setCampaignLoadState('retry');
+                setRetryAttempts(0);
+              }}
+              variant="outline"
+              className="mb-4 text-white border-white/30 hover:bg-white/10"
+            >
+              Refresh list
+            </Button>
+            <p className="text-white/60">Create a campaign in the Scribe app to get started with audio uploads</p>
           </div>
         )}
 

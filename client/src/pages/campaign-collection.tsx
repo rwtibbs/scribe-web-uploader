@@ -128,7 +128,11 @@ export default function CampaignCollectionPage() {
     showNoCampaigns, 
     showTimeoutMessage,
     hasError: !!error,
-    campaignsLength: campaigns?.length || 0
+    campaignsLength: campaigns?.length || 0,
+    isLoadingCampaigns,
+    loadingTimeout,
+    campaignsUndefined: campaigns === undefined,
+    campaignsNull: campaigns === null
   });
 
   // Show loading state while checking authentication or loading campaigns
@@ -202,6 +206,15 @@ export default function CampaignCollectionPage() {
           </div>
         )}
 
+        {/* Debug info - remove in production */}
+        <div className="text-center mb-4 p-4 bg-blue-900/20 rounded border border-blue-500/30">
+          <div className="text-white text-sm">
+            <div>Debug: isLoading={isLoadingCampaigns.toString()}, error={!!error ? 'yes' : 'no'}, timeout={loadingTimeout.toString()}</div>
+            <div>Campaigns: {campaigns ? campaigns.length : 'undefined'} items</div>
+            <div>Show Grid: {String(showCampaignGrid)}, Show No Campaigns: {String(showNoCampaigns)}</div>
+          </div>
+        </div>
+
         {/* No Campaigns - only show after definitive loading completion and no timeout reached */}
         {!isLoadingCampaigns && !error && !loadingTimeout && campaigns && campaigns.length === 0 && (
           <div className="text-center py-12">
@@ -235,12 +248,14 @@ export default function CampaignCollectionPage() {
           </div>
         )}
 
-        {/* Campaign Grid */}
-        {!isLoadingCampaigns && !error && campaigns && campaigns.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {campaigns.map((campaign) => (
-              <Link key={campaign.id} href={`/campaign/${campaign.id}/upload`}>
-                <Card className="bg-white/10 border-white/20 hover:bg-white/15 transition-colors cursor-pointer group">
+        {/* Campaign Grid - simplified condition */}
+        {campaigns && campaigns.length > 0 && (
+          <div>
+            <div className="text-green-400 text-center mb-4 text-sm">✅ Rendering {campaigns.length} campaigns</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {campaigns.map((campaign) => (
+                <Link key={campaign.id} href={`/campaign/${campaign.id}/upload`}>
+                  <Card className="bg-white/10 border-white/20 hover:bg-white/15 transition-colors cursor-pointer group">
                   <CardHeader>
                     <CardTitle className="text-white group-hover:text-white/90">
                       {campaign.name}
@@ -283,6 +298,7 @@ export default function CampaignCollectionPage() {
                 </Card>
               </Link>
             ))}
+            </div>
           </div>
         )}
       </div>

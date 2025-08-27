@@ -38,21 +38,22 @@ export function useCampaigns(owner?: string) {
     // More robust enablement condition - wait for full auth state including access token
     enabled: !!owner && !!user && !!user.accessToken && isAuthenticated && owner === user?.username && !!user.username,
     retry: (failureCount, error) => {
-      // Retry up to 5 times for mobile networks
-      if (failureCount >= 5) return false;
+      // More aggressive retries for mobile networks
+      if (failureCount >= 8) return false;
       
-      // If it's a network error or auth error, retry more aggressively
+      // If it's a network error or auth error, retry very aggressively
       if (error?.message?.includes('Network connection failed') || 
           error?.message?.includes('access token') ||
-          error?.message?.includes('User access token is required')) {
-        return failureCount < 7;
+          error?.message?.includes('User access token is required') ||
+          error?.message?.includes('GraphQL authentication failed')) {
+        return failureCount < 10;
       }
       
       return true;
     },
     retryDelay: (attemptIndex) => {
-      // Faster initial retries for mobile: 500ms, 1s, 2s, 4s...
-      return Math.min(500 * Math.pow(2, attemptIndex), 8000);
+      // Very fast initial retries for mobile: 200ms, 400ms, 800ms, 1.6s...
+      return Math.min(200 * Math.pow(2, attemptIndex), 5000);
     },
     staleTime: 2 * 60 * 1000, // Consider data fresh for 2 minutes (more aggressive refresh for mobile)
     gcTime: 15 * 60 * 1000, // Keep in cache for 15 minutes

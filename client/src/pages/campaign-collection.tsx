@@ -34,15 +34,17 @@ export default function CampaignCollectionPage() {
     }
   }, [isAuthenticated, user?.accessToken]);
 
-  // Robust loading state - only show content when auth is ready AND campaigns are loaded
-  const isLoadingCampaigns = authLoading || 
+  // Robust loading state - only apply when authenticated, not during login flow
+  const isLoadingCampaigns = isAuthenticated && (
+    authLoading || 
     !authReady ||
     campaignsLoading || 
-    (isAuthenticated && (!user?.accessToken || !user?.username)) || 
+    (!user?.accessToken || !user?.username) || 
     isFetching ||
     showLoadingMinimum ||
     // Critical: Wait for definitive campaign result (either data or confirmed error)
-    (isAuthenticated && authReady && user?.accessToken && user?.username && !campaigns && !error);
+    (authReady && user?.accessToken && user?.username && !campaigns && !error)
+  );
 
   const handleLogout = async () => {
     try {

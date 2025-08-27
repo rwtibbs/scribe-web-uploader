@@ -491,9 +491,8 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* All Fields in One Row */}
-                  <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr_auto] gap-4 items-start">
-                    {/* File Upload */}
+                  {/* File Upload Always Visible */}
+                  <div className="space-y-4">
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-game-primary">
                         Audio Recording <span className="text-game-error">*</span>
@@ -507,39 +506,44 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
                       />
                     </div>
 
-                    {/* Session Name */}
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-game-primary">
-                        Session Name <span className="text-game-error">*</span>
-                      </Label>
-                      <Input
-                        value={session.name}
-                        onChange={(e) => updateSession(session.id, { name: e.target.value })}
-                        className={`form-input bg-game-primary/5 border-game-primary/20 text-game-primary placeholder:text-game-secondary/50 ${
-                          hasSubmissionAttempt && session.file && !session.name.trim() ? 'border-game-error bg-game-error/5' : ''
-                        }`}
-                        placeholder={`Session ${index + 1}: The Adventure Begins`}
-                        disabled={globalUploadStatus === 'uploading'}
-                      />
-                      {hasSubmissionAttempt && session.file && !session.name.trim() && (
-                        <p className="text-sm text-game-error">Session name is required when audio file is selected</p>
-                      )}
-                    </div>
+                    {/* Session Name & Date - Only Show When File is Selected */}
+                    {session.file && (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+                        {/* Session Name */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-game-primary">
+                            Session Name <span className="text-game-error">*</span>
+                          </Label>
+                          <Input
+                            value={session.name}
+                            onChange={(e) => updateSession(session.id, { name: e.target.value })}
+                            className={`form-input bg-game-primary/5 border-game-primary/20 text-game-primary placeholder:text-game-secondary/50 ${
+                              hasSubmissionAttempt && session.file && !session.name.trim() ? 'border-game-error bg-game-error/5' : ''
+                            }`}
+                            placeholder={`Session ${index + 1}: The Adventure Begins`}
+                            disabled={globalUploadStatus === 'uploading'}
+                          />
+                          {hasSubmissionAttempt && session.file && !session.name.trim() && (
+                            <p className="text-sm text-game-error">Session name is required when audio file is selected</p>
+                          )}
+                        </div>
 
-                    {/* Session Date */}
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-game-primary">
-                        Session Date <span className="text-game-error">*</span>
-                      </Label>
-                      <Input
-                        type="date"
-                        max={new Date().toISOString().split('T')[0]}
-                        value={session.date}
-                        onChange={(e) => updateSession(session.id, { date: e.target.value })}
-                        className="form-input bg-game-primary/5 border-game-primary/20 text-game-primary"
-                        disabled={globalUploadStatus === 'uploading'}
-                      />
-                    </div>
+                        {/* Session Date */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-game-primary">
+                            Session Date <span className="text-game-error">*</span>
+                          </Label>
+                          <Input
+                            type="date"
+                            max={new Date().toISOString().split('T')[0]}
+                            value={session.date}
+                            onChange={(e) => updateSession(session.id, { date: e.target.value })}
+                            className="form-input bg-game-primary/5 border-game-primary/20 text-game-primary"
+                            disabled={globalUploadStatus === 'uploading'}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Session Status & Progress */}

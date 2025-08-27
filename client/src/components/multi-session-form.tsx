@@ -442,7 +442,7 @@ export function MultiSessionForm({ campaignId, campaignName }: MultiSessionFormP
           <div>
             <h2 className="text-2xl font-semibold text-game-primary">Upload Sessions</h2>
             <p className="text-game-secondary">
-              Uploading to campaign: <span className="text-game-accent font-medium">{campaignName}</span>
+              To campaign: <span className="text-game-accent font-medium">{campaignName}</span>
             </p>
           </div>
         </div>

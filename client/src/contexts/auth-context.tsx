@@ -46,14 +46,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsLoading(true);
       console.log('🔄 Checking current session...');
       
+      const oauthTokens = localStorage.getItem('cognito_tokens');
+      if (oauthTokens) {
+        try {
+          const { user: storedUser } = JSON.parse(oauthTokens);
+          console.log('✅ OAuth session found in localStorage');
+          setUser(storedUser);
+          await new Promise(resolve => setTimeout(resolve, 150));
+          console.log('✅ OAuth session restored');
+          return;
+        } catch (parseError) {
+          console.error('❌ Failed to parse stored OAuth tokens:', parseError);
+          localStorage.removeItem('cognito_tokens');
+        }
+      }
+      
       const currentUser = await AuthService.getCurrentSession();
       
-      // Add a small delay to ensure user state is fully set before queries can run
       if (currentUser) {
         console.log('✅ User found, setting user data with access token');
         setUser(currentUser);
-        
-        // Wait longer for mobile to ensure user state is fully propagated
         await new Promise(resolve => setTimeout(resolve, 150));
       } else {
         setUser(null);
@@ -64,7 +76,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (err) {
       console.error('❌ Error checking current session:', err);
       setUser(null);
-      // Only clear cache when session check fails (user not authenticated)
       localStorage.removeItem('selectedCampaign');
     } finally {
       setIsLoading(false);
@@ -105,9 +116,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signOut = () => {
     console.log('🚪 Signing out user');
     
-    // Clear all cached data on signout to prevent cross-environment contamination
     localStorage.removeItem('selectedCampaign');
     localStorage.removeItem('tabletopscribe-environment');
+    localStorage.removeItem('cognito_tokens');
     
     AuthService.signOut();
     setUser(null);

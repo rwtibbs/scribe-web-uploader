@@ -7,6 +7,7 @@ import { Route, Switch } from "wouter";
 import PublicSessionPage from "@/pages/public-session";
 import CampaignCollectionPage from "@/pages/campaign-collection";
 import CampaignUploadPage from "@/pages/campaign-upload";
+import { OAuthCallback } from "@/pages/oauth-callback";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Switch>
+            <Route path="/oauth-callback" component={OAuthCallback} />
             <Route path="/share/:sessionId" component={PublicSessionPage} />
             <Route path="/campaign/:campaignId/upload" component={CampaignUploadPage} />
             <Route path="/" component={CampaignCollectionPage} />

@@ -1,4 +1,4 @@
-import { CognitoUserPool, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
+import { CognitoUserPool, CognitoUser, AuthenticationDetails, CognitoUserSession } from 'amazon-cognito-identity-js';
 import { getAwsConfig } from './aws-config';
 import { AuthUser } from '@shared/schema';
 
@@ -8,6 +8,10 @@ const getUserPool = () => {
     UserPoolId: config.userPoolId,
     ClientId: config.userPoolClientId,
   });
+};
+
+const getRedirectUri = () => {
+  return `${window.location.origin}/oauth-callback`;
 };
 
 export class AuthService {
@@ -97,6 +101,54 @@ export class AuthService {
     const cognitoUser = this.getCurrentUser();
     if (cognitoUser) {
       cognitoUser.signOut();
+    }
+  }
+
+  static signInWithGoogle(): void {
+    const config = getAwsConfig();
+    const redirectUri = getRedirectUri();
+    
+    const oauthUrl = `${config.cognitoDomain}/oauth2/authorize?` +
+      `identity_provider=Google&` +
+      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+      `response_type=TOKEN&` +
+      `client_id=${config.userPoolClientId}&` +
+      `scope=openid email profile`;
+    
+    console.log('🔐 Redirecting to Google OAuth:', oauthUrl);
+    window.location.href = oauthUrl;
+  }
+
+  static parseOAuthResponse(): { accessToken: string; idToken: string } | null {
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    
+    const accessToken = params.get('access_token');
+    const idToken = params.get('id_token');
+    
+    if (accessToken && idToken) {
+      return { accessToken, idToken };
+    }
+    
+    return null;
+  }
+
+  static async getUserFromToken(accessToken: string, idToken: string): Promise<AuthUser> {
+    try {
+      const payload = JSON.parse(atob(idToken.split('.')[1]));
+      
+      const username = payload['cognito:username'] || payload.email || 'google_user';
+      const sub = payload.sub;
+      
+      console.log('✅ Google authentication successful');
+      return {
+        username,
+        sub,
+        accessToken,
+      };
+    } catch (error) {
+      console.error('❌ Failed to parse token:', error);
+      throw new Error('Failed to parse authentication token');
     }
   }
 }

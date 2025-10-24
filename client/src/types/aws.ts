@@ -2,6 +2,7 @@ export interface AWSConfig {
   region: string;
   userPoolId: string;
   userPoolClientId: string;
+  cognitoDomain: string;
   s3Bucket: string;
   appsyncApiKey: string;
   graphqlEndpoint: string;

@@ -113,7 +113,8 @@ export class AuthService {
       `redirect_uri=${encodeURIComponent(redirectUri)}&` +
       `response_type=TOKEN&` +
       `client_id=${config.userPoolClientId}&` +
-      `scope=openid email profile`;
+      `scope=openid email profile&` +
+      `prompt=select_account`;
     
     console.log('🔐 Redirecting to Google OAuth:', oauthUrl);
     

@@ -108,7 +108,7 @@ export class AuthService {
     
     const logoutUrl = `${config.cognitoDomain}/logout?` +
       `client_id=${config.userPoolClientId}&` +
-      `redirect_uri=${logoutUri}`;
+      `logout_uri=${logoutUri}`;
     
     console.log('🔐 Signing out from Cognito');
     

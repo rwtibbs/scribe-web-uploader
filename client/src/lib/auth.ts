@@ -116,7 +116,12 @@ export class AuthService {
       `scope=openid email profile`;
     
     console.log('🔐 Redirecting to Google OAuth:', oauthUrl);
-    window.location.href = oauthUrl;
+    
+    if (window.top) {
+      window.top.location.href = oauthUrl;
+    } else {
+      window.location.href = oauthUrl;
+    }
   }
 
   static parseOAuthResponse(): { accessToken: string; idToken: string } | null {

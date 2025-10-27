@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/auth-context";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useCampaignSessionCounts } from "@/hooks/use-campaign-sessions";
 import { graphqlClient } from "@/lib/graphql";
 import { LoginForm } from "@/components/login-form";
@@ -31,8 +31,8 @@ export default function CampaignCollectionPage() {
     !authLoading && 
     (campaignLoadState === 'initial' || campaignLoadState === 'retry');
 
-  // Robust campaign loading function
-  const loadCampaignsRobustly = async () => {
+  // Robust campaign loading function - memoized to prevent unnecessary re-renders
+  const loadCampaignsRobustly = useCallback(async () => {
     if (!user?.username || !user?.accessToken) {
       console.log('⏸️ Campaign loading skipped: Missing auth data');
       return;
@@ -59,32 +59,43 @@ export default function CampaignCollectionPage() {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load campaigns';
       setCampaignError(errorMessage);
       
-      // Retry logic for mobile
-      if (retryAttempts < 3) {
-        console.log(`🔄 Retrying campaign load (attempt ${retryAttempts + 1}/3)`);
-        setRetryAttempts(prev => prev + 1);
-        setCampaignLoadState('retry');
-        
-        // Progressive retry delays
-        const delay = 1000 * Math.pow(2, retryAttempts);
-        setTimeout(() => {
-          if (shouldLoadCampaigns) {
+      // Retry logic for mobile - use setRetryAttempts callback to avoid stale closure
+      setRetryAttempts(prev => {
+        const currentAttempts = prev;
+        if (currentAttempts < 3) {
+          console.log(`🔄 Retrying campaign load (attempt ${currentAttempts + 1}/3)`);
+          setCampaignLoadState('retry');
+          
+          // Progressive retry delays
+          const delay = 1000 * Math.pow(2, currentAttempts);
+          setTimeout(() => {
             loadCampaignsRobustly();
-          }
-        }, delay);
-      } else {
-        console.error('💥 Campaign loading failed after all retries');
-        setCampaignLoadState('ready'); // Stop loading state
-      }
+          }, delay);
+          
+          return currentAttempts + 1;
+        } else {
+          console.error('💥 Campaign loading failed after all retries');
+          setCampaignLoadState('ready'); // Stop loading state
+          return currentAttempts;
+        }
+      });
     }
-  };
+  }, [user?.username, user?.accessToken]);
 
   // Load campaigns when authentication is complete
+  // Watch individual auth state variables to ensure we don't miss the access token on mobile
   useEffect(() => {
     if (shouldLoadCampaigns) {
+      console.log('✅ All conditions met, loading campaigns...', {
+        isAuthenticated,
+        username: user?.username,
+        hasAccessToken: !!user?.accessToken,
+        authLoading,
+        campaignLoadState
+      });
       loadCampaignsRobustly();
     }
-  }, [shouldLoadCampaigns]);
+  }, [isAuthenticated, user?.username, user?.accessToken, authLoading, campaignLoadState, loadCampaignsRobustly]);
 
   const handleLogout = async () => {
     try {

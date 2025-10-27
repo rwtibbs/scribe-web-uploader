@@ -130,26 +130,35 @@ export default function CampaignCollectionPage() {
     });
   }
 
-  // New loading state logic
-  const isShowingLoadingScreen = authLoading || 
-    (isAuthenticated && user?.accessToken && campaignLoadState === 'loading') ||
-    (isAuthenticated && user?.accessToken && campaignLoadState === 'initial');
+  // Enhanced loading state logic - keep loading screen visible until campaigns are actually loaded
+  // Don't show content until we've completed at least one load attempt
+  // Only wait for campaign states if user is authenticated
+  const isLoadingCampaigns = authLoading || 
+    (isAuthenticated && (
+      campaignLoadState === 'initial' || 
+      campaignLoadState === 'loading' ||
+      (campaignLoadState === 'retry' && retryAttempts < 3)
+    ));
 
   // Show loading state while checking authentication or loading campaigns  
-  if (isShowingLoadingScreen) {
+  if (isLoadingCampaigns) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#01032d] to-[#010101] flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-white mb-2">Loading campaigns...</div>
-          <div className="text-white/50 text-sm">
-            {authLoading ? 'Authenticating...' : 'Fetching your campaigns'}
+        <div className="text-center" data-testid="loading-campaigns">
+          <div className="text-white mb-2" data-testid="text-loading-title">Loading campaigns...</div>
+          <div className="text-white/50 text-sm" data-testid="text-loading-status">
+            {authLoading ? 'Authenticating...' : 
+             campaignLoadState === 'initial' ? 'Preparing to fetch campaigns...' :
+             campaignLoadState === 'loading' ? 'Fetching your campaigns...' :
+             retryAttempts > 0 ? `Retrying (${retryAttempts}/3)...` :
+             'Loading...'}
           </div>
         </div>
       </div>
     );
   }
 
-  // Show login form if not authenticated
+  // Show login form if not authenticated (only after loading is complete)
   if (!isAuthenticated) {
     return <LoginForm />;
   }
@@ -211,17 +220,18 @@ export default function CampaignCollectionPage() {
 
         {/* Empty State - Only show when we're sure there are no campaigns and not loading */}
         {campaignLoadState === 'ready' && (!campaignData || campaignData.length === 0) && !campaignError && (
-          <div className="text-center py-12">
+          <div className="text-center py-12" data-testid="empty-state-campaigns">
             <FolderIcon className="mx-auto h-16 w-16 text-white/30 mb-4" />
-            <h2 className="text-xl font-semibold text-white mb-2">No campaigns found!</h2>
+            <h2 className="text-xl font-semibold text-white mb-2" data-testid="text-no-campaigns">No campaigns found!</h2>
             <Button
               onClick={() => window.location.reload()}
               variant="outline"
               className="mb-4 text-white border-white/30 hover:bg-white/10"
+              data-testid="button-refresh-list"
             >
               Refresh list
             </Button>
-            <p className="text-white/60">Create a campaign in the Scribe app to get started with audio uploads</p>
+            <p className="text-white/60" data-testid="text-empty-hint">Create a campaign in the Scribe app to get started with audio uploads</p>
           </div>
         )}
 

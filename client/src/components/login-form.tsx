@@ -117,7 +117,7 @@ export function LoginForm() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="btn-primary w-full py-3 bg-game-accent hover:bg-game-hover text-white font-medium"
+                className="btn-primary w-full py-3 bg-game-accent hover:brightness-90 text-white font-medium transition-all"
                 data-testid="button-signin"
               >
                 {isLoading ? 'Signing In...' : 'Sign In'}
@@ -137,7 +137,7 @@ export function LoginForm() {
                 onClick={handleGoogleSignIn}
                 disabled={isLoading}
                 variant="outline"
-                className="w-full py-3 bg-white hover:bg-gray-100 text-gray-900 border-gray-300 font-medium flex items-center justify-center gap-2"
+                className="w-full py-3 bg-white hover:brightness-90 text-gray-900 border-gray-300 font-medium flex items-center justify-center gap-2 transition-all"
                 data-testid="button-google-signin"
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">

@@ -117,7 +117,7 @@ export function LoginForm() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="btn-primary w-full py-3 bg-game-accent hover:brightness-90 text-white font-medium transition-all"
+                className="btn-primary w-full py-3 bg-game-accent text-white font-medium"
                 data-testid="button-signin"
               >
                 {isLoading ? 'Signing In...' : 'Sign In'}

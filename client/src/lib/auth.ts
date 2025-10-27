@@ -102,6 +102,21 @@ export class AuthService {
     if (cognitoUser) {
       cognitoUser.signOut();
     }
+    
+    const config = getAwsConfig();
+    const logoutUri = encodeURIComponent(window.location.origin);
+    
+    const logoutUrl = `${config.cognitoDomain}/logout?` +
+      `client_id=${config.userPoolClientId}&` +
+      `logout_uri=${logoutUri}`;
+    
+    console.log('🔐 Signing out from Cognito');
+    
+    if (window.top) {
+      window.top.location.href = logoutUrl;
+    } else {
+      window.location.href = logoutUrl;
+    }
   }
 
   static signInWithGoogle(): void {

@@ -111,19 +111,17 @@ export class AuthService {
       `logout_uri=${logoutUri}`;
     
     console.log('🔐 Signing out from Cognito');
-    window.location.href = logoutUrl;
+    
+    if (window.top) {
+      window.top.location.href = logoutUrl;
+    } else {
+      window.location.href = logoutUrl;
+    }
   }
 
   static signInWithGoogle(): void {
     const config = getAwsConfig();
     const redirectUri = getRedirectUri();
-    
-    console.log('🔐 OAuth Configuration:', {
-      cognitoDomain: config.cognitoDomain,
-      redirectUri,
-      clientId: config.userPoolClientId,
-      origin: window.location.origin
-    });
     
     const oauthUrl = `${config.cognitoDomain}/oauth2/authorize?` +
       `identity_provider=Google&` +
@@ -133,9 +131,13 @@ export class AuthService {
       `scope=openid email profile&` +
       `prompt=select_account`;
     
-    console.log('🔐 Full OAuth URL:', oauthUrl);
-    console.log('⚠️ IMPORTANT: Make sure this redirect URI is whitelisted in Cognito:', redirectUri);
-    window.location.href = oauthUrl;
+    console.log('🔐 Redirecting to Google OAuth:', oauthUrl);
+    
+    if (window.top) {
+      window.top.location.href = oauthUrl;
+    } else {
+      window.location.href = oauthUrl;
+    }
   }
 
   static parseOAuthResponse(): { accessToken: string; idToken: string } | null {

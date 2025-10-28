@@ -118,6 +118,13 @@ export class AuthService {
     const config = getAwsConfig();
     const redirectUri = getRedirectUri();
     
+    console.log('🔐 OAuth Configuration:', {
+      cognitoDomain: config.cognitoDomain,
+      redirectUri,
+      clientId: config.userPoolClientId,
+      origin: window.location.origin
+    });
+    
     const oauthUrl = `${config.cognitoDomain}/oauth2/authorize?` +
       `identity_provider=Google&` +
       `redirect_uri=${encodeURIComponent(redirectUri)}&` +
@@ -126,7 +133,8 @@ export class AuthService {
       `scope=openid email profile&` +
       `prompt=select_account`;
     
-    console.log('🔐 Redirecting to Google OAuth:', oauthUrl);
+    console.log('🔐 Full OAuth URL:', oauthUrl);
+    console.log('⚠️ IMPORTANT: Make sure this redirect URI is whitelisted in Cognito:', redirectUri);
     window.location.href = oauthUrl;
   }
 

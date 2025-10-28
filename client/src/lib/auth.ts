@@ -111,12 +111,7 @@ export class AuthService {
       `logout_uri=${logoutUri}`;
     
     console.log('🔐 Signing out from Cognito');
-    
-    if (window.top) {
-      window.top.location.href = logoutUrl;
-    } else {
-      window.location.href = logoutUrl;
-    }
+    window.location.href = logoutUrl;
   }
 
   static signInWithGoogle(): void {
@@ -132,12 +127,7 @@ export class AuthService {
       `prompt=select_account`;
     
     console.log('🔐 Redirecting to Google OAuth:', oauthUrl);
-    
-    if (window.top) {
-      window.top.location.href = oauthUrl;
-    } else {
-      window.location.href = oauthUrl;
-    }
+    window.location.href = oauthUrl;
   }
 
   static parseOAuthResponse(): { accessToken: string; idToken: string } | null {

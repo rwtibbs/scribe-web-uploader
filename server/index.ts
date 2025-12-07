@@ -1,22 +1,100 @@
 import express, { type Request, Response, NextFunction } from "express";
+import { runMigrations } from 'stripe-replit-sync';
 import { registerRoutes } from "./routes";
+import { registerReferralRoutes } from "./referralRoutes";
 import { setupVite, serveStatic, log } from "./vite";
+import { getStripeSync } from "./stripeClient";
+import { WebhookHandlers } from "./webhookHandlers";
+import { referralWebhookHandler } from "./referralWebhookHandler";
+import { isReferralEnabled } from "./featureFlags";
 
 const app = express();
 
-// Log environment info
 const isDeployed = process.env.REPLIT_DEPLOYMENT_ID || process.env.NODE_ENV === 'production';
 console.log(`🌍 Environment: ${isDeployed ? 'DEPLOYED' : 'DEVELOPMENT'}`);
 console.log(`📊 File size limits: 300MB total (direct S3 upload via presigned URLs)`);
+console.log(`🎁 Referral system: ${isReferralEnabled() ? 'ENABLED' : 'DISABLED'}`);
 
-// Add raw body parser for debugging large requests
+async function initStripe() {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    console.log('⚠️ DATABASE_URL not set, skipping Stripe initialization');
+    return;
+  }
+
+  try {
+    console.log('💳 Initializing Stripe schema...');
+    await runMigrations({ databaseUrl });
+    console.log('✅ Stripe schema ready');
+
+    const stripeSync = await getStripeSync();
+
+    console.log('🔗 Setting up managed webhook...');
+    const webhookBaseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+    const { webhook, uuid } = await stripeSync.findOrCreateManagedWebhook(
+      `${webhookBaseUrl}/api/stripe/webhook`,
+      {
+        enabled_events: ['*'],
+        description: 'Managed webhook for Stripe sync and referrals',
+      }
+    );
+    console.log(`✅ Webhook configured: ${webhook.url}`);
+
+    console.log('📥 Syncing Stripe data in background...');
+    stripeSync.syncBackfill()
+      .then(() => console.log('✅ Stripe data synced'))
+      .catch((err: Error) => console.error('❌ Error syncing Stripe data:', err));
+  } catch (error) {
+    console.error('❌ Failed to initialize Stripe:', error);
+  }
+}
+
+app.post(
+  '/api/stripe/webhook/:uuid',
+  express.raw({ type: 'application/json' }),
+  async (req, res) => {
+    const signature = req.headers['stripe-signature'];
+
+    if (!signature) {
+      return res.status(400).json({ error: 'Missing stripe-signature' });
+    }
+
+    try {
+      const sig = Array.isArray(signature) ? signature[0] : signature;
+
+      if (!Buffer.isBuffer(req.body)) {
+        console.error('STRIPE WEBHOOK ERROR: req.body is not a Buffer');
+        return res.status(500).json({ error: 'Webhook processing error' });
+      }
+
+      const { uuid } = req.params;
+      await WebhookHandlers.processWebhook(req.body as Buffer, sig, uuid);
+
+      const event = JSON.parse(req.body.toString());
+      
+      if (event.type === 'checkout.session.completed' && isReferralEnabled()) {
+        try {
+          await referralWebhookHandler.handleCheckoutSessionCompleted(event.data.object);
+        } catch (referralError) {
+          console.error('Error processing referral webhook:', referralError);
+        }
+      }
+
+      res.status(200).json({ received: true });
+    } catch (error: any) {
+      console.error('Webhook error:', error.message);
+      res.status(400).json({ error: 'Webhook processing error' });
+    }
+  }
+);
+
 app.use((req, res, next) => {
   const contentLength = req.get('content-length');
   if (contentLength) {
     const sizeInMB = parseInt(contentLength) / (1024 * 1024);
     console.log(`📊 Incoming request: ${req.method} ${req.path} - Content-Length: ${contentLength} bytes (${sizeInMB.toFixed(2)}MB)`);
     
-    // Allow larger files for server-side upload endpoint
     const maxSizeForPath = req.path === '/api/upload-server-side' ? 300 : 50;
     
     if (sizeInMB > maxSizeForPath) {
@@ -34,12 +112,10 @@ app.use(express.json({ limit: '350mb' }));
 app.use(express.urlencoded({ extended: false, limit: '350mb' }));
 app.use(express.raw({ limit: '350mb', type: 'application/octet-stream' }));
 
-// Increase timeout for large file uploads
 app.use((req, res, next) => {
-  // Set timeout to 10 minutes for upload endpoints
   if (req.path.includes('/upload')) {
-    req.setTimeout(600000); // 10 minutes
-    res.setTimeout(600000); // 10 minutes
+    req.setTimeout(600000);
+    res.setTimeout(600000);
   }
   next();
 });
@@ -75,6 +151,10 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  await initStripe();
+  
+  registerReferralRoutes(app);
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -85,24 +165,17 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  // Configure server for large file uploads
   server.maxHeadersCount = 0;
-  server.timeout = 600000; // 10 minutes
-  server.keepAliveTimeout = 600000; // 10 minutes
-  server.headersTimeout = 610000; // Slightly longer than keepAliveTimeout
+  server.timeout = 600000;
+  server.keepAliveTimeout = 600000;
+  server.headersTimeout = 610000;
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
   const port = 5000;
   server.listen({
     port,

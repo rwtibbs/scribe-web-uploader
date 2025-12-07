@@ -9,6 +9,7 @@ import { Link } from "wouter";
 import { CalendarIcon, FolderIcon, LogOutIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ReferralCard } from "@/components/referral-card";
 import scribeLogoPath from "@assets/scribeLogo_1753313610468.png";
 
 export default function CampaignCollectionPage() {
@@ -264,6 +265,11 @@ export default function CampaignCollectionPage() {
             ))}
           </div>
         )}
+
+        {/* Referral Section */}
+        <div className="mt-8 max-w-md mx-auto">
+          <ReferralCard />
+        </div>
       </div>
     </div>
   );

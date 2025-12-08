@@ -80,7 +80,10 @@ export class ReferralService {
     const code = this.generateReferralCode();
     
     const promotionCode = await stripe.promotionCodes.create({
-      coupon: couponId,
+      promotion: {
+        type: 'coupon',
+        coupon: couponId,
+      },
       code: code,
       metadata: {
         referrer_user_id: userId.toString(),

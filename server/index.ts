@@ -30,16 +30,21 @@ async function initStripe() {
 
     const stripeSync = await getStripeSync();
 
-    console.log('🔗 Setting up managed webhook...');
-    const webhookBaseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
-    const { webhook, uuid } = await stripeSync.findOrCreateManagedWebhook(
-      `${webhookBaseUrl}/api/stripe/webhook`,
-      {
-        enabled_events: ['*'],
-        description: 'Managed webhook for Stripe sync and referrals',
-      }
-    );
-    console.log(`✅ Webhook configured: ${webhook.url}`);
+    try {
+      console.log('🔗 Setting up managed webhook...');
+      const webhookBaseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+      const { webhook, uuid } = await stripeSync.findOrCreateManagedWebhook(
+        `${webhookBaseUrl}/api/stripe/webhook`,
+        {
+          enabled_events: ['*'],
+          description: 'Managed webhook for Stripe sync and referrals',
+        }
+      );
+      console.log(`✅ Webhook configured: ${webhook.url}`);
+    } catch (webhookError) {
+      console.warn('⚠️ Webhook setup failed (non-fatal):', (webhookError as Error).message);
+      console.warn('⚠️ Referral rewards may not be automatically issued. Ensure your Stripe API key has webhook permissions.');
+    }
 
     console.log('📥 Syncing Stripe data in background...');
     stripeSync.syncBackfill()

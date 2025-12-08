@@ -9,7 +9,7 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
-function extractUserFromAuth(req: AuthenticatedRequest): { sub: string; email: string } | null {
+function extractUserFromAuth(req: AuthenticatedRequest): { sub: string; email: string | null } | null {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return null;
@@ -21,9 +21,11 @@ function extractUserFromAuth(req: AuthenticatedRequest): { sub: string; email: s
     if (parts.length !== 3) return null;
     
     const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf-8'));
+    if (!payload.sub) return null;
+    
     return {
       sub: payload.sub,
-      email: payload.email || payload['cognito:username'],
+      email: payload.email || null,
     };
   } catch {
     return null;

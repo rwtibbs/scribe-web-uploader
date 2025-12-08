@@ -39,10 +39,14 @@ export class ReferralService {
     }
   }
 
-  async getOrCreateUserByEmail(email: string, cognitoSub: string): Promise<User> {
+  async getOrCreateUserByEmail(email: string | null, cognitoSub: string): Promise<User> {
     const existingUser = await db.select().from(users).where(eq(users.cognitoSub, cognitoSub)).limit(1);
     
     if (existingUser.length > 0) {
+      if (email && !existingUser[0].email) {
+        await db.update(users).set({ email }).where(eq(users.id, existingUser[0].id));
+        return { ...existingUser[0], email };
+      }
       return existingUser[0];
     }
 

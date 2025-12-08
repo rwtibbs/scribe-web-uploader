@@ -66,7 +66,7 @@ export type FileUploadPayload = z.infer<typeof fileUploadSchema>;
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   cognitoSub: text("cognito_sub").unique().notNull(),
-  email: text("email").unique().notNull(),
+  email: text("email"),
   stripeCustomerId: text("stripe_customer_id"),
   createdAt: timestamp("created_at").defaultNow(),
 });

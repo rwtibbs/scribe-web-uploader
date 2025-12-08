@@ -15,28 +15,15 @@ import { getFeatureFlags } from './featureFlags';
 import crypto from 'crypto';
 
 export class ReferralService {
-  private async getOrCreateBaseCoupon(): Promise<string> {
-    const stripe = await getUncachableStripeClient();
-    const flags = getFeatureFlags();
-    
-    const couponId = 'referral_5_off';
-    
-    try {
-      const existingCoupon = await stripe.coupons.retrieve(couponId);
-      return existingCoupon.id;
-    } catch (error: any) {
-      if (error.code === 'resource_missing') {
-        const coupon = await stripe.coupons.create({
-          id: couponId,
-          amount_off: flags.referralDiscountAmount,
-          currency: 'usd',
-          name: 'Referral - $5 Off',
-          duration: 'once',
-        });
-        return coupon.id;
-      }
-      throw error;
-    }
+  private readonly REFERRAL_COUPON_ID = 'p7HVG7ZT';
+  private readonly REFERRER_REWARD_COUPON_ID = 'MFqI4JxX';
+
+  private getBaseCouponId(): string {
+    return this.REFERRAL_COUPON_ID;
+  }
+
+  private getReferrerRewardCouponId(): string {
+    return this.REFERRER_REWARD_COUPON_ID;
   }
 
   async getOrCreateUserByEmail(email: string | null, cognitoSub: string): Promise<User> {
@@ -75,7 +62,7 @@ export class ReferralService {
     }
 
     const stripe = await getUncachableStripeClient();
-    const couponId = await this.getOrCreateBaseCoupon();
+    const couponId = this.getBaseCouponId();
     
     const code = this.generateReferralCode();
     
@@ -196,17 +183,14 @@ export class ReferralService {
 
     const stripe = await getUncachableStripeClient();
     
-    const rewardCoupon = await stripe.coupons.create({
-      amount_off: flags.referralDiscountAmount,
-      currency: 'usd',
-      name: 'Referral Reward - $5 Off',
-      duration: 'once',
-    });
-
+    const rewardCouponId = this.getReferrerRewardCouponId();
     const rewardCode = this.generateReferralCode() + '_REWARD';
     
     const promotionCode = await stripe.promotionCodes.create({
-      coupon: rewardCoupon.id,
+      promotion: {
+        type: 'coupon',
+        coupon: rewardCouponId,
+      },
       code: rewardCode,
       metadata: {
         reward_for_user_id: referrerUserId.toString(),
@@ -223,7 +207,7 @@ export class ReferralService {
       referrerUserId,
       referredUserId,
       stripePromotionCodeId: promotionCode.id,
-      stripeCouponId: rewardCoupon.id,
+      stripeCouponId: rewardCouponId,
       stripeCheckoutSessionId: checkoutSessionId,
     }).returning();
 

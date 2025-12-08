@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from 'express';
 import { referralService } from './referralService';
 import { isReferralEnabled, getFeatureFlags } from './featureFlags';
+import { extractVerifiedUser } from './cognitoAuth';
 
 interface AuthenticatedRequest extends Request {
   user?: {
@@ -9,36 +10,13 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
-function extractUserFromAuth(req: AuthenticatedRequest): { sub: string; email: string | null } | null {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return null;
-  }
-
-  const token = authHeader.substring(7);
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    
-    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf-8'));
-    if (!payload.sub) return null;
-    
-    return {
-      sub: payload.sub,
-      email: payload.email || null,
-    };
-  } catch {
-    return null;
-  }
-}
-
 export function registerReferralRoutes(app: Express) {
   app.post('/api/referrals/code', async (req: AuthenticatedRequest, res: Response) => {
     if (!isReferralEnabled()) {
       return res.status(503).json({ error: 'Referral system is currently disabled' });
     }
 
-    const userInfo = extractUserFromAuth(req);
+    const userInfo = await extractVerifiedUser(req.headers.authorization);
     if (!userInfo) {
       return res.status(401).json({ error: 'Authentication required' });
     }
@@ -62,7 +40,7 @@ export function registerReferralRoutes(app: Express) {
       return res.status(503).json({ error: 'Referral system is currently disabled' });
     }
 
-    const userInfo = extractUserFromAuth(req);
+    const userInfo = await extractVerifiedUser(req.headers.authorization);
     if (!userInfo) {
       return res.status(401).json({ error: 'Authentication required' });
     }

@@ -67,11 +67,9 @@ export class ReferralService {
     const code = this.generateReferralCode();
     
     const promotionCode = await stripe.promotionCodes.create({
-      promotion: {
-        type: 'coupon',
-        coupon: couponId,
-      },
+      coupon: couponId,
       code: code,
+      max_redemptions: 1,
       metadata: {
         referrer_user_id: userId.toString(),
         type: 'referral',
@@ -187,11 +185,9 @@ export class ReferralService {
     const rewardCode = this.generateReferralCode() + '_REWARD';
     
     const promotionCode = await stripe.promotionCodes.create({
-      promotion: {
-        type: 'coupon',
-        coupon: rewardCouponId,
-      },
+      coupon: rewardCouponId,
       code: rewardCode,
+      max_redemptions: 1,
       metadata: {
         reward_for_user_id: referrerUserId.toString(),
         referred_user_id: referredUserId.toString(),

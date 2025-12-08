@@ -31,6 +31,13 @@ interface ReferralInfo {
 export function useReferralStatus() {
   return useQuery<ReferralStatus>({
     queryKey: ['/api/referrals/status'],
+    queryFn: async () => {
+      const response = await fetch('/api/referrals/status');
+      if (!response.ok) {
+        throw new Error('Failed to fetch referral status');
+      }
+      return response.json();
+    },
   });
 }
 

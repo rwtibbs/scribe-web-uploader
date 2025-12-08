@@ -20,7 +20,9 @@ function getCredentials() {
 
 export async function getUncachableStripeClient() {
   const { secretKey } = getCredentials();
-  return new Stripe(secretKey);
+  return new Stripe(secretKey, {
+    apiVersion: '2024-11-20.acacia' as any,
+  });
 }
 
 export async function getStripePublishableKey() {

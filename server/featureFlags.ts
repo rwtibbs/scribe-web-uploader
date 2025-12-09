@@ -6,7 +6,7 @@ export interface FeatureFlags {
 }
 
 const defaultFlags: FeatureFlags = {
-  referralSystem: true,
+  referralSystem: false,
   referralMaxRewardsPerMonth: 5,
   referralMinPurchaseAmount: 500,
   referralDiscountAmount: 500,
